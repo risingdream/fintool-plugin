@@ -1,127 +1,343 @@
 # prompt
 액면 100억 원, 표면금리 연 1%(연 1회 이표), 만기 3년(2026-08-23 발행, 2029-08-23 만기), 전환가 20,000원, 현재 주가 18,000원, 주가 변동성 35%, 무위험금리 3.2%, 이 회사 일반채 신용스프레드 4%. 이 전환사채 가치는?
 
-# run: plugin ON (fintool@fintool-plugin 0.5.3) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-opus-5[1m] · 2026-08-23
+# run: plugin ON (fintool@fintool-plugin 0.5.4) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-opus-5[1m] · 2026-08-23
 
 [tool_use Skill]
-{"skill":"fintool:fixed-income","args":"전환사채 가치평가: 액면 100억, 쿠폰 1% 연1회, 만기 3년, 전환가 20000, 주가 18000, 변동성 35%, 무위험 3.2%, 신용스프레드 4%"}
+{"skill":"fintool:fixed-income","args":"전환사채 가치평가: 액면 100억, 표면금리 1% 연1회, 만기 3년, 전환가 20000원, 주가 18000원, 변동성 35%, 무위험 3.2%, 신용스프레드 4%"}
 
 [tool_result]
 Launching skill: fintool:fixed-income
 
-[tool_use mcp__plugin_fintool_fintool__fintool_run]
-{"tool":"bond","flags":{"solve":"price","settlement":"2026-08-23","maturity":"2029-08-23","rate":0.01,"yield":0.072,"redemption":100,"frequency":1,"basis":1}}
-
-[tool_use mcp__plugin_fintool_fintool__fintool_run]
-{"tool":"option","flags":{"model":"binomial","exercise":"american","solve":"price","type":"call","spot":18000,"strike":20000,"rate":0.032,"vol":0.35,"maturity":3,"steps":500}}
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{"tool":"convertible"}
 
 [tool_result]
 {
   "ok": true,
-  "tool": "bond",
+  "tool": "tools",
   "data": {
-    "solve": "price",
-    "value": 83.78851246662653,
-    "settlement": "2026-08-23",
-    "maturity": "2029-08-23",
-    "rate": 0.01,
-    "yield": 0.072,
-    "price": 83.78851246662653,
-    "redemption": 100,
-    "accrued_interest": 0,
-    "frequency": 1,
-    "basis": 1,
-    "schedule": {
-      "previous_coupon_date": "2026-08-23",
-      "next_coupon_date": "2027-08-23",
-      "days_before_settlement": 0,
-      "days_in_period": 365,
-      "days_to_next": 365,
-      "coupons_remaining": 3
-    },
-    "convention": "엑셀 PRICE와 같다. 액면 100 기준 청산가격(clean price)이며 경과이자를 뺀 값이다. 실제 결제대금은 value + accrued_interest에 액면/100을 곱한 금액이다."
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "convertible",
+        "kind": "calculator",
+        "summary": "전환사채(CB)를 Tsiveriotis-Fernandes 이항 트리로 평가한다 (신용스프레드·콜·풋 반영)",
+        "usage": "fintool convertible [flags]",
+        "example": "  # 액면 100억, 표면 1% 연 1회, 3년, 전환가 20,000, 주가 18,000, σ 35%, rf 3.2%, 스프레드 4%\n  fintool convertible --face 10000000000 --coupon-rate 0.01 --frequency 1 --maturity 3 \\\n    --conversion-price 20000 --spot 18000 --vol 0.35 --rate 0.032 --spread 0.04 --steps 500\n\n  # 발행사 콜(2년차부터 액면 105%)과 투자자 풋(1.5년차부터 액면 100%)\n  fintool convertible --face 10000000000 --coupon-rate 0.01 --frequency 1 --maturity 3 \\\n    --conversion-price 20000 --spot 18000 --vol 0.35 --rate 0.032 --spread 0.04 \\\n    --call-price 10500000000 --call-start 2 --put-price 10000000000 --put-start 1.5\n\n  # 만기보장수익률 조항: 만기 상환 106%\n  fintool convertible --face 100 --coupon-rate 0 --maturity 3 --redemption 1.06 \\\n    --conversion-ratio 5 --spot 18 --vol 0.3 --rate 0.03 --spread 0.05\n\n  # 사람이 읽는 표로\n  fintool convertible --face 100 --coupon-rate 0.02 --frequency 2 --maturity 5 \\\n    --conversion-price 25 --spot 20 --vol 0.3 --rate 0.03 --spread 0.03 --format table",
+        "flags": [
+          {
+            "name": "call-price",
+            "type": "float64",
+            "default": "0",
+            "description": "발행사 콜 가격(액면 기준 금액). 0이면 콜 없음"
+          },
+          {
+            "name": "call-start",
+            "type": "float64",
+            "default": "0",
+            "description": "콜 가능 시작 시점(년)"
+          },
+          {
+            "name": "conversion-price",
+            "type": "float64",
+            "default": "0",
+            "description": "전환가. --conversion-ratio와 하나만 준다"
+          },
+          {
+            "name": "conversion-ratio",
+            "type": "float64",
+            "default": "0",
+            "description": "액면 전체를 전환했을 때 받는 주식 수"
+          },
+          {
+            "name": "coupon-rate",
+            "type": "float64",
+            "default": "0",
+            "description": "연 표면금리(소수. 0.01 = 1%)"
+          },
+          {
+            "name": "dividend",
+            "type": "float64",
+            "default": "0",
+            "description": "연속 배당수익률 q(소수)"
+          },
+          {
+            "name": "face",
+            "type": "float64",
+            "default": "0",
+            "description": "액면. 상환·이표·콜·풋 금액의 기준"
+          },
+          {
+            "name": "frequency",
+            "type": "int",
+            "default": "1",
+            "description": "연간 이표 횟수. 0이면 무이표"
+          },
+          {
+            "name": "maturity",
+            "type": "float64",
+            "default": "0",
+            "description": "잔존만기(년)"
+          },
+          {
+            "name": "put-price",
+            "type": "float64",
+            "default": "0",
+            "description": "투자자 풋 가격(액면 기준 금액). 0이면 풋 없음"
+          },
+          {
+            "name": "put-start",
+            "type": "float64",
+            "default": "0",
+            "description": "풋 가능 시작 시점(년). 그때부터 만기까지 행사 가능"
+          },
+          {
+            "name": "rate",
+            "type": "float64",
+            "default": "0",
+            "description": "무위험 이자율(연속복리 연율 소수)"
+          },
+          {
+            "name": "redemption",
+            "type": "float64",
+            "default": "1",
+            "description": "만기 상환율(액면 대비 소수. 1.06 = 106%). 만기보장수익률 조항은 여기로"
+          },
+          {
+            "name": "spot",
+            "type": "float64",
+            "default": "0",
+            "description": "현재 주가"
+          },
+          {
+            "name": "spread",
+            "type": "float64",
+            "default": "0",
+            "description": "발행사 신용스프레드(연율 소수). 현금 성분 할인에만 더해진다"
+          },
+          {
+            "name": "steps",
+            "type": "int",
+            "default": "500",
+            "description": "이항 트리 스텝 수(1~10000). O(steps²)"
+          },
+          {
+            "name": "vol",
+            "type": "float64",
+            "default": "0",
+            "description": "주가 연 변동성(소수. 0.35 = 35%)"
+          }
+        ],
+        "workflow": {
+          "batch": false,
+          "inputs": {
+            "call-price": {
+              "type": "number"
+            },
+            "call-start": {
+              "type": "number"
+            },
+            "conversion-price": {
+              "type": "number"
+            },
+            "conversion-ratio": {
+              "type": "number"
+            },
+            "coupon-rate": {
+              "type": "number"
+            },
+            "dividend": {
+              "type": "number"
+            },
+            "face": {
+              "type": "number"
+            },
+            "frequency": {
+              "type": "number"
+            },
+            "maturity": {
+              "type": "number"
+            },
+            "put-price": {
+              "type": "number"
+            },
+            "put-start": {
+              "type": "number"
+            },
+            "rate": {
+              "type": "number"
+            },
+            "redemption": {
+              "type": "number"
+            },
+            "spot": {
+              "type": "number"
+            },
+            "spread": {
+              "type": "number"
+            },
+            "steps": {
+              "type": "number"
+            },
+            "vol": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    ]
   }
 }
 
 
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"convertible","flags":{"face":10000000000,"coupon-rate":0.01,"frequency":1,"maturity":3,"conversion-price":20000,"spot":18000,"vol":0.35,"rate":0.032,"spread":0.04,"steps":500}}
+
 [tool_result]
 {
   "ok": true,
-  "tool": "option",
+  "tool": "convertible",
   "data": {
-    "model": "binomial",
-    "solve": "price",
-    "type": "call",
-    "exercise": "american",
-    "price": 4222.127038737545,
-    "steps": 500,
+    "model": "tsiveriotis-fernandes",
     "inputs": {
-      "spot": 18000,
-      "strike": 20000,
-      "rate": 0.032,
-      "yield": 0,
-      "vol": 0.35,
+      "face": 10000000000,
+      "coupon_rate": 0.01,
+      "frequency": 1,
       "maturity": 3,
-      "carry": 0.032
+      "redemption": 1,
+      "conversion_price": 20000,
+      "spot": 18000,
+      "vol": 0.35,
+      "rate": 0.032,
+      "spread": 0.04,
+      "dividend": 0,
+      "steps": 500
     },
-    "convention": "Cox-Ross-Rubinstein 이항 트리. u = e^(σ√dt), d = 1/u, p = (e^((r−q)dt) − d)/(u − d). 스텝을 늘리면 유럽형은 Black-Scholes로 수렴한다. 만기는 연 단위 소수다(0.5 = 6개월). 그릭스는 vega가 변동성 1%p당, theta가 하루당(365일 기준), rho가 이자율 1%p당이며 원시 미분값도 함께 낸다."
+    "value": 10764990730.903393,
+    "equity_component": 5346924332.8570795,
+    "debt_component": 5418066398.046313,
+    "value_pct_face": 107.64990730903392,
+    "conversion_ratio": 500000,
+    "parity": 9000000000,
+    "bond_floor": 8317567484.310382,
+    "premium_over_parity": 0.19611008121148799,
+    "premium_over_bond": 0.29424747694679265,
+    "delta": 338803.38569968985,
+    "component_method_value": 10429314832.234562,
+    "steps": 500,
+    "convention": "Tsiveriotis-Fernandes 이항 트리. 주식 성분은 무위험금리, 현금 성분은 무위험금리+신용스프레드로 할인한다. CRR: u = e^(σ√dt), d = 1/u, p = (e^((r−q)dt) − d)/(u − d). 이표는 지급일이 속한 스텝의 현금 성분에 더한다. 노드 판정 순서: 발행사 콜(보유자는 전환으로 대응) → 보유자 풋 → 보유자 전환. 금리·스프레드·변동성은 연속복리 상수다.",
+    "assumptions": [
+      "주가는 변동성이 일정한 기하브라운운동을 따른다. 점프·변동성 스마일은 없다",
+      "무위험금리와 신용스프레드는 만기까지 상수다. 스프레드가 주가와 함께 움직이는 효과는 없다",
+      "부도 시 회수율은 모형에 없다. 신용위험은 현금 성분의 할인율로만 들어간다",
+      "전환 시 희석 효과(주식 수 증가에 따른 주가 하락)는 반영하지 않는다",
+      "리픽싱(전환가 조정) 조항은 반영하지 않는다. 조건이 있다면 별도 시나리오로 전환가를 바꿔 평가한다"
+    ],
+    "calculation_hash": "sha256:217dee536d906280a54343762bac1c5554cff3296da18135067f485d4c527dd7"
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"convertible","flags":{"face":10000000000,"coupon-rate":0.01,"frequency":1,"maturity":3,"conversion-price":14000,"spot":18000,"vol":0.35,"rate":0.032,"spread":0.04,"steps":500}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "convertible",
+  "data": {
+    "model": "tsiveriotis-fernandes",
+    "inputs": {
+      "face": 10000000000,
+      "coupon_rate": 0.01,
+      "frequency": 1,
+      "maturity": 3,
+      "redemption": 1,
+      "conversion_price": 14000,
+      "spot": 18000,
+      "vol": 0.35,
+      "rate": 0.032,
+      "spread": 0.04,
+      "dividend": 0,
+      "steps": 500
+    },
+    "value": 13787321584.897749,
+    "equity_component": 10365973383.860838,
+    "debt_component": 3421348201.0369105,
+    "value_pct_face": 137.87321584897748,
+    "conversion_ratio": 714285.7142857143,
+    "parity": 12857142857.142859,
+    "bond_floor": 8317567484.310382,
+    "premium_over_parity": 0.07234723438093593,
+    "premium_over_bond": 0.6576146344354992,
+    "delta": 611617.6118995653,
+    "component_method_value": 13216886288.085274,
+    "steps": 500,
+    "convention": "Tsiveriotis-Fernandes 이항 트리. 주식 성분은 무위험금리, 현금 성분은 무위험금리+신용스프레드로 할인한다. CRR: u = e^(σ√dt), d = 1/u, p = (e^((r−q)dt) − d)/(u − d). 이표는 지급일이 속한 스텝의 현금 성분에 더한다. 노드 판정 순서: 발행사 콜(보유자는 전환으로 대응) → 보유자 풋 → 보유자 전환. 금리·스프레드·변동성은 연속복리 상수다.",
+    "assumptions": [
+      "주가는 변동성이 일정한 기하브라운운동을 따른다. 점프·변동성 스마일은 없다",
+      "무위험금리와 신용스프레드는 만기까지 상수다. 스프레드가 주가와 함께 움직이는 효과는 없다",
+      "부도 시 회수율은 모형에 없다. 신용위험은 현금 성분의 할인율로만 들어간다",
+      "전환 시 희석 효과(주식 수 증가에 따른 주가 하락)는 반영하지 않는다",
+      "리픽싱(전환가 조정) 조항은 반영하지 않는다. 조건이 있다면 별도 시나리오로 전환가를 바꿔 평가한다"
+    ],
+    "calculation_hash": "sha256:e61517cf752fd1c0997b6cdccdcf2eb5d0780cbfb730c8f456f1dc5e6508e14a"
   }
 }
 
 
 [assistant]
-## 전환사채 이론가: 약 **104.9억 원** (액면 대비 104.9%)
+# 전환사채 평가 결과
 
-스트레이트 채권 + 전환옵션으로 분해해 산출했습니다.
+**CB 가치 = 107억 6,499만 원 (액면 대비 107.65%)**
 
-### 1) 채권 부문 (bond floor)
+Tsiveriotis-Fernandes 이항 트리(500 스텝), 콜·풋·만기보장수익률 조항 없음(상환율 100%) 기준입니다.
 
-| 항목 | 값 |
-|---|---|
-| 할인율 | 7.2% (무위험 3.2% + 신용스프레드 4.0%) |
-| 결제일 / 만기 | 2026-08-23 / 2029-08-23, 연 1회, actual/actual |
-| 표면금리 | 1.0% |
-| **가격 (액면 100 기준)** | **83.7885** |
-| 경과이자 | 0 (발행일 결제) |
+## 구성 분해
 
-→ 채권가치 = 100억 × 83.7885 / 100 = **8,378,851,247원**
+| 항목 | 금액 | 비고 |
+|---|---:|---|
+| **CB 가치** | 10,764,990,731원 | 107.65% of face |
+| 주식 성분 (equity component) | 5,346,924,333원 | 무위험금리로 할인 |
+| 채권 성분 (debt component) | 5,418,066,398원 | rf + 스프레드(7.2%)로 할인 |
+| Bond floor (일반채 가치) | 8,317,567,484원 | 전환권 없을 때 |
+| Parity (전환가치) | 9,000,000,000원 | 50만 주 × 18,000원 |
 
-### 2) 전환옵션 부문
+## 지표
 
-| 항목 | 값 |
-|---|---|
-| 모형 | CRR 이항트리, 미국형 콜, 500스텝 |
-| 기초자산 / 행사가 | 18,000원 / 20,000원 |
-| 변동성 / 무위험금리 / 잔존만기 | 35% / 3.2% / 3년 |
-| **옵션 1주 가치** | **4,222.13원** |
+- **전환비율**: 500,000주 (100억 ÷ 20,000원)
+- **패리티 프리미엄**: 19.61% — 지금 당장 전환하는 것보다 CB를 보유하는 게 19.6% 유리
+- **채권 대비 프리미엄**: 29.42% — 전환권이 bond floor 위에 얹는 값
+- **Delta**: 338,803 (주가 1원 변동 시 CB 가치 변동액) → 전환비율 대비 헤지비율 약 0.68
 
-전환주식수 = 100억 ÷ 20,000 = 500,000주
-→ 옵션가치 = 500,000 × 4,222.13 = **2,111,063,519원**
+주가(18,000)가 전환가(20,000) 아래인 **out-of-the-money** 상태인데도 액면을 넘는 이유는, 3년간 변동성 35%가 만들어내는 시간가치가 크기 때문입니다. 주식·채권 성분이 거의 반반(49.7% : 50.3%)으로 나뉜 전형적인 balanced CB 구간입니다.
 
-### 3) 합산
+**참고**: 봉투의 `component_method_value`(단순 "채권 + 무위험 콜" 분해법)는 104억 2,931만 원으로, TF 모형값보다 3.4억 원 낮습니다. 차이는 신용위험이 전환권 부분에 어떻게 반영되는지와 조기 전환 효과에서 나옵니다.
 
-```
-CB 이론가 = 8,378,851,247 + 2,111,063,519 = 10,489,914,766원
-          ≈ 104.9억 원 (액면의 104.90%)
-```
+## 리픽싱 시나리오 (별도)
 
-### 해석
+모형에 리픽싱 조항은 없습니다. 국내 사모 CB에 흔한 **전환가 하한 70%(14,000원)**까지 조정된 경우를 별도로 돌리면:
 
-| 지표 | 값 |
-|---|---|
-| 채권 floor | 83.79억 (액면의 83.8%) |
-| 전환 패리티 (500,000주 × 18,000원) | 90.00억 |
-| 옵션가치 비중 | 21.11억 / 104.90억 = 20.1% |
-| 전환 프리미엄 (전환가 vs 주가) | +11.1% |
-| 이론가의 패리티 대비 프리미엄 | +16.6% |
+- CB 가치 **137억 8,732만 원 (137.87%)**, 전환비율 714,286주, 패리티 128억 5,714만 원
 
-현재 주가가 전환가를 밑도는 out-of-the-money 상태(패리티 90억 < 액면 100억)지만, 만기 3년 · 변동성 35%라는 긴 시간가치 덕분에 옵션 부문이 액면의 21%를 채워 이론가가 액면을 넘습니다. 반대로 표면금리 1%에 요구수익률 7.2%라 채권 부문만으로는 액면의 84%에 그치므로, 이 CB의 가치는 사실상 **주가 상승 시나리오에 크게 의존**합니다.
+즉 리픽싱 조항 유무에 따라 **107.65% ~ 137.87%** 범위입니다. 실제 계약서의 리픽싱 트리거·주기·하한을 확인해야 어느 쪽에 가까운지 판단할 수 있습니다.
 
-### 모형의 한계 (중요)
+## 모형 가정 (해석 시 주의)
 
-- **신용위험이 옵션에 반영되지 않았습니다.** 발행사 부도 시 전환권도 함께 소멸하는데, 이 분해는 옵션을 무위험금리로만 평가하므로 옵션가치가 **과대평가**됩니다. 정밀 평가는 이항트리에 신용스프레드를 결합한 Tsiveriotis-Fernandes 모형이 필요하며 fintool 범위 밖입니다.
-- **콜/풋 옵션 조항, 리픽싱(전환가 조정), 희석효과를 모두 무시**했습니다. 국내 사모 CB에 흔한 하향 리픽싱 조항이 있다면 실제 가치는 위 수치보다 높아지고, 발행사 콜옵션이 있다면 낮아집니다.
-- 만기보장수익률(YTM 프리미엄) 조항이 있다면 상환금액 100 대신 그 값을 넣어 채권 부문을 다시 계산해야 합니다.
-- 배당수익률 0%를 가정했습니다.
+- 주가는 변동성이 일정한 기하브라운운동을 따름 — 점프·변동성 스마일 없음
+- 무위험금리와 신용스프레드는 만기까지 상수 — 스프레드가 주가와 연동해 움직이는 효과 없음
+- 부도 시 회수율은 미반영. 신용위험은 현금 성분 할인율로만 들어감
+- **전환 시 희석 효과(주식 수 증가에 따른 주가 하락) 미반영** — 액면 100억이 발행사 시총 대비 크다면 실제 가치는 이보다 낮습니다
+- 리픽싱 조항 미반영 (위 시나리오 참조)
 
-[result] duration_ms=34283 turns=5 cost_usd=0.2361635 input_tokens=60256 output_tokens=2201
+`calculation_hash`: `sha256:217dee53…c527dd7` (기본 시나리오)
+
+[result] duration_ms=38621 turns=6 cost_usd=0.290942 input_tokens=109429 output_tokens=2119

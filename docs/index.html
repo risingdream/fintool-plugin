@@ -231,47 +231,44 @@ N(d1) = 0.6132    N(d2) = 0.3750</pre>
           <a class="src" href="assets/transcripts/case-b-off.txt">원문 case-b-off.txt</a>
         </div>
         <div class="col after" data-pane="after">
-          <div class="col-head">fintool</div><div class="meta-strip"><span><b>34s</b> 소요</span><span><b>5</b> turns</span><span>입력 <b>60,256</b> tok</span><span>출력 <b>2,201</b> tok</span><span><b>$0.24</b></span></div>
-          <div class="chain"><span class="pill pill-mcp">Skill · fintool:fixed-income</span><span class="pill pill-mcp">fintool_run · bond</span><span class="pill pill-mcp">fintool_run · option</span></div>
-          <p class="env-note">fixed-income 스킬이 CB를 <span class="mono">bond</span>(스트레이트 채권) + <span class="mono">option</span>(이항 전환옵션)으로 분해해 봉투 2개로 합산했다. 왼쪽도 블랙-숄즈를 손으로 풀어 같은 104.9억에 도달한다 — 다만 N(d1) 표를 암산한 6,800토큰짜리 답이고, 오른쪽은 1/3 시간·1/3 분량에 호출 인자가 남는다.</p>
-          <div class="chat"><h4>전환사채 이론가: 약 <b>104.9억 원</b> (액면 대비 104.9%)</h4>
-<p>스트레이트 채권 + 전환옵션으로 분해해 산출했습니다.</p>
-<h5>1) 채권 부문 (bond floor)</h5>
-<table><thead><tr><th>항목</th><th>값</th></tr></thead><tbody>
-<tr><td>할인율</td><td>7.2% (무위험 3.2% + 신용스프레드 4.0%)</td></tr>
-<tr><td>결제일 / 만기</td><td>2026-08-23 / 2029-08-23, 연 1회, actual/actual</td></tr>
-<tr><td>표면금리</td><td>1.0%</td></tr>
-<tr><td><b>가격 (액면 100 기준)</b></td><td><b>83.7885</b></td></tr>
-<tr><td>경과이자</td><td>0 (발행일 결제)</td></tr>
+          <div class="col-head">fintool</div><div class="meta-strip"><span><b>39s</b> 소요</span><span><b>6</b> turns</span><span>입력 <b>109,429</b> tok</span><span>출력 <b>2,119</b> tok</span><span><b>$0.29</b></span></div>
+          <div class="chain"><span class="pill pill-mcp">Skill · fintool:fixed-income</span><span class="pill pill-mcp">fintool_catalog</span><span class="pill pill-mcp">fintool_run · convertible ×2</span></div>
+          <p class="env-note">왼쪽은 "채권 + 블랙-숄즈 콜" 분해법으로 104.9억. 오른쪽은 <span class="mono">convertible</span>(Tsiveriotis-Fernandes 이항 트리)로 107.65억 — 신용스프레드를 전환권에 반영하고 조기전환을 판정한 값이며, 봉투 안의 <span class="mono">component_method_value</span>(104.29억)가 왼쪽 방식에 해당한다. 리픽싱 시나리오까지 한 번 더 돌려 범위를 냈다.</p>
+          <div class="chat"><h3>전환사채 평가 결과</h3>
+<p><b>CB 가치 = 107억 6,499만 원 (액면 대비 107.65%)</b></p>
+<p>Tsiveriotis-Fernandes 이항 트리(500 스텝), 콜·풋·만기보장수익률 조항 없음(상환율 100%) 기준입니다.</p>
+<h4>구성 분해</h4>
+<table><thead><tr><th>항목</th><th>금액</th><th>비고</th></tr></thead><tbody>
+<tr><td><b>CB 가치</b></td><td>10,764,990,731원</td><td>107.65% of face</td></tr>
+<tr><td>주식 성분 (equity component)</td><td>5,346,924,333원</td><td>무위험금리로 할인</td></tr>
+<tr><td>채권 성분 (debt component)</td><td>5,418,066,398원</td><td>rf + 스프레드(7.2%)로 할인</td></tr>
+<tr><td>Bond floor (일반채 가치)</td><td>8,317,567,484원</td><td>전환권 없을 때</td></tr>
+<tr><td>Parity (전환가치)</td><td>9,000,000,000원</td><td>50만 주 × 18,000원</td></tr>
 </tbody></table>
-<p>→ 채권가치 = 100억 × 83.7885 / 100 = <b>8,378,851,247원</b></p>
-<h5>2) 전환옵션 부문</h5>
-<table><thead><tr><th>항목</th><th>값</th></tr></thead><tbody>
-<tr><td>모형</td><td>CRR 이항트리, 미국형 콜, 500스텝</td></tr>
-<tr><td>기초자산 / 행사가</td><td>18,000원 / 20,000원</td></tr>
-<tr><td>변동성 / 무위험금리 / 잔존만기</td><td>35% / 3.2% / 3년</td></tr>
-<tr><td><b>옵션 1주 가치</b></td><td><b>4,222.13원</b></td></tr>
-</tbody></table>
-<p>전환주식수 = 100억 ÷ 20,000 = 500,000주<br>→ 옵션가치 = 500,000 × 4,222.13 = <b>2,111,063,519원</b></p>
-<h5>3) 합산</h5>
-<pre>CB 이론가 = 8,378,851,247 + 2,111,063,519 = 10,489,914,766원
-          ≈ 104.9억 원 (액면의 104.90%)</pre>
-<h5>해석</h5>
-<table><thead><tr><th>지표</th><th>값</th></tr></thead><tbody>
-<tr><td>채권 floor</td><td>83.79억 (액면의 83.8%)</td></tr>
-<tr><td>전환 패리티 (500,000주 × 18,000원)</td><td>90.00억</td></tr>
-<tr><td>옵션가치 비중</td><td>21.11억 / 104.90억 = 20.1%</td></tr>
-<tr><td>전환 프리미엄 (전환가 vs 주가)</td><td>+11.1%</td></tr>
-<tr><td>이론가의 패리티 대비 프리미엄</td><td>+16.6%</td></tr>
-</tbody></table>
-<p>현재 주가가 전환가를 밑도는 out-of-the-money 상태(패리티 90억 &lt; 액면 100억)지만, 만기 3년 · 변동성 35%라는 긴 시간가치 덕분에 옵션 부문이 액면의 21%를 채워 이론가가 액면을 넘습니다. 반대로 표면금리 1%에 요구수익률 7.2%라 채권 부문만으로는 액면의 84%에 그치므로, 이 CB의 가치는 사실상 <b>주가 상승 시나리오에 크게 의존</b>합니다.</p>
-<h5>모형의 한계 (중요)</h5>
+<h4>지표</h4>
 <ul>
-<li><b>신용위험이 옵션에 반영되지 않았습니다.</b> 발행사 부도 시 전환권도 함께 소멸하는데, 이 분해는 옵션을 무위험금리로만 평가하므로 옵션가치가 <b>과대평가</b>됩니다. 정밀 평가는 이항트리에 신용스프레드를 결합한 Tsiveriotis-Fernandes 모형이 필요하며 fintool 범위 밖입니다.</li>
-<li><b>콜/풋 옵션 조항, 리픽싱(전환가 조정), 희석효과를 모두 무시</b>했습니다. 국내 사모 CB에 흔한 하향 리픽싱 조항이 있다면 실제 가치는 위 수치보다 높아지고, 발행사 콜옵션이 있다면 낮아집니다.</li>
-<li>만기보장수익률(YTM 프리미엄) 조항이 있다면 상환금액 100 대신 그 값을 넣어 채권 부문을 다시 계산해야 합니다.</li>
-<li>배당수익률 0%를 가정했습니다.</li>
-</ul></div>
+<li><b>전환비율</b>: 500,000주 (100억 ÷ 20,000원)</li>
+<li><b>패리티 프리미엄</b>: 19.61% — 지금 당장 전환하는 것보다 CB를 보유하는 게 19.6% 유리</li>
+<li><b>채권 대비 프리미엄</b>: 29.42% — 전환권이 bond floor 위에 얹는 값</li>
+<li><b>Delta</b>: 338,803 (주가 1원 변동 시 CB 가치 변동액) → 전환비율 대비 헤지비율 약 0.68</li>
+</ul>
+<p>주가(18,000)가 전환가(20,000) 아래인 <b>out-of-the-money</b> 상태인데도 액면을 넘는 이유는, 3년간 변동성 35%가 만들어내는 시간가치가 크기 때문입니다. 주식·채권 성분이 거의 반반(49.7% : 50.3%)으로 나뉜 전형적인 balanced CB 구간입니다.</p>
+<p><b>참고</b>: 봉투의 <code>component_method_value</code>(단순 "채권 + 무위험 콜" 분해법)는 104억 2,931만 원으로, TF 모형값보다 3.4억 원 낮습니다. 차이는 신용위험이 전환권 부분에 어떻게 반영되는지와 조기 전환 효과에서 나옵니다.</p>
+<h4>리픽싱 시나리오 (별도)</h4>
+<p>모형에 리픽싱 조항은 없습니다. 국내 사모 CB에 흔한 <b>전환가 하한 70%(14,000원)</b>까지 조정된 경우를 별도로 돌리면:</p>
+<ul>
+<li>CB 가치 <b>137억 8,732만 원 (137.87%)</b>, 전환비율 714,286주, 패리티 128억 5,714만 원</li>
+</ul>
+<p>즉 리픽싱 조항 유무에 따라 <b>107.65% ~ 137.87%</b> 범위입니다. 실제 계약서의 리픽싱 트리거·주기·하한을 확인해야 어느 쪽에 가까운지 판단할 수 있습니다.</p>
+<h4>모형 가정 (해석 시 주의)</h4>
+<ul>
+<li>주가는 변동성이 일정한 기하브라운운동을 따름 — 점프·변동성 스마일 없음</li>
+<li>무위험금리와 신용스프레드는 만기까지 상수 — 스프레드가 주가와 연동해 움직이는 효과 없음</li>
+<li>부도 시 회수율은 미반영. 신용위험은 현금 성분 할인율로만 들어감</li>
+<li><b>전환 시 희석 효과(주식 수 증가에 따른 주가 하락) 미반영</b> — 액면 100억이 발행사 시총 대비 크다면 실제 가치는 이보다 낮습니다</li>
+<li>리픽싱 조항 미반영 (위 시나리오 참조)</li>
+</ul>
+<p><code>calculation_hash</code>: <code>sha256:217dee53…c527dd7</code> (기본 시나리오)</p></div>
           <a class="src" href="assets/transcripts/case-b-on.txt">원문 case-b-on.txt</a>
         </div>
       </div>
@@ -495,12 +492,13 @@ PV(TV) = 229.50 / 1.61051 = 142.50억</pre>
     <div class="sec-label">02 · 왜 다른가</div>
     <h2>신뢰 모델</h2>
     <div class="trust">
-      <div class="tcard"><b>봉투만 인용</b><p>모든 계산은 <code>ok / data / error</code> 봉투로 돌아온다. 스킬 원칙 1번: "LLM은 숫자를 만들지 않는다. 수치는 JSON 봉투만 인용한다."</p><pre>{"ok": true, "tool": "option",
- "data": {"model": "binomial", "exercise": "american",
-   "price": 4222.127, "steps": 500, …}}</pre></div>
+      <div class="tcard"><b>봉투만 인용</b><p>모든 계산은 <code>ok / data / error</code> 봉투로 돌아온다. 스킬 원칙 1번: "LLM은 숫자를 만들지 않는다. 수치는 JSON 봉투만 인용한다."</p><pre>{"ok": true, "tool": "convertible",
+ "data": {"model": "tsiveriotis-fernandes",
+   "value": 10764990730.9, "bond_floor": 8317567484.3,
+   "component_method_value": 10429314832.2, …}}</pre></div>
       <div class="tcard"><b>계산 해시</b><p>월별 재무모델(<code>financial-model</code>)과 캡테이블은 정규화 입력·월별 결과·엔진 버전을 SHA-256으로 묶는다. 같은 입력·같은 엔진이면 같은 해시. 해시는 자르지 않는다.</p><pre>"calculation_hash":
 "sha256:7975344eb576343854747676d6518d56b17b319c0cc386e5de06946d6210002e"</pre></div>
-      <div class="tcard"><b>39개 계산 커맨드, 하나의 엔진</b><p>상환표·TVM·WACC·DCF·몬테카를로·캡테이블까지 39개 커맨드가 단일 Go 바이너리에서 결정론적으로 실행된다. MCP는 <code>fintool_catalog</code>·<code>fintool_run</code> 두 도구만 노출한다.</p></div>
+      <div class="tcard"><b>40개 계산 커맨드, 하나의 엔진</b><p>상환표·TVM·WACC·DCF·전환사채·몬테카를로·캡테이블까지 40개 커맨드가 단일 Go 바이너리에서 결정론적으로 실행된다. MCP는 <code>fintool_catalog</code>·<code>fintool_run</code> 두 도구만 노출한다.</p></div>
     </div>
   </section>
 
@@ -508,7 +506,7 @@ PV(TV) = 229.50 / 1.61051 = 142.50억</pre>
     <div class="sec-label">03 · 무엇을 하나</div>
     <h2>스킬 8종</h2>
     <p class="sec-intro">재무 4 + 검증 4. 스킬은 "언제 어떤 커맨드를 어떤 순서로" 쓰는지 정한 절차서고, 숫자는 전부 엔진에서 온다.</p>
-    <div class="skills"><div class="skill"><span class="kind fin">재무</span><b class="mono">startup-finance</b><p>런웨이·자금소요·bear/base/bull·캡테이블·IR 리포트</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">valuation</b><p>WACC → DCF → 민감도. 입력 인터뷰 먼저</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">portfolio-risk</b><p>최적 비중·샤프·VaR/CVaR·고갈 확률</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">fixed-income</b><p>채권 가격·수익률·듀레이션·Z-spread·커브 부트스트랩</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-design</b><p>시장·경쟁·BM·제품 정의·검증 실험까지 설계</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-competitors</b><p>경쟁사 제품·가격·GTM 분석, 배틀카드</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-positioning</b><p>April Dunford 프레임 + JTBD 포지셔닝 문서</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-pitch</b><p>10분/5분/2분/1분 피치 스크립트와 Q&A</p></div></div>
+    <div class="skills"><div class="skill"><span class="kind fin">재무</span><b class="mono">startup-finance</b><p>런웨이·자금소요·bear/base/bull·캡테이블·IR 리포트</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">valuation</b><p>WACC → DCF → 민감도. 입력 인터뷰 먼저</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">portfolio-risk</b><p>최적 비중·샤프·VaR/CVaR·고갈 확률</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">fixed-income</b><p>채권 가격·듀레이션·커브·전환사채(TF 모형)</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-design</b><p>시장·경쟁·BM·제품 정의·검증 실험까지 설계</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-competitors</b><p>경쟁사 제품·가격·GTM 분석, 배틀카드</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-positioning</b><p>April Dunford 프레임 + JTBD 포지셔닝 문서</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-pitch</b><p>10분/5분/2분/1분 피치 스크립트와 Q&A</p></div></div>
   </section>
 
   <section id="sample">

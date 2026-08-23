@@ -5,7 +5,7 @@
 | 파일 | 조건 |
 |------|------|
 | `case-*-off.txt` | `claude plugin disable fintool@fintool-plugin`, `claude -p --tools "" --setting-sources ""` — 셸·파일 도구 없음, 사용자 CLAUDE.md 없음. 모델 단독(Claude Desktop의 일반 채팅과 같은 조건) |
-| `case-*-on.txt` | `claude plugin enable fintool@fintool-plugin`(A는 v0.5.2, B·C는 v0.5.3 — fixed-income 전환사채 절차·valuation 가정 정책 추가 후), `claude -p --tools "Skill,Read" --mcp-config <plugin .mcp.json> --strict-mcp-config`, 실행 동안 `~/.claude/CLAUDE.md` 제거 — 스킬 + 원격 fintool MCP. `Read`는 Claude Code가 큰 MCP 결과를 파일로 저장하는 동작 때문에 허용(이번 실행에서는 쓰이지 않음) |
+| `case-*-on.txt` | `claude plugin enable fintool@fintool-plugin`(A는 v0.5.2, C는 v0.5.3, B는 v0.5.4 — `convertible` TF 커맨드 추가 후), `claude -p --tools "Skill,Read" --mcp-config <plugin .mcp.json> --strict-mcp-config`, 실행 동안 `~/.claude/CLAUDE.md` 제거 — 스킬 + 원격 fintool MCP. `Read`는 Claude Code가 큰 MCP 결과를 파일로 저장하는 동작 때문에 허용(이번 실행에서는 쓰이지 않음) |
 
 - 실행 위치: 빈 임시 폴더(`mktemp -d`). 프로젝트 파일·CLAUDE.md 힌트 없음.
 - 모델: 두 조건 모두 같은 모델(파일 머리말에 기록).
