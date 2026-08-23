@@ -7,7 +7,7 @@ description: fintool MCP로 채권 가격·수익률·듀레이션·커브·전�
 
 원격 MCP: `fintool_catalog` → `fintool_run`.
 
-범위: `coupon` / daycount basis → `bond` / `discount` → (선택) `curve`. 전환사채는 `bond` + `option` 분해.  
+범위: `coupon` / daycount basis → `bond` / `discount` → (선택) `curve`. 전환사채는 `convertible`.  
 범위 밖: 주식 DCF, 스타트업 런웨이.
 
 ## 흐름
@@ -21,28 +21,18 @@ description: fintool MCP로 채권 가격·수익률·듀레이션·커브·전�
 
 ## 전환사채(CB)
 
-전용 도구는 없다. **스트레이트 채권 + 전환옵션**으로 분해해 두 봉투를 합산한다. 합산은 자명한 산술이므로 계산 과정을 보여주고, 두 봉투 값을 그대로 인용한다.
-
-```
-1. 스트레이트 채권  bond --solve price  (액면 100 기준)
-     yield = 무위험 + 발행사 신용스프레드   ← 전환권 없는 같은 회사 채권의 할인율
-     settlement/maturity ISO 날짜, frequency 이표 횟수, rate 표면금리, basis 명시
-2. 전환옵션        option --model binomial --exercise american --type call
-     spot 현재 주가, strike 전환가, rate 무위험, vol 주가 변동성, maturity 잔존연수, steps 500
-     dividend 가 있으면 연속 배당수익률로
-3. 합산            CB = 액면 × (채권가격/100) + 전환주식수 × 옵션가격
-     전환주식수 = 액면 / 전환가
-4. 해설            채권 floor, 전환 패리티(주가 × 전환주식수), 프리미엄을 같이 쓴다
-```
-
-호출 예(액면 100억, 표면 1% 연 1회, 3년, 전환가 20,000, 주가 18,000, σ 35%, rf 3.2%, 스프레드 4%):
+`convertible` 하나로 평가한다. Tsiveriotis-Fernandes 이항 트리라 발행사 신용스프레드가 전환권에 반영되고, 발행사 콜·투자자 풋·만기보장수익률(`redemption`)을 받는다.
 
 ```json
-{"tool":"bond","flags":{"solve":"price","settlement":"2026-08-23","maturity":"2029-08-23","rate":0.01,"yield":0.072,"redemption":100,"frequency":1,"basis":1}}
-{"tool":"option","flags":{"model":"binomial","exercise":"american","solve":"price","type":"call","spot":18000,"strike":20000,"rate":0.032,"vol":0.35,"maturity":3,"steps":500}}
+{"tool":"convertible","flags":{"face":10000000000,"coupon-rate":0.01,"frequency":1,"maturity":3,"conversion-price":20000,"spot":18000,"vol":0.35,"rate":0.032,"spread":0.04,"steps":500}}
 ```
 
-한계를 반드시 적는다: 이 분해는 옵션에 신용위험을 반영하지 않고(발행사 부도 시 전환권도 소멸), 콜·풋 조항·리픽싱·희석을 무시한다. 정밀 평가는 이항 트리에 신용스프레드를 결합한 모형(Tsiveriotis-Fernandes)이 필요하며 fintool 범위 밖이다.
+인용: `data.value`(CB 가치), `equity_component`·`debt_component`, `bond_floor`, `parity`, `premium_over_parity`, `delta`, `calculation_hash`. 봉투의 `component_method_value`는 "채권 + 무위험 콜" 분해법 값이다 — 둘의 차이가 신용위험·조기행사 효과이므로 해설에 같이 쓴다.
+
+- 콜·풋 조항이 있으면 `call-price`/`call-start`, `put-price`/`put-start`(액면 기준 금액, 년).
+- 만기보장수익률이 있으면 `redemption`(1.06 = 106%).
+- 리픽싱은 모형에 없다. 전환가를 바꾼 시나리오(예: 하한 70%)를 한 번 더 돌려 범위로 보여준다.
+- `assumptions`·`warnings`를 해설 끝에 옮긴다(희석·리픽싱·회수율 미반영).
 
 ## 함정
 
