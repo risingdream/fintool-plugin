@@ -1,10 +1,10 @@
 # prompt
 내년부터 5년 FCF 10억, 12억, 14억, 16억, 18억, 순부채 20억, 발행주식 100만 주. DCF로 주당가치는?
 
-# run: plugin ON (fintool@fintool-plugin 0.5.3) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-opus-5[1m] · 2026-08-23
+# run: plugin ON (fintool@fintool-plugin 0.5.4) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-opus-5 · 2026-08-23
 
 [tool_use Skill]
-{"skill":"fintool:valuation","args":"5년 FCF 10/12/14/16/18억, 순부채 20억, 주식수 100만주, 주당가치 계산"}
+{"skill":"fintool:valuation","args":"5년 FCF 10/12/14/16/18억, 순부채 20억, 발행주식 100만주 DCF 주당가치"}
 
 [tool_result]
 Launching skill: fintool:valuation
@@ -217,7 +217,7 @@ Launching skill: fintool:valuation
 
 
 [tool_use mcp__plugin_fintool_fintool__fintool_run]
-{"tool":"dcf","flags":{"fcf":"1000000000,1200000000,1400000000,1600000000,1800000000","wacc":0.11,"terminal-method":"growth","terminal-growth":0.02,"net-debt":2000000000,"shares":1000000,"wacc-range":"0.09,0.10,0.11,0.12,0.13","terminal-growth-range":"0.01,0.02,0.03"}}
+{"tool":"dcf","flags":{"fcf":"1000000000,1200000000,1400000000,1600000000,1800000000","wacc":0.11,"terminal-method":"growth","terminal-growth":0.02,"net-debt":2000000000,"shares":1000000,"wacc-range":"0.09,0.10,0.11,0.12,0.13","terminal-growth-range":"0.01,0.015,0.02,0.025,0.03"}}
 
 [tool_result]
 {
@@ -290,7 +290,9 @@ Launching skill: fintool:valuation
       ],
       "terminal_growth_range": [
         0.01,
+        0.015,
         0.02,
+        0.025,
         0.03
       ],
       "rows": [
@@ -307,10 +309,26 @@ Launching skill: fintool:valuation
             },
             {
               "wacc": 0.09,
+              "terminal_growth": 0.015,
+              "enterprise_value": 21144189459.934937,
+              "equity_value": 19144189459.934937,
+              "value_per_share": 19144.189459934936,
+              "is_base": false
+            },
+            {
+              "wacc": 0.09,
               "terminal_growth": 0.02,
               "enterprise_value": 22358632678.903847,
               "equity_value": 20358632678.903847,
               "value_per_share": 20358.632678903847,
+              "is_base": false
+            },
+            {
+              "wacc": 0.09,
+              "terminal_growth": 0.025,
+              "enterprise_value": 23759913316.175663,
+              "equity_value": 21759913316.175663,
+              "value_per_share": 21759.91331617566,
               "is_base": false
             },
             {
@@ -336,10 +354,26 @@ Launching skill: fintool:valuation
             },
             {
               "wacc": 0.1,
+              "terminal_growth": 0.015,
+              "enterprise_value": 18509303045.034683,
+              "equity_value": 16509303045.034683,
+              "value_per_share": 16509.30304503468,
+              "is_base": false
+            },
+            {
+              "wacc": 0.1,
               "terminal_growth": 0.02,
               "enterprise_value": 19413291441.8414,
               "equity_value": 17413291441.8414,
               "value_per_share": 17413.2914418414,
+              "is_base": false
+            },
+            {
+              "wacc": 0.1,
+              "terminal_growth": 0.025,
+              "enterprise_value": 20437811624.889,
+              "equity_value": 18437811624.889,
+              "value_per_share": 18437.811624889,
               "is_base": false
             },
             {
@@ -365,11 +399,27 @@ Launching skill: fintool:valuation
             },
             {
               "wacc": 0.11,
+              "terminal_growth": 0.015,
+              "enterprise_value": 16433703770.731308,
+              "equity_value": 14433703770.731308,
+              "value_per_share": 14433.703770731308,
+              "is_base": false
+            },
+            {
+              "wacc": 0.11,
               "terminal_growth": 0.02,
               "enterprise_value": 17127104796.147099,
               "equity_value": 15127104796.147099,
               "value_per_share": 15127.104796147098,
               "is_base": true
+            },
+            {
+              "wacc": 0.11,
+              "terminal_growth": 0.025,
+              "enterprise_value": 17902082412.788277,
+              "equity_value": 15902082412.788277,
+              "value_per_share": 15902.082412788277,
+              "is_base": false
             },
             {
               "wacc": 0.11,
@@ -394,10 +444,26 @@ Launching skill: fintool:valuation
             },
             {
               "wacc": 0.12,
+              "terminal_growth": 0.015,
+              "enterprise_value": 14757406698.101976,
+              "equity_value": 12757406698.101976,
+              "value_per_share": 12757.406698101977,
+              "is_base": false
+            },
+            {
+              "wacc": 0.12,
               "terminal_growth": 0.02,
               "enterprise_value": 15302136479.591833,
               "equity_value": 13302136479.591833,
               "value_per_share": 13302.136479591833,
+              "is_base": false
+            },
+            {
+              "wacc": 0.12,
+              "terminal_growth": 0.025,
+              "enterprise_value": 15904206238.080618,
+              "equity_value": 13904206238.080618,
+              "value_per_share": 13904.206238080618,
               "is_base": false
             },
             {
@@ -423,10 +489,26 @@ Launching skill: fintool:valuation
             },
             {
               "wacc": 0.13,
+              "terminal_growth": 0.015,
+              "enterprise_value": 13376083353.500881,
+              "equity_value": 11376083353.500881,
+              "value_per_share": 11376.08335350088,
+              "is_base": false
+            },
+            {
+              "wacc": 0.13,
               "terminal_growth": 0.02,
               "enterprise_value": 13812436598.490162,
               "equity_value": 11812436598.490162,
               "value_per_share": 11812.436598490161,
+              "is_base": false
+            },
+            {
+              "wacc": 0.13,
+              "terminal_growth": 0.025,
+              "enterprise_value": 14290347295.383179,
+              "equity_value": 12290347295.383179,
+              "value_per_share": 12290.347295383179,
               "is_base": false
             },
             {
@@ -447,42 +529,40 @@ Launching skill: fintool:valuation
 
 
 [assistant]
-**가정: WACC 11%, 영구성장률 g 2% (제가 정한 값 — 할인율·성장률을 안 주셔서, 한국 비상장 중소기업 통상 범위 10~12%의 중간과 장기 물가+실질성장 수준 1~3%의 중간을 썼습니다.)**
+**가정: WACC 11%, 영구성장률 g 2% (제가 정한 값)**
+- WACC 11% — 할인율 미제공. 한국 비상장/중소 규모 기업 통상 범위 10~12%의 중앙값.
+- g 2% — 장기 물가(약 2%) + 실질성장 0 수준의 보수적 영구성장 가정.
+- FCF는 비레버드 FCFF, 각 연도 말 발생, 순부채 20억은 평가시점 기준으로 봤습니다.
 
-## 결과 (base: WACC 11%, g 2%)
+## 결과 (base)
 
-| 항목 | 금액 |
+| 항목 | 값 |
 |---|---|
-| 예측기간(1~5년) FCF 현재가치 | 약 50.2억 원 |
-| Terminal Value (5년차 시점) | 204.0억 원 |
-| Terminal Value 현재가치 | 약 121.1억 원 |
-| **기업가치 (EV)** | **약 171.3억 원** |
-| − 순부채 | 20억 원 |
-| **주주가치** | **약 151.3억 원** |
-| **주당가치 (100만 주)** | **약 15,127원** |
+| 예측기간 5년 PV | 50.2억 원 |
+| Terminal value (5년차 시점) | 204.0억 원 |
+| Terminal PV | 121.1억 원 |
+| **기업가치(EV)** | **171.3억 원** |
+| − 순부채 | 20.0억 원 |
+| **주주가치** | **151.3억 원** |
+| **주당가치** | **약 15,127원** |
 
-연도별 현재가치: 1년차 9.01억 → 2년차 9.74억 → 3년차 10.24억 → 4년차 10.54억 → 5년차 10.68억
+## 민감도 (주당가치, 원)
 
-## 민감도 — 주당가치 (원)
+| WACC \ g | 1.0% | 1.5% | 2.0% | 2.5% | 3.0% |
+|---|---|---|---|---|---|
+| 9% | 18,082 | 19,144 | 20,359 | 21,760 | 23,395 |
+| 10% | 15,706 | 16,509 | 17,413 | 18,438 | 19,609 |
+| **11%** | 13,810 | 14,434 | **15,127** | 15,902 | 16,774 |
+| 12% | 12,262 | 12,757 | 13,302 | 13,904 | 14,573 |
+| 13% | 10,976 | 11,376 | 11,812 | 12,290 | 12,816 |
 
-| WACC \ g | 1% | 2% | 3% |
-|---|---|---|---|
-| 9% | 18,082 | 20,359 | 23,395 |
-| 10% | 15,706 | 17,413 | 19,609 |
-| **11%** | 13,810 | **15,127** | 16,774 |
-| 12% | 12,262 | 13,302 | 14,573 |
-| 13% | 10,976 | 11,812 | 12,816 |
+대략 **11,000~23,000원 밴드**, 중심값 1.5만 원 수준입니다.
 
-대략 **11,000~23,000원** 범위이고, 가정을 좁히면 15,000원 안팎입니다.
+## 유의점
+- Terminal value가 EV의 **70.7%**를 차지합니다. 즉 이 밸류에이션은 사실상 6년차 이후 영구가정에 좌우되며, 5년 FCF 숫자보다 WACC·g 선택이 결과를 지배합니다.
+- 5년간 FCF 연평균 +15.8% 성장 후 곧바로 2%로 떨어지는 구조입니다. 성장 감속 구간(6~10년차)을 명시적으로 넣으면 값이 달라질 수 있습니다.
+- 규모 프리미엄·비유동성 할인은 반영하지 않았습니다. 비상장이면 통상 20~30% 추가 할인을 검토합니다.
 
-## 읽을 때 주의할 점
+실제 WACC(또는 무위험이자율·베타·자본구조)와 영구성장률 값을 주시면 그 수치로 다시 계산하겠습니다.
 
-- **터미널 밸류 의존도가 70.7%**입니다. 가치의 3분의 2 이상이 6년차 이후 영구가치에서 나오므로, g와 WACC 한 칸 차이가 주당 1,000~2,000원씩 움직입니다. 5년 FCF 숫자보다 이 두 가정이 결과를 지배합니다.
-- 입력하신 FCF는 **비레버드 FCFF**(이자비용 차감 전)여야 합니다. 사업계획서상 이자 차감 후 FCF라면 순부채를 이중으로 반영하는 셈이라 결과가 과소평가됩니다.
-- 순부채 20억은 **시장가치 기준**으로 봤습니다. 장부가와 크게 다르면 조정이 필요합니다.
-- 비상장 중소기업이라면 규모 프리미엄·비유동성 할인이 추가로 붙는 게 보통인데, 이 계산에는 들어있지 않습니다(WACC 계산 범위 밖). 실무에선 여기서 20~30% 더 깎기도 합니다.
-- FCF 첫 값은 1년차 말(내년 말) 발생 기준입니다.
-
-WACC와 영구성장률 값을 주시면 그 기준으로 다시 계산해 드리겠습니다. 자본구조(부채/자기자본 시장가치), 베타, 세율을 주시면 WACC부터 산출해서 연결할 수도 있습니다.
-
-[result] duration_ms=30734 turns=5 cost_usd=0.2853935 input_tokens=88957 output_tokens=1738
+[result] duration_ms=31111 turns=5 cost_usd=0.289772 input_tokens=89906 output_tokens=1540

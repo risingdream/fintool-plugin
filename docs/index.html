@@ -60,6 +60,17 @@
   .col-head{font-size:12px;letter-spacing:.1em;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;}
   .col.after .col-head{color:var(--green);}
   .col-head .meta{font-weight:400;letter-spacing:0;color:var(--muted);font-family:'IBM Plex Mono',Menlo,monospace;font-size:11px;}
+  .turns-wrap{overflow-x:auto;margin-bottom:14px;}
+  .turns{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--paper);border:1px solid var(--line);border-radius:6px;}
+  .turns th,.turns td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;}
+  .turns thead th{font-size:11px;letter-spacing:.08em;color:var(--muted);font-weight:500;border-bottom:2px solid var(--line-strong);}
+  .turns td.tn{font-family:'IBM Plex Mono',Menlo,monospace;color:var(--muted);width:24px;}
+  .turns td.tp{min-width:220px;}
+  .turns td.tm{font-family:'IBM Plex Mono',Menlo,monospace;font-size:11.5px;color:var(--muted);white-space:nowrap;}
+  .turns td.on{color:var(--green);}
+  .turns .dim{color:var(--muted);font-family:inherit;}
+  .turns .hashmark{display:inline-block;margin-top:3px;font-size:10.5px;background:var(--green-soft);color:var(--green);padding:0 6px;border-radius:2px;}
+  .turns tfoot td{border-top:2px solid var(--line-strong);border-bottom:none;font-family:'IBM Plex Mono',Menlo,monospace;font-size:11.5px;}
   .meta-strip{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--muted);font-family:'IBM Plex Mono',Menlo,monospace;margin:-4px 0 10px;padding-bottom:8px;border-bottom:1px dashed var(--line);}
   .meta-strip b{color:var(--ink);font-weight:500;}
   .col.after .meta-strip b{color:var(--green);}
@@ -160,7 +171,7 @@
   <section id="before-after">
     <div class="sec-label">01 · BEFORE / AFTER</div>
     <h2>같은 프롬프트, 플러그인 없이 / 있이</h2>
-    <p class="sec-intro">2026-08-23 Claude Code에서 같은 모델·같은 프롬프트를 플러그인 off/on으로 실제 실행한 기록이다. 두 열 모두 응답을 고치지 않았고, 양쪽 다 셸·파일 도구와 사용자 지시문 없이(Claude Desktop의 일반 채팅과 같은 조건) 돌렸다. 각 열 머리의 소요 시간·턴·토큰·비용은 그 실행의 실측값이다. 각 열 아래 원문 링크로 도구 호출·반환까지 전부 볼 수 있다.</p>
+    <p class="sec-intro">2026-08-23 Claude Code(claude-opus-5)에서 같은 모델·같은 프롬프트를 플러그인 off/on으로 실제 실행한 기록이다. 두 열 모두 응답을 고치지 않았고, 양쪽 다 셸·파일 도구와 사용자 지시문 없이(Claude Desktop의 일반 채팅과 같은 조건) 돌렸다. 각 열 머리의 소요 시간·턴·토큰·비용은 그 실행의 실측값이다. 각 열 아래 원문 링크로 도구 호출·반환까지 전부 볼 수 있다.</p>
     
     <article class="case" id="case-b">
       <header class="case-head">
@@ -175,100 +186,93 @@
       </div>
       <div class="cols">
         <div class="col before" data-pane="before">
-          <div class="col-head">플러그인 없음</div><div class="meta-strip"><span><b>91s</b> 소요</span><span><b>1</b> turns</span><span>입력 <b>12,666</b> tok</span><span>출력 <b>6,852</b> tok</span><span><b>$0.18</b></span></div>
-          <div class="chat"><h3>전환사채(CB) 가치평가</h3>
-<h4>1. 기본 파라미터</h4>
-<table><thead><tr><th>항목</th><th>값</th></tr></thead><tbody>
-<tr><td>액면</td><td>10,000,000,000원</td></tr>
-<tr><td>전환비율(주식수)</td><td>100억 ÷ 20,000 = <b>500,000주</b></td></tr>
-<tr><td>패리티(전환가치)</td><td>500,000 × 18,000 = <b>90.0억</b> (액면 대비 90%)</td></tr>
-<tr><td>만기</td><td>3년 (2029-08-23)</td></tr>
-<tr><td>이표</td><td>연 1억원 × 3회</td></tr>
-<tr><td>위험조정 할인율</td><td>3.2% + 4.0% = <b>7.2%</b></td></tr>
-</tbody></table>
-<p>배당은 주어지지 않아 무배당(q=0)으로 가정했습니다. 무배당·비수의상환(non-callable) CB는 만기 전 조기전환이 절대 유리하지 않으므로, 전환권을 <b>유럽형 콜</b>로 보고 블랙-숄즈로 평가하는 것이 이론적으로 정확합니다.</p>
-<h4>2. 일반사채 가치 (Bond Floor)</h4>
-<p>7.2%로 할인:</p>
-<table><thead><tr><th>시점</th><th>현금흐름</th><th>할인계수</th><th>현재가치</th></tr></thead><tbody>
-<tr><td>1년</td><td>1.00억</td><td>0.93284</td><td>0.933억</td></tr>
-<tr><td>2년</td><td>1.00억</td><td>0.87018</td><td>0.870억</td></tr>
-<tr><td>3년</td><td>101.00억</td><td>0.81174</td><td>81.986억</td></tr>
-<tr><td><b>합계</b></td><td></td><td></td><td><b>83.79억</b> (액면의 83.8%)</td></tr>
-</tbody></table>
-<h4>3. 전환옵션 가치 (Black-Scholes)</h4>
-<p>S=18,000, K=20,000, r=3.2%, σ=35%, T=3</p>
-<pre>d1 = [ln(0.9) + (0.032 + 0.35²/2)×3] / (0.35×√3)
-   = (-0.10536 + 0.27975) / 0.60622 = 0.2877
-d2 = 0.2877 - 0.60622 = -0.3185
-
-N(d1) = 0.6132    N(d2) = 0.3750</pre>
-<p><b>콜옵션 = 18,000 × 0.6132 − 20,000 × e^(−0.096) × 0.3750 = 11,037 − 6,814 = 4,223원/주</b></p>
-<p>전환권 가치 = 500,000주 × 4,223원 = <b>21.12억</b></p>
-<h4>4. 결론</h4>
-<table><thead><tr><th>구성요소</th><th>금액</th><th>액면 대비</th></tr></thead><tbody>
-<tr><td>채권가치</td><td>83.79억</td><td>83.8%</td></tr>
-<tr><td>전환권 가치</td><td>21.12억</td><td>21.1%</td></tr>
-<tr><td><b>CB 이론가치</b></td><td><b>약 104.9억</b></td><td><b>104.9%</b></td></tr>
-</tbody></table>
-<p>관련 지표:</p>
+          <div class="col-head">플러그인 없음</div><div class="meta-strip"><span><b>63s</b> 소요</span><span><b>1</b> turns</span><span>입력 <b>12,658</b> tok</span><span>출력 <b>4,826</b> tok</span><span><b>$0.16</b></span></div>
+          <div class="chat"><h4>전환사채 가치: 약 <b>104.9억원</b> (액면 대비 104.9%)</h4>
+<h5>전제</h5>
+<p>표준 분해법(straight bond + 주식 콜옵션), 배당 0, 리픽싱·풋·콜 조항 없음, 만기 전환(European) 가정입니다.</p>
 <ul>
-<li><b>패리티 대비 전환프리미엄</b>: (104.9 − 90.0) / 90.0 = <b>+16.6%</b></li>
-<li><b>채권가치 대비 옵션프리미엄</b>: +25.2%</li>
-<li><b>델타</b>: 0.613 → 주가 1% 변동 시 CB 가치 약 0.53% 변동 (주식 306,600주 상당 익스포저)</li>
-<li>전환 미실행 시 만기수익률(YTM)은 정의상 7.2%이나, 104.9억에 매입하면 채권으로만 보유 시 YTM은 약 −0.6%로 마이너스입니다. 즉 이 가격의 정당성은 전적으로 전환권에 있습니다.</li>
+<li>전환주수 = 100억 ÷ 20,000 = <b>500,000주</b></li>
+<li>패리티(전환가치) = 500,000 × 18,000 = <b>90.0억</b> (액면의 90%)</li>
+<li>위험조정 할인율 = 3.2% + 4.0% = <b>7.2%</b></li>
 </ul>
-<h4>5. 정밀화 및 유의사항</h4>
-<p><b>만기 이표 조정</b>: 엄밀히는 만기에 전환하면 원금 100억과 마지막 이표 1억을 함께 포기하므로, 실효 행사가는 20,000원이 아니라 <b>20,200원</b>입니다. 이를 반영하면 옵션 4,156원/주 → 20.78억, <b>CB 가치 104.57억</b>으로 약 0.3억 낮아집니다. 실무 레인지는 <b>104.5~105.0억</b>으로 보시면 됩니다.</p>
-<p><b>신용리스크 처리</b>: 위 계산은 채권부에만 스프레드를 적용하고 옵션부는 무위험금리로 할인하는 표준 분해법입니다. Tsiveriotis-Fernandes 방식(이항모형에서 현금성 부분만 위험할인)을 쓰면 통상 1~2% 낮게 나옵니다.</p>
-<p><b>미반영 조항</b> — 한국 CB에서 흔한 아래 조항들이 조건에 없어 반영하지 않았습니다. 실제 발행조건에 있다면 가치가 크게 달라집니다:</p>
+<h5>1) 채권가치 (bond floor)</h5>
+<p>연 이표 1억원 × 3회 + 만기 원금 100억, 7.2% 할인:</p>
+<table><thead><tr><th>시점</th><th>현금흐름</th><th>DF(7.2%)</th><th>현가</th></tr></thead><tbody>
+<tr><td>1년</td><td>1.0억</td><td>0.93284</td><td>0.93억</td></tr>
+<tr><td>2년</td><td>1.0억</td><td>0.87018</td><td>0.87억</td></tr>
+<tr><td>3년</td><td>101.0억</td><td>0.81174</td><td>81.99억</td></tr>
+<tr><td><b>계</b></td><td></td><td></td><td><b>83.79억</b></td></tr>
+</tbody></table>
+<h5>2) 콜옵션 가치 (Black-Scholes, 무위험금리 3.2%로 할인)</h5>
+<p>S=18,000, K=20,000, T=3, σ=35%</p>
 <ul>
-<li><b>리픽싱(전환가액 조정)</b>: 현재 주가 18,000원이 전환가 20,000원 하회 상태라 리픽싱 조항이 있으면 가치가 <b>상당폭 상승</b>합니다 (하한 70% 기준 통상 +3~8%p).</li>
-<li><b>조기상환청구권(풋)</b>: 투자자에게 유리 → 가치 상승</li>
-<li><b>매도청구권(콜옵션)</b>: 발행사에게 유리 → 가치 하락</li>
-<li><b>만기보장수익률(YTM 조항)</b>: 표면금리 1%에 더해 만기보장수익률이 별도로 있으면 채권가치 상승</li>
+<li>d1 = 0.2877, d2 = −0.3185</li>
+<li>N(d1) = 0.6132, N(d2) = 0.3750</li>
+<li>주당 옵션가치 = 18,000×0.6132 − 18,169×0.3750 = <b>4,223원</b></li>
+<li>총 옵션가치 = 500,000주 × 4,223 = <b>21.12억</b></li>
 </ul>
-<p>변동성 35%는 이 결과의 최대 민감 변수입니다. σ가 30%면 옵션이 약 18.5억, 40%면 약 23.8억으로 CB 가치가 102~108억 사이에서 움직입니다.</p></div>
+<h5>3) 합계</h5>
+<p><b>83.79 + 21.12 = 104.91억원</b> (액면 100억 대비 +4.9%)</p>
+<p>옵션 부분을 무위험금리로 할인한 것은 전환 시 신용위험이 아닌 주식을 수취하기 때문입니다. 참고로 무배당 주식에 대한 콜은 조기행사가 최적이 아니고 여기에 이표까지 붙으므로, American 전환권을 가정해도 값은 사실상 동일합니다.</p>
+<h5>민감도</h5>
+<table><thead><tr><th>변수</th><th>시나리오</th><th>CB 가치</th></tr></thead><tbody>
+<tr><td>변동성</td><td>25% / 35% / 45%</td><td>98.9억 / <b>104.9억</b> / 110.8억</td></tr>
+<tr><td>신용스프레드</td><td>3% / 4% / 5%</td><td>107.3억 / <b>104.9억</b> / 102.6억</td></tr>
+</tbody></table>
+<h5>실무상 주의점</h5>
+<ol>
+<li><b>리픽싱 조항</b>이 있으면(국내 사모 CB는 대부분 존재) 하방에서 전환가가 조정되어 옵션가치가 크게 올라갑니다 — 최저 조정한도 70% 기준이면 옵션가치가 수억~십수억 추가될 수 있습니다.</li>
+<li><b>투자자 풋(조기상환청구권, 통상 1.5~2년차)</b> 과 <b>발행사 콜</b>이 있으면 각각 가치를 올리고/내립니다. 특히 표면금리 1%에 만기보장수익률(YTM)이 별도로 있는 구조라면 채권가치가 83.79억보다 훨씬 높아집니다.</li>
+<li>순수 분해법은 전환 부분에도 암묵적으로 신용위험이 없다고 보므로 약간 고평가 경향이 있습니다. Tsiveriotis-Fernandes 모형(주식성분/채권성분 분리 할인)이나 신용조정 이항트리를 쓰면 통상 1~3억 낮게 나옵니다.</li>
+<li>배당수익률이 0이 아니면 옵션가치가 하락합니다(배당 2% 가정 시 약 2억 감소).</li>
+</ol>
+<p>위 조항들의 실제 조건을 알려주시면 이항트리로 다시 계산해 드리겠습니다.</p></div>
           <a class="src" href="assets/transcripts/case-b-off.txt">원문 case-b-off.txt</a>
         </div>
         <div class="col after" data-pane="after">
-          <div class="col-head">fintool</div><div class="meta-strip"><span><b>39s</b> 소요</span><span><b>6</b> turns</span><span>입력 <b>109,429</b> tok</span><span>출력 <b>2,119</b> tok</span><span><b>$0.29</b></span></div>
-          <div class="chain"><span class="pill pill-mcp">Skill · fintool:fixed-income</span><span class="pill pill-mcp">fintool_catalog</span><span class="pill pill-mcp">fintool_run · convertible ×2</span></div>
+          <div class="col-head">fintool</div><div class="meta-strip"><span><b>35s</b> 소요</span><span><b>5</b> turns</span><span>입력 <b>82,286</b> tok</span><span>출력 <b>2,211</b> tok</span><span><b>$0.26</b></span></div>
+          <div class="chain"><span class="pill pill-mcp">Skill · fintool:fixed-income</span><span class="pill pill-mcp">fintool_run · convertible ×2</span></div>
           <p class="env-note">왼쪽은 "채권 + 블랙-숄즈 콜" 분해법으로 104.9억. 오른쪽은 <span class="mono">convertible</span>(Tsiveriotis-Fernandes 이항 트리)로 107.65억 — 신용스프레드를 전환권에 반영하고 조기전환을 판정한 값이며, 봉투 안의 <span class="mono">component_method_value</span>(104.29억)가 왼쪽 방식에 해당한다. 리픽싱 시나리오까지 한 번 더 돌려 범위를 냈다.</p>
           <div class="chat"><h3>전환사채 평가 결과</h3>
-<p><b>CB 가치 = 107억 6,499만 원 (액면 대비 107.65%)</b></p>
-<p>Tsiveriotis-Fernandes 이항 트리(500 스텝), 콜·풋·만기보장수익률 조항 없음(상환율 100%) 기준입니다.</p>
-<h4>구성 분해</h4>
-<table><thead><tr><th>항목</th><th>금액</th><th>비고</th></tr></thead><tbody>
-<tr><td><b>CB 가치</b></td><td>10,764,990,731원</td><td>107.65% of face</td></tr>
-<tr><td>주식 성분 (equity component)</td><td>5,346,924,333원</td><td>무위험금리로 할인</td></tr>
-<tr><td>채권 성분 (debt component)</td><td>5,418,066,398원</td><td>rf + 스프레드(7.2%)로 할인</td></tr>
-<tr><td>Bond floor (일반채 가치)</td><td>8,317,567,484원</td><td>전환권 없을 때</td></tr>
-<tr><td>Parity (전환가치)</td><td>9,000,000,000원</td><td>50만 주 × 18,000원</td></tr>
+<p><b>Tsiveriotis-Fernandes 이항 트리(500스텝)</b> 기준.</p>
+<h4>기본 시나리오 (전환가 20,000원)</h4>
+<table><thead><tr><th>항목</th><th>값</th></tr></thead><tbody>
+<tr><td><b>CB 가치</b></td><td><b>10,764,990,731원 (액면의 107.65%)</b></td></tr>
+<tr><td>주식 성분(equity component)</td><td>5,346,924,333원</td></tr>
+<tr><td>현금 성분(debt component)</td><td>5,418,066,398원</td></tr>
+<tr><td>Bond floor (순수 채권가치)</td><td>8,317,567,484원 (83.18%)</td></tr>
+<tr><td>Parity (전환가치)</td><td>9,000,000,000원 (90.00%)</td></tr>
+<tr><td>패리티 대비 프리미엄</td><td>19.61%</td></tr>
+<tr><td>본드플로어 대비 프리미엄</td><td>29.42%</td></tr>
+<tr><td>Delta</td><td>338,803.39주 상당</td></tr>
+<tr><td>전환주식수(conversion ratio)</td><td>500,000주</td></tr>
+<tr><td>분해법 참고값</td><td>10,429,314,832원</td></tr>
 </tbody></table>
-<h4>지표</h4>
+<p><b>해석</b></p>
 <ul>
-<li><b>전환비율</b>: 500,000주 (100억 ÷ 20,000원)</li>
-<li><b>패리티 프리미엄</b>: 19.61% — 지금 당장 전환하는 것보다 CB를 보유하는 게 19.6% 유리</li>
-<li><b>채권 대비 프리미엄</b>: 29.42% — 전환권이 bond floor 위에 얹는 값</li>
-<li><b>Delta</b>: 338,803 (주가 1원 변동 시 CB 가치 변동액) → 전환비율 대비 헤지비율 약 0.68</li>
+<li>현재 주가 18,000원 &lt; 전환가 20,000원이라 <b>out-of-the-money</b>지만, 잔존 3년 × 변동성 35%의 시간가치가 커서 전환권 가치가 액면의 약 53%를 차지합니다. 채권 부분(83.18%) 단독보다 24.5%p 높은 값이 옵션 프리미엄입니다.</li>
+<li>"채권 + 무위험 콜" 단순 분해법 값(104.29%)보다 TF 모형 값(107.65%)이 <b>3.36%p 높습니다</b>. 분해법은 콜옵션까지 신용스프레드 7.2%로 할인해 옵션가치를 과소평가하는데, TF 모형은 전환 시 실제로 주식을 받으므로 주식 성분을 무위험금리 3.2%로만 할인합니다. 이 차이가 신용위험 반영 방식의 차이입니다.</li>
+<li>표면금리 1%는 무위험금리+스프레드 = 7.2% 대비 크게 낮은데, 그 이자 손실을 전환권으로 보상하는 구조입니다. 결과적으로 <b>액면가 발행 시 투자자에게 약 7.65% 유리한 조건</b>이고, 발행사 입장에서는 조건을 조이거나(전환가 상향, 콜옵션 부가) 만기보장수익률 없이 발행하는 근거가 됩니다.</li>
 </ul>
-<p>주가(18,000)가 전환가(20,000) 아래인 <b>out-of-the-money</b> 상태인데도 액면을 넘는 이유는, 3년간 변동성 35%가 만들어내는 시간가치가 크기 때문입니다. 주식·채권 성분이 거의 반반(49.7% : 50.3%)으로 나뉜 전형적인 balanced CB 구간입니다.</p>
-<p><b>참고</b>: 봉투의 <code>component_method_value</code>(단순 "채권 + 무위험 콜" 분해법)는 104억 2,931만 원으로, TF 모형값보다 3.4억 원 낮습니다. 차이는 신용위험이 전환권 부분에 어떻게 반영되는지와 조기 전환 효과에서 나옵니다.</p>
-<h4>리픽싱 시나리오 (별도)</h4>
-<p>모형에 리픽싱 조항은 없습니다. 국내 사모 CB에 흔한 <b>전환가 하한 70%(14,000원)</b>까지 조정된 경우를 별도로 돌리면:</p>
+<h4>참고: 리픽싱 하한 시나리오 (전환가 14,000원 = 70%)</h4>
+<p>모형에 리픽싱 조항이 없어 전환가를 최저한도까지 조정한 케이스를 별도로 돌렸습니다.</p>
+<table><thead><tr><th>항목</th><th>값</th></tr></thead><tbody>
+<tr><td>CB 가치</td><td>13,787,321,585원 (137.87%)</td></tr>
+<tr><td>Parity</td><td>12,857,142,857원</td></tr>
+<tr><td>패리티 대비 프리미엄</td><td>7.23%</td></tr>
+<tr><td>Delta</td><td>611,617.61주 상당</td></tr>
+</tbody></table>
+<p>→ 국내 사모 CB 표준인 70% 리픽싱 조항이 붙어 있다면 <b>가치는 107.65% ~ 137.87% 구간</b>이며, 실제 값은 주가 경로에 따라 결정됩니다. 리픽싱 조항 유무를 확인하시면 조건을 반영한 재평가를 드릴 수 있습니다.</p>
+<h4>모형 가정 (봉투 기재)</h4>
 <ul>
-<li>CB 가치 <b>137억 8,732만 원 (137.87%)</b>, 전환비율 714,286주, 패리티 128억 5,714만 원</li>
+<li>주가는 변동성이 일정한 기하브라운운동을 따름. 점프·변동성 스마일 없음</li>
+<li>무위험금리와 신용스프레드는 만기까지 상수. 스프레드가 주가와 함께 움직이는 효과 없음</li>
+<li>부도 시 회수율은 모형에 없음. 신용위험은 현금 성분의 할인율로만 반영</li>
+<li>전환 시 희석 효과(주식 수 증가에 따른 주가 하락) 미반영</li>
+<li>리픽싱(전환가 조정) 조항 미반영 — 위 별도 시나리오 참조</li>
+<li>발행사 콜·투자자 풋·만기보장수익률(YTM 프리미엄)은 입력하지 않아 <b>redemption = 100%</b> 로 계산했습니다. 조항이 있으면 알려주세요.</li>
 </ul>
-<p>즉 리픽싱 조항 유무에 따라 <b>107.65% ~ 137.87%</b> 범위입니다. 실제 계약서의 리픽싱 트리거·주기·하한을 확인해야 어느 쪽에 가까운지 판단할 수 있습니다.</p>
-<h4>모형 가정 (해석 시 주의)</h4>
-<ul>
-<li>주가는 변동성이 일정한 기하브라운운동을 따름 — 점프·변동성 스마일 없음</li>
-<li>무위험금리와 신용스프레드는 만기까지 상수 — 스프레드가 주가와 연동해 움직이는 효과 없음</li>
-<li>부도 시 회수율은 미반영. 신용위험은 현금 성분 할인율로만 들어감</li>
-<li><b>전환 시 희석 효과(주식 수 증가에 따른 주가 하락) 미반영</b> — 액면 100억이 발행사 시총 대비 크다면 실제 가치는 이보다 낮습니다</li>
-<li>리픽싱 조항 미반영 (위 시나리오 참조)</li>
-</ul>
-<p><code>calculation_hash</code>: <code>sha256:217dee53…c527dd7</code> (기본 시나리오)</p></div>
+<p><code>calculation_hash</code>: <code>sha256:217dee53…</code> (기본), <code>sha256:e61517cf…</code> (리픽싱)</p></div>
           <a class="src" href="assets/transcripts/case-b-on.txt">원문 case-b-on.txt</a>
         </div>
       </div>
@@ -287,81 +291,75 @@ N(d1) = 0.6132    N(d2) = 0.3750</pre>
       </div>
       <div class="cols">
         <div class="col before" data-pane="before">
-          <div class="col-head">플러그인 없음</div><div class="meta-strip"><span><b>36s</b> 소요</span><span><b>1</b> turns</span><span>입력 <b>12,595</b> tok</span><span>출력 <b>3,011</b> tok</span><span><b>$0.09</b></span></div>
-          <div class="chat"><h4>전제 (미제시 항목이라 표준값 가정)</h4>
-<p>할인율(WACC)과 영구성장률(g)을 주지 않으셔서 <b>WACC 10%, g 2%, 기말 할인(year-end convention)</b> 으로 계산했습니다. 이 두 값이 결과를 거의 좌우하므로 아래 민감도표를 함께 보세요.</p>
-<h4>1) 예측기간 FCF 현가 (단위: 억원)</h4>
-<table><thead><tr><th>연차</th><th>FCF</th><th>할인계수 (10%)</th><th>현가</th></tr></thead><tbody>
+          <div class="col-head">플러그인 없음</div><div class="meta-strip"><span><b>32s</b> 소요</span><span><b>1</b> turns</span><span>입력 <b>12,587</b> tok</span><span>출력 <b>2,736</b> tok</span><span><b>$0.08</b></span></div>
+          <div class="chat"><h4>전제</h4>
+<p>할인율(WACC)과 영구성장률(g)이 주어지지 않아 <b>WACC 10%, g 2%, 기말 할인(year-end convention)</b> 을 기준으로 계산했습니다. 이 두 값이 결과를 좌우하므로 아래에 민감도표를 함께 붙였습니다.</p>
+<h4>기준 시나리오 (WACC 10%, g 2%)</h4>
+<table><thead><tr><th>연도</th><th>FCF(억)</th><th>할인계수</th><th>현재가치(억)</th></tr></thead><tbody>
 <tr><td>1</td><td>10</td><td>0.9091</td><td>9.09</td></tr>
 <tr><td>2</td><td>12</td><td>0.8264</td><td>9.92</td></tr>
 <tr><td>3</td><td>14</td><td>0.7513</td><td>10.52</td></tr>
 <tr><td>4</td><td>16</td><td>0.6830</td><td>10.93</td></tr>
 <tr><td>5</td><td>18</td><td>0.6209</td><td>11.18</td></tr>
-<tr><td><b>합계</b></td><td></td><td></td><td><b>51.63</b></td></tr>
+<tr><td><b>소계</b></td><td></td><td></td><td><b>51.63</b></td></tr>
 </tbody></table>
-<h4>2) 영구가치(TV)</h4>
-<pre>TV₅ = 18 × 1.02 / (0.10 − 0.02) = 229.50억
-PV(TV) = 229.50 / 1.61051 = 142.50억</pre>
-<h4>3) 주당가치</h4>
-<table><thead><tr><th>항목</th><th>금액</th></tr></thead><tbody>
-<tr><td>예측기간 현가</td><td>51.63억</td></tr>
-<tr><td>영구가치 현가</td><td>142.50억</td></tr>
-<tr><td><b>기업가치(EV)</b></td><td><b>194.13억</b></td></tr>
-<tr><td>(−) 순부채</td><td>20.00억</td></tr>
-<tr><td><b>주주가치</b></td><td><b>174.13억</b></td></tr>
-<tr><td>÷ 발행주식 100만 주</td><td></td></tr>
-<tr><td><b>주당가치</b></td><td><b>약 17,413원</b></td></tr>
-</tbody></table>
-<h4>4) 민감도 (주당가치, 원)</h4>
-<table><thead><tr><th>WACC \ g</th><th>1%</th><th>2%</th><th>3%</th></tr></thead><tbody>
-<tr><td><b>8%</b></td><td>21,142</td><td>24,293</td><td>28,703</td></tr>
-<tr><td><b>10%</b></td><td>15,706</td><td><b>17,413</b></td><td>19,609</td></tr>
-<tr><td><b>12%</b></td><td>12,262</td><td>13,302</td><td>14,573</td></tr>
-</tbody></table>
-<h4>참고 사항</h4>
+<p>터미널 밸류 = 18 × 1.02 ÷ (0.10 − 0.02) = <b>229.5억</b><br>→ 현재가치 = 229.5 × 0.6209 = <b>142.50억</b></p>
 <ul>
-<li><b>영구가치 비중이 EV의 73%</b> 입니다. 5년 예측치 정교화보다 WACC·g 가정 검증이 훨씬 중요합니다.</li>
-<li>5년차 성장률이 12.5%인데 g를 2%로 떨어뜨리는 건 급격한 단절입니다. 실제로는 6~10년차 페이드 구간을 두거나 EV/EBITDA 배수법(exit multiple)으로 TV를 교차검증하는 편이 낫습니다.</li>
-<li>현금흐름이 연중 고르게 발생한다면 <b>기중 할인(mid-year convention)</b> 적용 시 주당가치가 약 5% 상승합니다 (기준 케이스 ≈ 18,260원).</li>
-<li>순부채 20억은 장부가로 차감했습니다. 우선주·전환사채·스톡옵션 등 희석요인이 있으면 주식수를 완전희석 기준으로 조정해야 합니다.</li>
+<li>기업가치(EV) = 51.63 + 142.50 = <b>194.13억</b></li>
+<li>자기자본가치 = 194.13 − 20 = <b>174.13억</b></li>
+<li><b>주당가치 = 174.13억 ÷ 100만 주 ≈ 17,410원</b></li>
 </ul>
-<p>실제 WACC와 g 값을 알려주시면 그 기준으로 다시 계산해 드리겠습니다.</p></div>
+<h4>민감도 (원/주)</h4>
+<table><thead><tr><th>WACC \ g</th><th>0%</th><th>2%</th><th>3%</th></tr></thead><tbody>
+<tr><td><b>8%</b></td><td>18,780</td><td>24,290</td><td>28,700</td></tr>
+<tr><td><b>10%</b></td><td>14,340</td><td><b>17,410</b></td><td>19,610</td></tr>
+<tr><td><b>12%</b></td><td>11,400</td><td>13,300</td><td>14,570</td></tr>
+</tbody></table>
+<h4>짚어둘 점</h4>
+<ul>
+<li>기준 시나리오에서 <b>터미널 밸류가 EV의 73%</b> 를 차지합니다. 사실상 5년 추정치보다 g와 WACC 가정이 값을 결정하는 구조라, 위 표의 범위(1.1만~2.9만원)를 하나의 결론으로 받아들이는 게 안전합니다.</li>
+<li>FCF가 연중 고르게 발생한다고 보면 mid-year convention이 더 적절하고, 그 경우 값이 약 5% 상승합니다(기준 시나리오 ≈ 18,260원).</li>
+<li>순부채 20억은 시점 조정 없이 현재 기준으로 차감했습니다.</li>
+</ul>
+<p>실제 WACC와 g 가정치가 있으시면 그 값으로 다시 계산해 드리겠습니다.</p></div>
           <a class="src" href="assets/transcripts/case-c-off.txt">원문 case-c-off.txt</a>
         </div>
         <div class="col after" data-pane="after">
-          <div class="col-head">fintool</div><div class="meta-strip"><span><b>31s</b> 소요</span><span><b>5</b> turns</span><span>입력 <b>88,957</b> tok</span><span>출력 <b>1,738</b> tok</span><span><b>$0.29</b></span></div>
+          <div class="col-head">fintool</div><div class="meta-strip"><span><b>31s</b> 소요</span><span><b>5</b> turns</span><span>입력 <b>89,906</b> tok</span><span>출력 <b>1,540</b> tok</span><span><b>$0.29</b></span></div>
           <div class="chain"><span class="pill pill-mcp">Skill · fintool:valuation</span><span class="pill pill-mcp">fintool_catalog</span><span class="pill pill-mcp">fintool_run · dcf</span></div>
           
-          <div class="chat"><p><b>가정: WACC 11%, 영구성장률 g 2% (제가 정한 값 — 할인율·성장률을 안 주셔서, 한국 비상장 중소기업 통상 범위 10~12%의 중간과 장기 물가+실질성장 수준 1~3%의 중간을 썼습니다.)</b></p>
-<h4>결과 (base: WACC 11%, g 2%)</h4>
-<table><thead><tr><th>항목</th><th>금액</th></tr></thead><tbody>
-<tr><td>예측기간(1~5년) FCF 현재가치</td><td>약 50.2억 원</td></tr>
-<tr><td>Terminal Value (5년차 시점)</td><td>204.0억 원</td></tr>
-<tr><td>Terminal Value 현재가치</td><td>약 121.1억 원</td></tr>
-<tr><td><b>기업가치 (EV)</b></td><td><b>약 171.3억 원</b></td></tr>
-<tr><td>− 순부채</td><td>20억 원</td></tr>
-<tr><td><b>주주가치</b></td><td><b>약 151.3억 원</b></td></tr>
-<tr><td><b>주당가치 (100만 주)</b></td><td><b>약 15,127원</b></td></tr>
-</tbody></table>
-<p>연도별 현재가치: 1년차 9.01억 → 2년차 9.74억 → 3년차 10.24억 → 4년차 10.54억 → 5년차 10.68억</p>
-<h4>민감도 — 주당가치 (원)</h4>
-<table><thead><tr><th>WACC \ g</th><th>1%</th><th>2%</th><th>3%</th></tr></thead><tbody>
-<tr><td>9%</td><td>18,082</td><td>20,359</td><td>23,395</td></tr>
-<tr><td>10%</td><td>15,706</td><td>17,413</td><td>19,609</td></tr>
-<tr><td><b>11%</b></td><td>13,810</td><td><b>15,127</b></td><td>16,774</td></tr>
-<tr><td>12%</td><td>12,262</td><td>13,302</td><td>14,573</td></tr>
-<tr><td>13%</td><td>10,976</td><td>11,812</td><td>12,816</td></tr>
-</tbody></table>
-<p>대략 <b>11,000~23,000원</b> 범위이고, 가정을 좁히면 15,000원 안팎입니다.</p>
-<h4>읽을 때 주의할 점</h4>
+          <div class="chat"><p><b>가정: WACC 11%, 영구성장률 g 2% (제가 정한 값)</b></p>
 <ul>
-<li><b>터미널 밸류 의존도가 70.7%</b>입니다. 가치의 3분의 2 이상이 6년차 이후 영구가치에서 나오므로, g와 WACC 한 칸 차이가 주당 1,000~2,000원씩 움직입니다. 5년 FCF 숫자보다 이 두 가정이 결과를 지배합니다.</li>
-<li>입력하신 FCF는 <b>비레버드 FCFF</b>(이자비용 차감 전)여야 합니다. 사업계획서상 이자 차감 후 FCF라면 순부채를 이중으로 반영하는 셈이라 결과가 과소평가됩니다.</li>
-<li>순부채 20억은 <b>시장가치 기준</b>으로 봤습니다. 장부가와 크게 다르면 조정이 필요합니다.</li>
-<li>비상장 중소기업이라면 규모 프리미엄·비유동성 할인이 추가로 붙는 게 보통인데, 이 계산에는 들어있지 않습니다(WACC 계산 범위 밖). 실무에선 여기서 20~30% 더 깎기도 합니다.</li>
-<li>FCF 첫 값은 1년차 말(내년 말) 발생 기준입니다.</li>
+<li>WACC 11% — 할인율 미제공. 한국 비상장/중소 규모 기업 통상 범위 10~12%의 중앙값.</li>
+<li>g 2% — 장기 물가(약 2%) + 실질성장 0 수준의 보수적 영구성장 가정.</li>
+<li>FCF는 비레버드 FCFF, 각 연도 말 발생, 순부채 20억은 평가시점 기준으로 봤습니다.</li>
 </ul>
-<p>WACC와 영구성장률 값을 주시면 그 기준으로 다시 계산해 드리겠습니다. 자본구조(부채/자기자본 시장가치), 베타, 세율을 주시면 WACC부터 산출해서 연결할 수도 있습니다.</p></div>
+<h4>결과 (base)</h4>
+<table><thead><tr><th>항목</th><th>값</th></tr></thead><tbody>
+<tr><td>예측기간 5년 PV</td><td>50.2억 원</td></tr>
+<tr><td>Terminal value (5년차 시점)</td><td>204.0억 원</td></tr>
+<tr><td>Terminal PV</td><td>121.1억 원</td></tr>
+<tr><td><b>기업가치(EV)</b></td><td><b>171.3억 원</b></td></tr>
+<tr><td>− 순부채</td><td>20.0억 원</td></tr>
+<tr><td><b>주주가치</b></td><td><b>151.3억 원</b></td></tr>
+<tr><td><b>주당가치</b></td><td><b>약 15,127원</b></td></tr>
+</tbody></table>
+<h4>민감도 (주당가치, 원)</h4>
+<table><thead><tr><th>WACC \ g</th><th>1.0%</th><th>1.5%</th><th>2.0%</th><th>2.5%</th><th>3.0%</th></tr></thead><tbody>
+<tr><td>9%</td><td>18,082</td><td>19,144</td><td>20,359</td><td>21,760</td><td>23,395</td></tr>
+<tr><td>10%</td><td>15,706</td><td>16,509</td><td>17,413</td><td>18,438</td><td>19,609</td></tr>
+<tr><td><b>11%</b></td><td>13,810</td><td>14,434</td><td><b>15,127</b></td><td>15,902</td><td>16,774</td></tr>
+<tr><td>12%</td><td>12,262</td><td>12,757</td><td>13,302</td><td>13,904</td><td>14,573</td></tr>
+<tr><td>13%</td><td>10,976</td><td>11,376</td><td>11,812</td><td>12,290</td><td>12,816</td></tr>
+</tbody></table>
+<p>대략 <b>11,000~23,000원 밴드</b>, 중심값 1.5만 원 수준입니다.</p>
+<h4>유의점</h4>
+<ul>
+<li>Terminal value가 EV의 <b>70.7%</b>를 차지합니다. 즉 이 밸류에이션은 사실상 6년차 이후 영구가정에 좌우되며, 5년 FCF 숫자보다 WACC·g 선택이 결과를 지배합니다.</li>
+<li>5년간 FCF 연평균 +15.8% 성장 후 곧바로 2%로 떨어지는 구조입니다. 성장 감속 구간(6~10년차)을 명시적으로 넣으면 값이 달라질 수 있습니다.</li>
+<li>규모 프리미엄·비유동성 할인은 반영하지 않았습니다. 비상장이면 통상 20~30% 추가 할인을 검토합니다.</li>
+</ul>
+<p>실제 WACC(또는 무위험이자율·베타·자본구조)와 영구성장률 값을 주시면 그 수치로 다시 계산하겠습니다.</p></div>
           <a class="src" href="assets/transcripts/case-c-on.txt">원문 case-c-on.txt</a>
         </div>
       </div>
@@ -380,109 +378,280 @@ PV(TV) = 229.50 / 1.61051 = 142.50억</pre>
       </div>
       <div class="cols">
         <div class="col before" data-pane="before">
-          <div class="col-head">플러그인 없음</div><div class="meta-strip"><span><b>67s</b> 소요</span><span><b>1</b> turns</span><span>입력 <b>28,362</b> tok</span><span>출력 <b>4,706</b> tok</span><span><b>$0.40</b></span></div>
-          <div class="chat"><p>숫자를 그대로 계산하면 <b>런웨이가 안 나옵니다 — 5개월 만에 흑자전환</b>입니다. 다만 그 결과는 가정의 산물이라, 세 가지 케이스로 나눠 드립니다.</p>
-<h4>시나리오 A — 주신 숫자 그대로 (변동비 0, 고정비 불변)</h4>
-<table><thead><tr><th>월</th><th>매출</th><th>순소진</th><th>잔고</th></tr></thead><tbody>
-<tr><td>1</td><td>3,000만</td><td>-5,000만</td><td>5.5억</td></tr>
-<tr><td>2</td><td>3,900만</td><td>-4,100만</td><td>5.09억</td></tr>
-<tr><td>3</td><td>5,070만</td><td>-2,930만</td><td>4.80억</td></tr>
-<tr><td>4</td><td>6,591만</td><td>-1,409만</td><td>4.66억</td></tr>
-<tr><td>5</td><td>8,568만</td><td><b>+568만</b></td><td>4.71억</td></tr>
+          <div class="col-head">플러그인 없음</div><div class="meta-strip"><span><b>55s</b> 소요</span><span><b>1</b> turns</span><span>입력 <b>3,596</b> tok</span><span>출력 <b>3,730</b> tok</span><span><b>$0.13</b></span></div>
+          <div class="chat"><h4>결론 먼저</h4>
+<p>주신 숫자를 그대로 넣으면 <b>런웨이는 무한대(∞)이고, 생존 목적의 라운드는 필요 없습니다.</b> 5개월 차에 손익분기를 넘고, 그 전까지 까먹는 현금은 총 1.3억 정도라 6억 중 4.7억이 남습니다.</p>
+<table><thead><tr><th>개월</th><th>매출</th><th>고정비</th><th>순증감</th><th>기말 현금</th></tr></thead><tbody>
+<tr><td>1</td><td>0.30억</td><td>0.8억</td><td>-0.50억</td><td>5.50억</td></tr>
+<tr><td>2</td><td>0.39억</td><td>0.8억</td><td>-0.41억</td><td>5.09억</td></tr>
+<tr><td>3</td><td>0.51억</td><td>0.8억</td><td>-0.29억</td><td>4.80억</td></tr>
+<tr><td>4</td><td>0.66억</td><td>0.8억</td><td>-0.14억</td><td><b>4.66억 (최저점)</b></td></tr>
+<tr><td>5</td><td>0.86억</td><td>0.8억</td><td>+0.06억</td><td>4.71억</td></tr>
+<tr><td>6</td><td>1.11억</td><td>0.8억</td><td>+0.31억</td><td>5.03억</td></tr>
 </tbody></table>
-<ul>
-<li>손익분기: <b>5개월차</b></li>
-<li>최대 누적 소진: <b>1.34억</b> (현금 6억 중 22%만 사용)</li>
-<li>런웨이: 사실상 무한</li>
-</ul>
-<p>이 답이 "고정비 8천만 원이 5개월간 그대로", "매출총이익률 100%"를 전제한다는 점이 문제입니다. 둘 다 현실에서 성립하지 않습니다.</p>
-<h4>시나리오 B — 매출총이익률 70%, 고정비 불변</h4>
-<ul>
-<li>손익분기: <b>6~7개월차</b> (월매출 약 1.14억)</li>
-<li>최대 누적 소진: <b>2.12억</b>, 저점 잔고 3.88억</li>
-<li>여전히 라운드 없이 생존 가능</li>
-</ul>
-<h4>시나리오 C — 현실 케이스 ⭐</h4>
-<p>성장률 30%는 유지되지 않고(매월 상대 15%씩 감쇠), 성장을 만들려면 비용도 늡니다(월 5% 증가), 매출총이익률 70%:</p>
-<table><thead><tr><th>월</th><th>매출</th><th>비용</th><th>순소진</th><th>잔고</th></tr></thead><tbody>
-<tr><td>3</td><td>4,895만</td><td>8,820만</td><td>-5,394만</td><td>4.30억</td></tr>
-<tr><td>6</td><td>8,157만</td><td>1.02억</td><td>-4,500만</td><td>2.87억</td></tr>
-<tr><td>9</td><td>1.13억</td><td>1.18억</td><td>-3,925만</td><td>1.64억</td></tr>
-<tr><td>12</td><td>1.38억</td><td>1.37억</td><td>-4,008만</td><td>0.47억</td></tr>
+<p>누적 최대 소진(peak burn) = <b>1.34억</b>.</p>
+<h4>그래서 진짜 질문은 "얼마가 필요한가"가 아닙니다</h4>
+<p>이 계산의 결과가 "라운드 불필요"로 나온다는 건, 답이 <b>가정 하나에 전부 걸려 있다</b>는 뜻입니다. 검증해야 할 것 세 가지:</p>
+<p><b>1. 8천만 원이 정말 "고정"인가</b> — 이게 가장 위험합니다. 매출이 12개월간 23배(월 7억) 되는 동안 인건비·인프라가 8천만 원에 머무를 수는 없습니다. 고정비도 같이 자란다면 위 표는 무의미합니다.</p>
+<p><b>2. 3천만 원이 매출인가 공헌이익인가</b> — 매출총이익률 50%라면 손익분기는 5개월이 아니라 8개월로 밀리고, 누적 소진은 1.3억이 아니라 <b>3.0억</b>이 됩니다. 여전히 버티지만 여유는 절반입니다.</p>
+<p><b>3. 월 30%가 몇 개월짜리인가</b> — 초기 작은 숫자에서의 30%는 흔하지만 유지되는 경우는 드뭅니다.</p>
+<h4>시나리오별 실제 필요액</h4>
+<table><thead><tr><th>시나리오</th><th>손익분기</th><th>누적 소진</th><th>현금 6억으로</th></tr></thead><tbody>
+<tr><td>성장 30% 유지, 고정비 고정</td><td>5개월</td><td>1.3억</td><td>여유</td></tr>
+<tr><td>성장 10%로 둔화</td><td>12개월</td><td>3.2억</td><td>버팀</td></tr>
+<tr><td>성장률 50% 마진 반영</td><td>8개월</td><td>3.0억</td><td>버팀</td></tr>
+<tr><td><b>성장 0% (최악)</b></td><td>없음</td><td>월 0.5억</td><td><b>12개월</b></td></tr>
 </tbody></table>
+<p><b>하한선은 12개월입니다.</b> 성장이 완전히 멈춰도 1년은 갑니다. 즉 지금 급하게 조달할 이유가 없습니다.</p>
+<h4>권장: 라운드는 "생존"이 아니라 "가속"으로 사이징하세요</h4>
+<p>생존용 필요액은 0원이므로, 조달 여부는 <em>"돈을 넣으면 성장이 더 빨라지는가"</em> 로만 판단하면 됩니다. 가속 케이스 예시 — 채용해서 고정비를 월 1.5억으로 올리고 성장률 20%를 유지하는 계획이라면:</p>
 <ul>
-<li><b>런웨이: 약 13개월</b> (2027년 9월경 고갈)</li>
-<li>흑자전환 못 함 — 9~10개월차에 소진액이 다시 벌어짐(비용 복리 &gt; 감쇠한 매출 성장)</li>
+<li>손익분기 10개월 차, 누적 소진 <b>약 7.3억</b></li>
+<li>버퍼 및 계획 미달 대비 1.5~2배 → <b>조달 규모 10~15억</b></li>
 </ul>
-<h4>다음 라운드 필요액</h4>
-<p>조달 시점은 <b>잔여 6~9개월 = 4~7개월차 착수</b>(실사·클로징 3~4개월 감안 시 늦어도 6개월차).</p>
-<pre>필요액 = 조달 후 24개월 순소진 + 버퍼 30% - 조달 시점 잔여현금
-       = (월평균 순소진 6,000~8,000만 × 24개월) × 1.3
-       = 18.7억 ~ 25억</pre>
-<p>조달 시점 잔여현금 3.5~4억을 감안하면 <b>15~20억 규모(Series A)</b>가 적정선입니다. 라운드 후에는 채용으로 소진이 늘어난다는 전제이며, 소진을 지금 수준(4,000만/월)으로 묶으면 10~12억으로도 24개월이 나옵니다.</p>
-<p>투자자가 볼 마일스톤 기준으로는, 다음 라운드까지 <b>월매출 2.5~4억(ARR 30~50억)</b> 도달이 필요합니다. 시나리오 C에서는 24개월 후 월매출이 2억 근처에 그쳐 미달이므로, 감쇠율을 낮출 채널 다변화가 라운드 자체보다 선행 과제입니다.</p>
-<h4>답을 바꾸는 변수 3개</h4>
-<ol>
-<li><b>매출총이익률</b> — 8천만 원이 COGS 포함인지 별도인지에 따라 손익분기가 5개월 vs 7개월로 갈립니다.</li>
-<li><b>30% 성장의 출처</b> — 유기적 성장인지 마케팅비 투입 결과인지. 후자면 고정비가 아니라 변동비이고 시나리오 A는 완전히 무효입니다.</li>
-<li><b>성장률 지속 기간</b> — 3천만 원 베이스의 30%는 900만 원이지만, 1억 베이스에서는 3천만 원입니다. 절대 증가액을 감당할 수 있는 시점까지가 실질 런웨이입니다.</li>
-</ol>
-<p>1번만 알려주시면 시나리오 C를 실제 숫자로 다시 돌려드리겠습니다.</p></div>
+<p>지금 상태가 협상에서 강한 이유도 여기 있습니다. 현금 12개월, 흑자 전환 가시권이면 조달 시점을 고를 수 있습니다. 30% 성장을 3~4개월 더 실증해서 트랙션을 붙인 뒤 올리는 쪽이 밸류에이션 면에서 유리합니다.</p>
+<hr>
+<p>두 가지만 확인해 주시면 숫자를 더 정확히 잡아드릴 수 있습니다: <b>(1) 8천만 원에 인건비가 다 포함된 총 비용인지</b>, <b>(2) 3천만 원의 매출총이익률</b>. 그리고 향후 12개월 채용 계획이 있다면 고정비 증가를 반영한 버전으로 다시 계산해 드리겠습니다.</p></div>
           <a class="src" href="assets/transcripts/case-a-off.txt">원문 case-a-off.txt</a>
         </div>
         <div class="col after" data-pane="after">
-          <div class="col-head">fintool</div><div class="meta-strip"><span><b>131s</b> 소요</span><span><b>6</b> turns</span><span>입력 <b>106,667</b> tok</span><span>출력 <b>9,605</b> tok</span><span><b>$0.63</b></span></div>
-          <div class="chain"><span class="pill pill-mcp">Skill · fintool:startup-finance</span><span class="pill pill-mcp">fintool_run · financial-model ×3</span></div>
+          <div class="col-head">fintool</div><div class="meta-strip"><span><b>157s</b> 소요</span><span><b>7</b> turns</span><span>입력 <b>138,319</b> tok</span><span>출력 <b>10,885</b> tok</span><span><b>$0.68</b></span></div>
+          <div class="chain"><span class="pill pill-mcp">Skill · fintool:startup-finance</span><span class="pill pill-mcp">fintool_run · financial-model ×4</span></div>
           
-          <div class="chat"><h4>답: 입력값 그대로면 조달이 필요 없습니다</h4>
-<p>3천만 × 1.3⁴ = 8,568만이라 <b>4개월 만에 고정비 8천만을 넘어섭니다.</b> 현금이 바닥날 일이 없습니다.</p>
-<h5>Base — 입력값 그대로 (MoM 30% 고정, 고정비 8천만 고정, COGS 0)</h5>
+          <div class="chat"><h4>결론 먼저</h4>
+<p><b>주신 숫자 그대로면 런웨이는 "소진 없음"입니다.</b> 월 30% 성장이면 5개월 차에 손익분기를 넘고 현금 저점이 4.66억이라 6억이 바닥나지 않습니다. 따라서 <b>생존 목적의 다음 라운드 필요액은 0원</b>이고, 라운드를 연다면 그건 성장 가속용입니다. 성장을 유지하려고 조직을 키우는 순간에만 자금이 필요해집니다 — 그 금액이 <b>약 3.5억(최소) / 6~7억(권장)</b> 입니다.</p>
+<p>가정 먼저 밝힙니다: 원가율(COGS)과 법인세는 주신 정보에 없어 <b>0으로 두었습니다</b>(매출총이익률 100%). 원가가 있으면 아래 숫자는 모두 나빠집니다.</p>
+<hr>
+<h4>1. Base — 월 30% 성장, 고정비 8천만 고정</h4>
 <table><thead><tr><th>월</th><th>매출</th><th>EBITDA</th><th>기말현금</th></tr></thead><tbody>
-<tr><td>2026-09</td><td>3,000만</td><td>-5,000만</td><td>5.50억</td></tr>
-<tr><td>2026-10</td><td>3,900만</td><td>-4,100만</td><td>5.09억</td></tr>
-<tr><td>2026-11</td><td>5,070만</td><td>-2,930만</td><td>4.797억</td></tr>
-<tr><td><b>2026-12</b></td><td>6,591만</td><td>-1,409만</td><td><b>4.656억 ← 현금 저점</b></td></tr>
-<tr><td>2027-01</td><td>8,568만</td><td>+568만</td><td>4.713억</td></tr>
-<tr><td>2027-02</td><td>1.114억</td><td>+3,139만</td><td>5.027억</td></tr>
+<tr><td>2026-09</td><td>30,000,000</td><td>-50,000,000</td><td>550,000,000</td></tr>
+<tr><td>2026-10</td><td>39,000,000</td><td>-41,000,000</td><td>509,000,000</td></tr>
+<tr><td>2026-11</td><td>50,700,000</td><td>-29,300,000</td><td>479,700,000</td></tr>
+<tr><td><b>2026-12</b></td><td>65,910,000</td><td>-14,090,000</td><td><b>465,610,000</b> ← 현금 저점</td></tr>
+<tr><td><b>2027-01</b></td><td>85,683,000</td><td><b>+5,683,000</b></td><td>471,293,000 ← 손익분기</td></tr>
+<tr><td>2027-08</td><td>537,648,118</td><td>+457,648,118</td><td>1,869,808,512</td></tr>
 </tbody></table>
 <ul>
-<li><b>런웨이: 18개월 horizon 내 소진 없음</b> (<code>exceeds_horizon: true</code>)</li>
-<li><b>손익분기: 2027-01 (5개월차)</b></li>
-<li><b>최대 누적 소진액: 1.34억</b> (6억 − 4.656억)</li>
-<li><b>다음 라운드 필요액: 0원.</b> 가진 현금의 22%만 쓰고 자력 흑자.</li>
-<li><code>sha256:7975344eb576343854747676d6518d56b17b319c0cc386e5de06946d6210002e</code></li>
+<li>런웨이: <code>months: 12</code>, <code>exhaustion_month: null</code>, <code>exceeds_horizon: true</code> (12개월 horizon 내 소진 없음)</li>
+<li>손익분기: <b>2027-01</b> (5개월 차)</li>
+<li>누적 최대 자금소요: 6억 − 4.6561억 = <b>1.3439억</b></li>
+<li><code>calculation_hash</code>: <code>sha256:cc507f52611dbc0ed7f7700204a8c3ecb7da02ca5d2efa0ed5f268844c064a1e</code></li>
 </ul>
-<hr>
-<h4>다만 이 답은 두 가정에 전부 걸려 있습니다</h4>
-<p>"MoM 30%가 계속된다"와 "고정비가 8천만에 묶여 있다"입니다. 18개월이면 매출 25.9억/월, 누적 111억이 되는 궤적인데, 이걸 인건비 증가 없이 해낸다는 뜻입니다. 그래서 두 케이스를 더 돌렸습니다.</p>
-<h5>Bear — 성장률만 감쇠 (매월 15%씩 둔화, 30%→2.2%)</h5>
+<h4>2. Bear — 성장률 30% → 10%로 둔화 (고정비 동일)</h4>
+<p>성장률이 무너지는 게 가장 흔한 실패 경로라 별도로 돌렸습니다.</p>
 <ul>
-<li>런웨이: <b>여전히 소진 없음</b>, 손익분기 2027-02, 현금 저점 4.48억</li>
-<li><b>필요액 0원.</b> 성장률이 꺾이는 것만으로는 안 죽습니다.</li>
-<li><code>sha256:d4e873cbfde96438b7421cbd10593a54ad698cab64b86d1edaf939367de031ed</code></li>
+<li>현금 저점: <b>275,935,012원</b> (2027-07)</li>
+<li>손익분기: <b>2027-08</b> (12개월 차)</li>
+<li>런웨이: <code>months: 18</code>, <code>exhaustion_month: null</code> — 18개월 horizon 내 소진 없음</li>
+<li>누적 최대 자금소요: <b>3.2406억</b></li>
+<li><code>calculation_hash</code>: <code>sha256:7466ab549d7edb9165c493e9ee38a845b359db2033d73e003fc9e6d7266a96f5</code></li>
 </ul>
-<h5>현실형 — 비용도 같이 커질 때 (Bear 매출 + COGS 매출의 25% + 고정비 월 7% 증가)</h5>
+<h4>3. 현실 보정 — 30% 성장 + 고정비 월 15% 증가</h4>
+<p>매출이 1년에 18배 느는데 고정비가 8천만에 고정된다는 건 성립하지 않습니다. 채용·마케팅이 따라 붙는 케이스입니다.</p>
+<ul>
+<li>현금 저점: <b>217,582,582원</b> (2027-05)</li>
+<li>손익분기: <b>2027-06</b> (10개월 차)</li>
+<li>런웨이: 12개월 horizon 내 소진 없음</li>
+<li>누적 최대 자금소요: <b>3.8242억</b></li>
+<li><code>calculation_hash</code>: <code>sha256:bb16fb5107c5bb8c11871f5093e32bf1a1e94adb707628485182be64eadb6055</code></li>
+</ul>
+<h4>4. 자금이 필요해지는 지점 — 30% 성장 + 고정비 월 20% 증가</h4>
 <table><thead><tr><th>월</th><th>매출</th><th>EBITDA</th><th>기말현금</th></tr></thead><tbody>
-<tr><td>2027-06</td><td>1.22억</td><td>-5,558만</td><td>0.645억</td></tr>
-<tr><td><b>2027-07</b></td><td>1.305억</td><td>-5,951만</td><td><b>0.049억</b></td></tr>
-<tr><td>2027-08</td><td>1.382억</td><td>-6,475만</td><td><b>-0.598억 ← 소진</b></td></tr>
+<tr><td>2027-03</td><td>144,804,270</td><td>-94,074,450</td><td>94,212,850</td></tr>
+<tr><td><b>2027-04</b></td><td>188,245,551</td><td>-98,408,913</td><td><b>-4,196,063</b> ← 소진</td></tr>
+<tr><td><b>2027-09</b></td><td>698,942,554</td><td>-14,345,482</td><td><b>-350,977,150</b> ← 최대 부족분</td></tr>
+<tr><td>2027-10</td><td>908,625,320</td><td>+52,679,677</td><td>-298,297,473</td></tr>
+<tr><td>2028-02</td><td>2,595,124,777</td><td>+820,235,892</td><td>1,496,207,385</td></tr>
 </tbody></table>
 <ul>
-<li><b>런웨이: 11개월 (2027-08 소진)</b>, 손익분기 미도달</li>
-<li><b>18개월 horizon 누적 부족액: 6.36억</b> → 다음 라운드는 최소 이 규모</li>
-<li><code>sha256:a4466b607c250f2c6499a2a0d7d0386f3c22e180a825573548616425deb73cd2</code></li>
+<li>런웨이: <b>7개월</b>, <code>exhaustion_month: 2027-04</code></li>
+<li>손익분기: <b>2027-10</b> (14개월 차)</li>
+<li>최대 자금 부족분: <b>350,977,150원</b></li>
+<li><code>calculation_hash</code>: <code>sha256:7a9361183d6ec390dcc252fd53363cc4e7fd17d38456acc0120a56daba304238</code></li>
 </ul>
 <hr>
-<h4>정리</h4>
-<p><b>당장의 숫자로는 런웨이 무한, 필요액 0원</b>입니다. 죽이는 건 성장 둔화가 아니라 <b>비용 곡선</b>입니다. 고정비를 8천만에 묶어둘 수만 있으면 성장률이 2%대로 떨어져도 살아남고, 매출 따라 비용이 붙기 시작하면 11개월 만에 6억을 다 씁니다.</p>
-<p>라운드 사이즈를 정해야 한다면 질문은 "얼마가 필요한가"가 아니라 <b>"이 성장을 지탱하려면 6개월 뒤 고정비가 얼마인가"</b> 입니다. 그 숫자를 주시면 필요액을 확정해 드리겠습니다.</p>
-<p>두 가지 확인 부탁드립니다:</p>
+<h4>다음 라운드 필요액</h4>
+<table><thead><tr><th>목적</th><th>금액</th><th>근거</th></tr></thead><tbody>
+<tr><td>생존</td><td><b>0원</b></td><td>케이스 1~3 모두 현금 소진 없음</td></tr>
+<tr><td>최소 조달</td><td><b>약 3.5억</b></td><td>케이스 4 최대 부족분 350,977,150원</td></tr>
+<tr><td><b>권장 Ask</b></td><td><b>6~7억</b></td><td>부족분 3.5억 × 안전계수 1.8~2.0</td></tr>
+</tbody></table>
+<p>권장액의 안전계수 1.8~2.0은 fintool 산출이 아니라 제 판단입니다 — 부족분에 딱 맞춰 조달하면 첫 달 미달성에 바로 브릿지가 필요해집니다. 이 조달로 도달하는 지점은 <b>월매출 9억, EBITDA 흑자 전환(2027-10)</b> 이고, 시리즈 A/B 마일스톤으로 쓸 만한 서사입니다.</p>
+<h4>이 답을 확정하려면 필요한 값</h4>
 <ol>
-<li><b>고정비 8천만에 인건비가 다 들어가 있나요?</b> 30% 성장을 뒷받침할 채용 계획이 별도라면 현실형 케이스가 실제에 가깝습니다.</li>
-<li><b>매출 3천만이 매출총이익인가요, 총매출인가요?</b> Base는 COGS 0으로 계산했습니다. 원가율이 있으면 손익분기가 뒤로 밀립니다.</li>
-</ol>
-<p><em>세금은 세 케이스 모두 0%로 두었습니다. Base는 2027-01부터 흑자라 실제 현금은 이보다 낮습니다. 감쇠율·원가율·고정비 증가율은 제안값이므로 승인/수정이 필요합니다.</em></p></div>
+<li><b>원가율(COGS)</b> — 지금 0%로 잡혀 있습니다. SaaS 20%만 넣어도 손익분기가 2~3개월 밀립니다.</li>
+<li><b>CAC / ARPA / churn</b> — "성장에 얼마를 태워야 30%가 유지되는가"가 케이스 4의 고정비 증가율(월 20%)을 대체합니다. 지금은 제가 가정한 값입니다.</li>
+<li><b>프리머니 밸류</b> — 주시면 <code>cap-table-simulate</code>로 희석률까지 뽑아 IR 자료 형태로 정리하겠습니다.</li>
+</ol></div>
           <a class="src" href="assets/transcripts/case-a-on.txt">원문 case-a-on.txt</a>
+        </div>
+      </div>
+    </article>
+    <article class="case" id="case-d">
+      <header class="case-head">
+        <span class="case-idx">D</span>
+        <h3>수정이 다섯 번 들어올 때</h3>
+        <span class="essence">본질 · 누적 수정</span>
+      </header>
+      <p class="sec-intro" style="margin-bottom:16px">한 방 계산은 모델도 잘한다. 실제 재무 작업은 "성장률 낮춰봐", "채용 넣어봐", "원가율도"가 다섯 번 이어지는 일이다.
+      같은 세션에서 같은 순서로 물었다(<span class="mono">claude -p --resume</span>).</p>
+      <div class="turns-wrap">
+      <table class="turns">
+        <thead><tr><th>#</th><th>수정 요청</th><th>플러그인 없음</th><th>fintool</th></tr></thead>
+        <tbody><tr><td class="tn">1</td><td class="tp">월 매출 3천만 원, 월 30% 성장, 고정비 8천만 원, 현금 6억. 12개월 런웨이와 월별 현금을 정리해줘.</td><td class="tm">35s · 2,651 tok · $0.08<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">35s · 2,727 tok · $0.29<br><span class="pill pill-mcp">Skill · fintool:startup-finance</span><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">2</td><td class="tp">성장률이 30%는 무리야. 월 12%로 낮춰서 다시.</td><td class="tm">37s · 2,845 tok · $0.51<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">47s · 3,332 tok · $0.16<br><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">3</td><td class="tp">개발자 3명을 3개월 뒤부터 채용해. 1인당 월 700만 원이야. 다시 계산해줘.</td><td class="tm">58s · 4,202 tok · $0.80<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">56s · 3,979 tok · $0.18<br><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">4</td><td class="tp">원가율 25%도 반영해줘.</td><td class="tm">57s · 4,297 tok · $0.18<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">56s · 4,255 tok · $0.20<br><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">5</td><td class="tp">지금까지 결과로 IR용 요약을 만들어줘. 런웨이, 현금 저점, 필요 조달액, 손익분기 시점.</td><td class="tm">43s · 2,914 tok · $0.15<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">115s · 7,770 tok · $0.39<br><span class="pill pill-mcp">fintool_run · financial-model ×2</span><br><span class="hashmark">해시 3</span></td></tr></tbody>
+        <tfoot><tr><td></td><td>합계</td><td>230s · 16,909 tok · <b>$1.72</b></td>
+        <td class="on">309s · 22,063 tok · <b>$1.22</b></td></tr></tfoot>
+      </table>
+      </div>
+      <p class="env-note">다섯 번을 거치는 동안 <b>양쪽 다 숫자가 어긋나지 않았다.</b> 결론도 같다 — 원가율을 넣는 순간 런웨이가 11개월로 뒤집힌다.
+      차이는 과정에 있다. 왼쪽은 매 턴 12줄짜리 표를 손으로 다시 쓰고, 그 표가 맞는지 확인할 방법이 본문 검산뿐이다.
+      오른쪽은 spec의 바뀐 필드만 교체해 엔진을 다시 돌린다 — 3턴에서 고정비가 12개월 배열로, 4턴에서 원가가 월별 배열로, 5턴에서 손익분기를 찾으려 24개월로 늘어났고, 매 턴 해시가 남는다.
+      여섯 번째 수정도, 석 달 뒤의 재현도 같은 방식이다. 이번 시퀀스에서는 비용도 오른쪽이 낮았다($1.22 vs $1.72).</p>
+      <div class="cols">
+        <div class="col before" data-pane="before">
+          <div class="col-head">플러그인 없음 · 5턴 IR 요약</div>
+          <div class="chat"><h3>IR 요약 — 12개월 현금 계획</h3>
+<p><b>기준 가정:</b> 월 매출 3,000만 원 시작 · 월 성장률 12% · 매출총이익률 75%(원가율 25%) · 고정비 8,000만 원 · 개발자 3명 4개월차 채용(월 2,100만 원) · 시작 현금 6.0억</p>
+<hr>
+<h4>핵심 지표</h4>
+<table><thead><tr><th>항목</th><th>수치</th></tr></thead><tbody>
+<tr><td><b>런웨이</b></td><td><b>11.7개월</b> (12개월차 중순 소진)</td></tr>
+<tr><td><b>현금 저점</b></td><td><b>-2,220만 원 / 14개월차</b> (무조달 기준)</td></tr>
+<tr><td><b>필요 조달액</b></td><td><b>최소 2,200만 원 · 권장 1억 원</b></td></tr>
+<tr><td><b>손익분기(BEP)</b></td><td><b>14.3개월차</b> (흑자 전환 15개월차)</td></tr>
+<tr><td>현금흐름 자력 회복</td><td>16개월차</td></tr>
+</tbody></table>
+<hr>
+<h4>1. 런웨이 — 11.7개월</h4>
+<p>시작 현금 6.0억으로 11개월차 말 잔고 1,670만 원, 12개월차 약 22일 시점에 소진됩니다.</p>
+<p>12개월 누적: 매출 7.24억 · 매출총이익 5.43억 · 고정비 11.49억 → <b>순소진 5.06억</b></p>
+<h4>2. 현금 저점 — 14개월차</h4>
+<table><thead><tr><th>구분</th><th>저점 시점</th><th>저점 잔고</th></tr></thead><tbody>
+<tr><td>무조달</td><td>14개월차</td><td><b>-2,220만 원</b></td></tr>
+<tr><td>1억 조달 시</td><td>14개월차</td><td><b>+7,780만 원</b></td></tr>
+</tbody></table>
+<p>12→14개월차 구간이 최대 압박 구간이며, 15개월차부터 월 현금흐름이 플러스로 전환되어 저점을 지납니다.</p>
+<h4>3. 필요 조달액 — 권장 1억 원</h4>
+<ul>
+<li><b>최소 필요액 2,220만 원</b> — BEP까지의 누적 부족분</li>
+<li><b>권장 1억 원</b> — 12~16개월 구간을 잔고 0 근처로 운영하는 리스크를 제거하고, 성장률 둔화 시나리오까지 흡수</li>
+<li><b>조달 완료 목표 시점: 11개월차 이전</b></li>
+</ul>
+<p>조달 규모가 작다는 점이 이 계획의 강점입니다. 1억으로 BEP를 넘겨 자력 성장 구간에 진입합니다.</p>
+<h4>4. 손익분기 — 14.3개월차</h4>
+<p>매출총이익이 고정비 1억 100만 원을 넘어서는 시점입니다. 해당 월 매출은 약 1.35억 원.</p>
+<table><thead><tr><th>단계</th><th>시점</th></tr></thead><tbody>
+<tr><td>월 흑자 전환</td><td>15개월차</td></tr>
+<tr><td>누적 현금 플러스 복귀</td><td>16개월차</td></tr>
+</tbody></table>
+<hr>
+<h4>민감도</h4>
+<table><thead><tr><th>월 성장률</th><th>현금 소진</th><th>BEP</th></tr></thead><tbody>
+<tr><td>15%</td><td>13개월차</td><td>12.0개월차</td></tr>
+<tr><td><b>12% (기준)</b></td><td><b>12개월차</b></td><td><b>14.3개월차</b></td></tr>
+<tr><td>8%</td><td>10개월차</td><td>19.9개월차</td></tr>
+<tr><td>5%</td><td>8개월차</td><td>후반</td></tr>
+</tbody></table>
+<p><b>12개월 자력 생존 임계 성장률은 월 12.2%</b>입니다. 기준 시나리오가 이 경계에 근접해 있어, 조달은 선택이 아니라 전제입니다.</p>
+<hr>
+<h4>리스크 및 대응</h4>
+<table><thead><tr><th>리스크</th><th>영향</th><th>대응</th></tr></thead><tbody>
+<tr><td>성장률 8%로 둔화</td><td>소진 2개월 조기화</td><td>8개월차 실적을 트리거로 채용 속도 조절</td></tr>
+<tr><td>4대보험·퇴직충당 미반영</td><td>소진 1개월 조기화</td><td>1인당 실질 800만 원으로 재산정 필요</td></tr>
+<tr><td>고정비 8,000만 원 고정 가정</td><td>BEP 지연</td><td>매출 3.5배 성장 구간의 인프라·인건비 증가 별도 검토</td></tr>
+<tr><td>매출 회수 지연 미반영</td><td>저점 심화</td><td>실제 입금 주기 반영 시 재계산</td></tr>
+</tbody></table>
+<p><b>모니터링 트리거:</b> 8개월차 실제 성장률 10% 미만 → 추가 채용 중단 및 조달 착수 (해당 시점 잔고 8,650만 원)</p>
+<hr>
+<h4>두 가지 짚어둘 점</h4>
+<p><b>1. 이 모델은 개발자 3명의 매출 기여를 0으로 잡았습니다.</b> 채용 목적이 성장률 제고라면 실제 결과는 이보다 낫습니다. 보수적 하한선으로 보시면 됩니다. IR에서는 이 점을 명시하는 편이 신뢰도에 유리합니다.</p>
+<p><b>2. 고정비 불변 가정이 가장 낙관적인 부분입니다.</b> 투자자가 가장 먼저 지적할 지점이므로, 12개월차 인건비·인프라 계획을 별도 슬라이드로 준비하시길 권합니다.</p>
+<hr>
+<p>필요하시면 ① 4대보험·퇴직충당 반영 버전, ② 채용 2명 축소안, ③ 원가율 20% 개선안을 나란히 놓은 비교표로도 만들어 드리겠습니다. Slack 캔버스나 채널 공유가 필요하시면 말씀해 주세요 — 지금은 여기에만 작성해 두었습니다.</p></div>
+          <a class="src" href="assets/transcripts/case-d-off.txt">원문 case-d-off.txt (5턴 전체)</a>
+        </div>
+        <div class="col after" data-pane="after">
+          <div class="col-head">fintool · 5턴 IR 요약</div>
+          <div class="chat"><h3>IR 요약 — 재무 하이라이트</h3>
+<p><b>작성 기준일 2026-08-23 · 모델 시작 2026-09 · 통화 KRW</b></p>
+<hr>
+<h4>핵심 4지표 (현재 계획 = 미조달 기준)</h4>
+<table><thead><tr><th>지표</th><th>값</th></tr></thead><tbody>
+<tr><td><b>런웨이</b></td><td><b>11개월</b> — 현금 소진 <b>2027-08</b></td></tr>
+<tr><td><b>현금 저점</b></td><td><b>−22,166,448원</b> (2027-10, 최대 누적 부족액)</td></tr>
+<tr><td><b>필요 조달액</b></td><td><b>5억 원</b> (권장 Ask) / 최소 브리지 2,300만 원</td></tr>
+<tr><td><b>손익분기</b></td><td><b>2027-11</b> (영업 15개월 차, 월 매출 1.47억 시점)</td></tr>
+</tbody></table>
+<hr>
+<h4>1. 런웨이</h4>
+<p>기초 현금 6억 원으로 <b>11개월</b>을 버틴다. 2027-08에 현금이 마이너스로 전환된다(엔진 경고: <code>runway_exhausted</code>).</p>
+<table><thead><tr><th>시점</th><th>기말 현금</th></tr></thead><tbody>
+<tr><td>2026-09 (시작)</td><td>542,500,000</td></tr>
+<tr><td>2027-01</td><td>300,939,066</td></tr>
+<tr><td>2027-04</td><td>131,743,095</td></tr>
+<tr><td>2027-07</td><td>16,728,122</td></tr>
+<tr><td><b>2027-08</b></td><td><b>−6,004,503</b> ← 소진</td></tr>
+</tbody></table>
+<h4>2. 현금 저점</h4>
+<p>저점은 소진 시점이 아니라 <b>손익분기 직전인 2027-10</b>에 온다. 최대 누적 부족액 <b>22,166,448원</b>. 이후 흑자 전환으로 자력 회복한다.</p>
+<table><thead><tr><th>월</th><th>기말 현금</th><th>EBITDA</th></tr></thead><tbody>
+<tr><td>2027-08</td><td>−6,004,503</td><td>−22,732,625</td></tr>
+<tr><td>2027-09</td><td>−19,345,043</td><td>−13,340,540</td></tr>
+<tr><td><b>2027-10</b></td><td><b>−22,166,448</b></td><td>−2,821,405</td></tr>
+<tr><td>2027-11</td><td>−13,206,421</td><td>+8,960,027 ← 흑자 전환</td></tr>
+<tr><td>2027-12</td><td>+8,948,809</td><td>+22,155,230</td></tr>
+</tbody></table>
+<h4>3. 필요 조달액</h4>
+<p><b>Ask: 5억 원 (2027-01 클로징 목표)</b></p>
+<table><thead><tr><th>항목</th><th>금액</th><th>근거</th></tr></thead><tbody>
+<tr><td>최소 브리지</td><td>22,166,448</td><td>최대 누적 부족액. 생존 최소선, 버퍼 0</td></tr>
+<tr><td><b>권장 Ask</b></td><td><b>500,000,000</b></td><td>아래 조달 케이스 검증치</td></tr>
+</tbody></table>
+<p>5억 조달 시 검증 결과:</p>
+<ul>
+<li>런웨이: <b>24개월 초과</b> (<code>exhaustion_month: null</code>)</li>
+<li>조달 후 현금 저점: <b>477,833,552원</b> (2027-10) — 음수 구간 완전 제거</li>
+<li>24개월 기말 현금: <b>1,397,492,924원</b></li>
+<li>손익분기: 2027-11 (조달과 무관, 영업 구조로 결정)</li>
+</ul>
+<p>&gt; 최소 브리지 2,200만 원은 산술적 생존선일 뿐 IR Ask로 쓸 수 없다. 성장률이 12%에서 조금만 흔들려도 즉시 붕괴하기 때문이다. 5억은 손익분기(2027-11) 통과 후에도 4.8억이 남아, <b>가정이 틀려도 재협상 없이 한 사이클을 더 돌릴 수 있는 최소 규모</b>다.</p>
+<p><b>타이밍</b>: 현금 3억이 남는 <b>2027-01이 클로징 데드라인</b>이다. 실무상 라운드에 4~6개월이 걸리므로 <b>2026년 9~10월 착수</b>해야 한다.</p>
+<h4>4. 손익분기</h4>
+<p><b>2027-11, 영업 15개월 차.</b></p>
+<ul>
+<li>손익분기 요구 매출: <b>월 134,666,667원</b> (= 고정비 1.01억 ÷ 매출총이익률 75%)</li>
+<li>도달 시점 매출: 146,613,369원 → EBITDA +8,960,027원</li>
+<li>이후 24개월 차(2028-08) EBITDA <b>203,927,813원</b>, EBITDA 마진 50%</li>
+</ul>
+<h4>재무 가정</h4>
+<table><thead><tr><th>항목</th><th>값</th><th>비고</th></tr></thead><tbody>
+<tr><td>시작 월 매출</td><td>30,000,000원</td><td>2026-09</td></tr>
+<tr><td>월 성장률</td><td>12%</td><td>30%에서 보수적으로 하향</td></tr>
+<tr><td>원가율</td><td>25%</td><td>매출총이익률 75%, 전 기간 고정</td></tr>
+<tr><td>고정비</td><td>80,000,000원 → 101,000,000원</td><td>2026-12부터 개발자 3명(1인 700만) 반영</td></tr>
+<tr><td>기초 현금</td><td>600,000,000원</td><td></td></tr>
+<tr><td>법인세</td><td>0</td><td>누적 결손 구간</td></tr>
+</tbody></table>
+<p>출처: 창업자 인터뷰 2026-08-23.</p>
+<h4>감도 — 투자자가 물어볼 지점</h4>
+<table><thead><tr><th>변수</th><th>영향</th></tr></thead><tbody>
+<tr><td>성장률 12% → 30%</td><td>손익분기 2027-01로 10개월 단축, 조달 불필요</td></tr>
+<tr><td>원가율 25% → 15%</td><td>요구 매출 1.19억으로 하락, 손익분기 약 2개월 단축</td></tr>
+<tr><td>인건비 700만 → 850만(4대보험 포함)</td><td>소진 약 1개월 조기화</td></tr>
+<tr><td>채용 2027-03 연기</td><td>6,300만 절감, 소진 2~3개월 지연 (근본 해결 아님)</td></tr>
+</tbody></table>
+<p><b>이 모델의 방어선은 하나다: 월 12% 성장이 15개월간 유지되는지.</b> 원가율과 인건비는 관리 가능한 변수지만, 성장률이 10% 아래로 내려가면 손익분기가 24개월 밖으로 밀리고 5억으로도 부족해진다.</p>
+<hr>
+<h5>검증 해시</h5>
+<table><thead><tr><th>케이스</th><th>calculation_hash</th></tr></thead><tbody>
+<tr><td>미조달 24개월 (기준선)</td><td><code>sha256:b2970f96854ef5c144e414df88611e6104eb6493fc82f06313111e615799996d</code></td></tr>
+<tr><td>5억 조달 24개월</td><td><code>sha256:af5adc45393ffb492e5ed3c9c688c54005ad3afc3b633a40632116a124bbeb52</code></td></tr>
+<tr><td>12개월 원안</td><td><code>sha256:68d3da702a9a8bf060c3381d2d15da43b58696578524bffd360dee09e583968f</code></td></tr>
+</tbody></table>
+<hr>
+<p><b>참고</b>: 원 질문 범위가 12개월이었으나, 12개월 horizon 안에서는 손익분기에 도달하지 않아 필요 조달액을 산출할 수 없었다. 24개월로 확장해 최대 부족액과 실제 손익분기 월을 뽑았고, 조달 케이스를 별도 검증했다.</p>
+<p>이 내용을 <code>pitch-deck</code> 또는 <code>investor-update</code> 레시피로 HTML IR 문서화할 수 있다. 필요하면 캡테이블(희석률 포함)까지 붙여서 만들겠다.</p></div>
+          <a class="src" href="assets/transcripts/case-d-on.txt">원문 case-d-on.txt (5턴 전체)</a>
         </div>
       </div>
     </article>
@@ -497,7 +666,7 @@ PV(TV) = 229.50 / 1.61051 = 142.50억</pre>
    "value": 10764990730.9, "bond_floor": 8317567484.3,
    "component_method_value": 10429314832.2, …}}</pre></div>
       <div class="tcard"><b>계산 해시</b><p>월별 재무모델(<code>financial-model</code>)과 캡테이블은 정규화 입력·월별 결과·엔진 버전을 SHA-256으로 묶는다. 같은 입력·같은 엔진이면 같은 해시. 해시는 자르지 않는다.</p><pre>"calculation_hash":
-"sha256:7975344eb576343854747676d6518d56b17b319c0cc386e5de06946d6210002e"</pre></div>
+"sha256:cc507f52611dbc0ed7f7700204a8c3ecb7da02ca5d2efa0ed5f268844c064a1e"</pre></div>
       <div class="tcard"><b>40개 계산 커맨드, 하나의 엔진</b><p>상환표·TVM·WACC·DCF·전환사채·몬테카를로·캡테이블까지 40개 커맨드가 단일 Go 바이너리에서 결정론적으로 실행된다. MCP는 <code>fintool_catalog</code>·<code>fintool_run</code> 두 도구만 노출한다.</p></div>
     </div>
   </section>

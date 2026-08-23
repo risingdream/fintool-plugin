@@ -1,19 +1,16 @@
 # prompt
 월 매출 3천만 원, 월 30% 성장, 고정비 8천만 원, 현금 6억. 런웨이와 다음 라운드 필요액은?
 
-# run: plugin ON (fintool@fintool-plugin 0.5.2) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-opus-5[1m] · 2026-08-23
+# run: plugin ON (fintool@fintool-plugin 0.5.4) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-opus-5 · 2026-08-23
 
 [tool_use Skill]
-{"skill":"fintool:startup-finance","args":"월 매출 3천만원, MoM 30% 성장, 고정비 월 8천만원, 현금 6억. 런웨이 및 다음 라운드 필요액 산출"}
+{"skill":"fintool:startup-finance","args":"월 매출 3천만 원, 월 30% 성장, 고정비 8천만 원, 현금 6억 — 런웨이와 다음 라운드 필요액"}
 
 [tool_result]
 Launching skill: fintool:startup-finance
 
-[assistant]
-fintool MCP로 계산하겠습니다. 입력값 그대로의 Base와, 그 가정이 깨지는 두 가지 케이스를 함께 돌립니다.
-
 [tool_use mcp__plugin_fintool_fintool__fintool_run]
-{"tool":"financial-model","flags":{"summary":true,"spec":"{\"version\":\"financial-model/v2\",\"start_month\":\"2026-09\",\"months\":18,\"currency\":\"KRW\",\"opening_balance_sheet\":{\"cash\":600000000,\"accounts_receivable\":0,\"inventory\":0,\"other_current_assets\":0,\"ppe_net\":0,\"accounts_payable\":0,\"deferred_revenue\":0,\"other_current_liabilities\":0,\"debt\":0,\"contributed_capital\":600000000,\"retained_earnings\":0},\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249829,2595124777],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"accounts_payable\":[0],\"deferred_revenue\":[0],\"other_current_liabilities\":[0]},\"ppe\":{\"capex\":[0],\"existing_depreciation_amortization\":[0],\"useful_life_months\":60},\"debt\":{\"draws\":[0],\"repayments\":[0],\"annual_interest_rate\":[0]},\"equity\":{\"raises\":[0],\"dividends\":[0]},\"tax\":{\"policy\":\"rate\",\"rate\":0},\"assumptions\":[{\"id\":\"founder_input\",\"description\":\"창업자 인터뷰 2026-08-23: 월매출 3천만, MoM 30% 고정, 고정비 월 8천만 고정, 현금 6억, COGS 0, 세금 0\"}]}"}}
+{"tool":"financial-model","flags":{"summary":true,"spec":"{\"version\":\"financial-model/v2\",\"start_month\":\"2026-09\",\"months\":12,\"currency\":\"KRW\",\"opening_balance_sheet\":{\"cash\":600000000,\"accounts_receivable\":0,\"inventory\":0,\"other_current_assets\":0,\"ppe_net\":0,\"accounts_payable\":0,\"deferred_revenue\":0,\"other_current_liabilities\":0,\"debt\":0,\"contributed_capital\":600000000,\"retained_earnings\":0},\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"accounts_payable\":[0],\"deferred_revenue\":[0],\"other_current_liabilities\":[0]},\"ppe\":{\"capex\":[0],\"existing_depreciation_amortization\":[0],\"useful_life_months\":60},\"debt\":{\"draws\":[0],\"repayments\":[0],\"annual_interest_rate\":[0]},\"equity\":{\"raises\":[0],\"dividends\":[0]},\"tax\":{\"policy\":\"rate\",\"rate\":0},\"assumptions\":[{\"id\":\"base_case\",\"description\":\"창업자 인터뷰 2026-08-23: 월매출 3천만, 월 30% 성장, 고정비 8천만 유지, 기초현금 6억\"}]}"}}
 
 [tool_result]
 {
@@ -118,64 +115,16 @@ fintool MCP로 계산하겠습니다. 입력값 그대로의 Base와, 그 가정
         "net_income": 457648118,
         "ending_cash": 1869808512,
         "ending_debt": 0
-      },
-      {
-        "month": "2027-09",
-        "revenue": 698942554,
-        "ebitda": 618942554,
-        "net_income": 618942554,
-        "ending_cash": 2488751066,
-        "ending_debt": 0
-      },
-      {
-        "month": "2027-10",
-        "revenue": 908625320,
-        "ebitda": 828625320,
-        "net_income": 828625320,
-        "ending_cash": 3317376386,
-        "ending_debt": 0
-      },
-      {
-        "month": "2027-11",
-        "revenue": 1181212916,
-        "ebitda": 1101212916,
-        "net_income": 1101212916,
-        "ending_cash": 4418589302,
-        "ending_debt": 0
-      },
-      {
-        "month": "2027-12",
-        "revenue": 1535576791,
-        "ebitda": 1455576791,
-        "net_income": 1455576791,
-        "ending_cash": 5874166093,
-        "ending_debt": 0
-      },
-      {
-        "month": "2028-01",
-        "revenue": 1996249829,
-        "ebitda": 1916249829,
-        "net_income": 1916249829,
-        "ending_cash": 7790415922,
-        "ending_debt": 0
-      },
-      {
-        "month": "2028-02",
-        "revenue": 2595124777,
-        "ebitda": 2515124777,
-        "net_income": 2515124777,
-        "ending_cash": 10305540699,
-        "ending_debt": 0
       }
     ],
     "summary": {
-      "revenue_total": 11145540699,
-      "ebitda_total": 9705540699,
-      "net_income_total": 9705540699,
-      "ending_cash": 10305540699,
+      "revenue_total": 2229808512,
+      "ebitda_total": 1269808512,
+      "net_income_total": 1269808512,
+      "ending_cash": 1869808512,
       "ending_debt": 0,
       "runway": {
-        "months": 18,
+        "months": 12,
         "exhaustion_month": null,
         "exceeds_horizon": true
       },
@@ -193,7 +142,7 @@ fintool MCP로 계산하겠습니다. 입력값 그대로의 Base와, 그 가정
         "semantic_id": "fm.v2.funding.runway_months"
       }
     ],
-    "calculation_hash": "sha256:7975344eb576343854747676d6518d56b17b319c0cc386e5de06946d6210002e",
+    "calculation_hash": "sha256:cc507f52611dbc0ed7f7700204a8c3ecb7da02ca5d2efa0ed5f268844c064a1e",
     "omitted": [
       "statements",
       "schedules",
@@ -206,11 +155,202 @@ fintool MCP로 계산하겠습니다. 입력값 그대로의 Base와, 그 가정
 }
 
 
-[assistant]
-Base 결과가 "조달 불필요"로 나왔으니, 그 결론이 얼마나 취약한지 두 케이스로 검증합니다.
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"summary":true,"spec":"{\"version\":\"financial-model/v2\",\"start_month\":\"2026-09\",\"months\":18,\"currency\":\"KRW\",\"opening_balance_sheet\":{\"cash\":600000000,\"accounts_receivable\":0,\"inventory\":0,\"other_current_assets\":0,\"ppe_net\":0,\"accounts_payable\":0,\"deferred_revenue\":0,\"other_current_liabilities\":0,\"debt\":0,\"contributed_capital\":600000000,\"retained_earnings\":0},\"operating\":{\"revenue\":[30000000,33000000,36300000,39930000,43923000,48315300,53146830,58461513,64307664,70738431,77812274,85593501,94152851,103568136,113924950,125317445,137849190,151634109],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"accounts_payable\":[0],\"deferred_revenue\":[0],\"other_current_liabilities\":[0]},\"ppe\":{\"capex\":[0],\"existing_depreciation_amortization\":[0],\"useful_life_months\":60},\"debt\":{\"draws\":[0],\"repayments\":[0],\"annual_interest_rate\":[0]},\"equity\":{\"raises\":[0],\"dividends\":[0]},\"tax\":{\"policy\":\"rate\",\"rate\":0},\"assumptions\":[{\"id\":\"bear_case\",\"description\":\"기본값 제안, 창업자 승인 필요: 성장률 30%→10% 둔화, 고정비 8천만 유지\"}]}"}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "financial-model",
+  "data": {
+    "schema_version": "financial-model/v2",
+    "engine_version": "financial-model-engine/2.0.0",
+    "monthly": [
+      {
+        "month": "2026-09",
+        "revenue": 30000000,
+        "ebitda": -50000000,
+        "net_income": -50000000,
+        "ending_cash": 550000000,
+        "ending_debt": 0
+      },
+      {
+        "month": "2026-10",
+        "revenue": 33000000,
+        "ebitda": -47000000,
+        "net_income": -47000000,
+        "ending_cash": 503000000,
+        "ending_debt": 0
+      },
+      {
+        "month": "2026-11",
+        "revenue": 36300000,
+        "ebitda": -43700000,
+        "net_income": -43700000,
+        "ending_cash": 459300000,
+        "ending_debt": 0
+      },
+      {
+        "month": "2026-12",
+        "revenue": 39930000,
+        "ebitda": -40070000,
+        "net_income": -40070000,
+        "ending_cash": 419230000,
+        "ending_debt": 0
+      },
+      {
+        "month": "2027-01",
+        "revenue": 43923000,
+        "ebitda": -36077000,
+        "net_income": -36077000,
+        "ending_cash": 383153000,
+        "ending_debt": 0
+      },
+      {
+        "month": "2027-02",
+        "revenue": 48315300,
+        "ebitda": -31684700,
+        "net_income": -31684700,
+        "ending_cash": 351468300,
+        "ending_debt": 0
+      },
+      {
+        "month": "2027-03",
+        "revenue": 53146830,
+        "ebitda": -26853170,
+        "net_income": -26853170,
+        "ending_cash": 324615130,
+        "ending_debt": 0
+      },
+      {
+        "month": "2027-04",
+        "revenue": 58461513,
+        "ebitda": -21538487,
+        "net_income": -21538487,
+        "ending_cash": 303076643,
+        "ending_debt": 0
+      },
+      {
+        "month": "2027-05",
+        "revenue": 64307664,
+        "ebitda": -15692336,
+        "net_income": -15692336,
+        "ending_cash": 287384307,
+        "ending_debt": 0
+      },
+      {
+        "month": "2027-06",
+        "revenue": 70738431,
+        "ebitda": -9261569,
+        "net_income": -9261569,
+        "ending_cash": 278122738,
+        "ending_debt": 0
+      },
+      {
+        "month": "2027-07",
+        "revenue": 77812274,
+        "ebitda": -2187726,
+        "net_income": -2187726,
+        "ending_cash": 275935012,
+        "ending_debt": 0
+      },
+      {
+        "month": "2027-08",
+        "revenue": 85593501,
+        "ebitda": 5593501,
+        "net_income": 5593501,
+        "ending_cash": 281528513,
+        "ending_debt": 0
+      },
+      {
+        "month": "2027-09",
+        "revenue": 94152851,
+        "ebitda": 14152851,
+        "net_income": 14152851,
+        "ending_cash": 295681364,
+        "ending_debt": 0
+      },
+      {
+        "month": "2027-10",
+        "revenue": 103568136,
+        "ebitda": 23568136,
+        "net_income": 23568136,
+        "ending_cash": 319249500,
+        "ending_debt": 0
+      },
+      {
+        "month": "2027-11",
+        "revenue": 113924950,
+        "ebitda": 33924950,
+        "net_income": 33924950,
+        "ending_cash": 353174450,
+        "ending_debt": 0
+      },
+      {
+        "month": "2027-12",
+        "revenue": 125317445,
+        "ebitda": 45317445,
+        "net_income": 45317445,
+        "ending_cash": 398491895,
+        "ending_debt": 0
+      },
+      {
+        "month": "2028-01",
+        "revenue": 137849190,
+        "ebitda": 57849190,
+        "net_income": 57849190,
+        "ending_cash": 456341085,
+        "ending_debt": 0
+      },
+      {
+        "month": "2028-02",
+        "revenue": 151634109,
+        "ebitda": 71634109,
+        "net_income": 71634109,
+        "ending_cash": 527975194,
+        "ending_debt": 0
+      }
+    ],
+    "summary": {
+      "revenue_total": 1367975194,
+      "ebitda_total": -72024806,
+      "net_income_total": -72024806,
+      "ending_cash": 527975194,
+      "ending_debt": 0,
+      "runway": {
+        "months": 18,
+        "exhaustion_month": null,
+        "exceeds_horizon": true
+      },
+      "break_even": {
+        "month": "2027-08",
+        "first_profitable_month": "2027-08"
+      }
+    },
+    "diagnostics": [
+      {
+        "severity": "info",
+        "kind": "runway_exceeds_horizon",
+        "path": "$.summary.runway",
+        "message": "기말현금이 모델 horizon 안에서 음수로 전환되지 않아 runway가 horizon을 초과합니다",
+        "semantic_id": "fm.v2.funding.runway_months"
+      }
+    ],
+    "calculation_hash": "sha256:7466ab549d7edb9165c493e9ee38a845b359db2033d73e003fc9e6d7266a96f5",
+    "omitted": [
+      "statements",
+      "schedules",
+      "inputs",
+      "dependencies",
+      "trace",
+      "invariant_checks"
+    ]
+  }
+}
+
 
 [tool_use mcp__plugin_fintool_fintool__fintool_run]
-{"tool":"financial-model","flags":{"summary":true,"spec":"{\"version\":\"financial-model/v2\",\"start_month\":\"2026-09\",\"months\":18,\"currency\":\"KRW\",\"opening_balance_sheet\":{\"cash\":600000000,\"accounts_receivable\":0,\"inventory\":0,\"other_current_assets\":0,\"ppe_net\":0,\"accounts_payable\":0,\"deferred_revenue\":0,\"other_current_liabilities\":0,\"debt\":0,\"contributed_capital\":600000000,\"retained_earnings\":0},\"operating\":{\"revenue\":[30000000,39000000,48945000,59553819,70525865,81570353,92428311,102886100,112780982,122000508,130477701,138184016,145121268,151313960,156802366,161636723,165872616,169567480],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"accounts_payable\":[0],\"deferred_revenue\":[0],\"other_current_liabilities\":[0]},\"ppe\":{\"capex\":[0],\"existing_depreciation_amortization\":[0],\"useful_life_months\":60},\"debt\":{\"draws\":[0],\"repayments\":[0],\"annual_interest_rate\":[0]},\"equity\":{\"raises\":[0],\"dividends\":[0]},\"tax\":{\"policy\":\"rate\",\"rate\":0},\"assumptions\":[{\"id\":\"growth_decay\",\"description\":\"Bear 가정 2026-08-23: MoM 성장률이 30%에서 매월 15%씩 감쇠(30%→2.2%). 고정비는 월 8천만 고정 유지. 기본값 제안, 창업자 승인 필요\"}]}"}}
+{"tool":"financial-model","flags":{"summary":true,"spec":"{\"version\":\"financial-model/v2\",\"start_month\":\"2026-09\",\"months\":12,\"currency\":\"KRW\",\"opening_balance_sheet\":{\"cash\":600000000,\"accounts_receivable\":0,\"inventory\":0,\"other_current_assets\":0,\"ppe_net\":0,\"accounts_payable\":0,\"deferred_revenue\":0,\"other_current_liabilities\":0,\"debt\":0,\"contributed_capital\":600000000,\"retained_earnings\":0},\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118],\"cogs\":[0],\"operating_expenses\":[80000000,92000000,105800000,121670000,139920500,160908575,185044861,212801590,244721829,281430103,323644619,372191312]},\"working_capital\":{\"accounts_receivable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"accounts_payable\":[0],\"deferred_revenue\":[0],\"other_current_liabilities\":[0]},\"ppe\":{\"capex\":[0],\"existing_depreciation_amortization\":[0],\"useful_life_months\":60},\"debt\":{\"draws\":[0],\"repayments\":[0],\"annual_interest_rate\":[0]},\"equity\":{\"raises\":[0],\"dividends\":[0]},\"tax\":{\"policy\":\"rate\",\"rate\":0},\"assumptions\":[{\"id\":\"opex_growth_case\",\"description\":\"기본값 제안, 창업자 승인 필요: 월 30% 성장을 받치기 위해 고정비가 월 15%씩 증가\"}]}"}}
 
 [tool_result]
 {
@@ -231,154 +371,106 @@ Base 결과가 "조달 불필요"로 나왔으니, 그 결론이 얼마나 취�
       {
         "month": "2026-10",
         "revenue": 39000000,
-        "ebitda": -41000000,
-        "net_income": -41000000,
-        "ending_cash": 509000000,
+        "ebitda": -53000000,
+        "net_income": -53000000,
+        "ending_cash": 497000000,
         "ending_debt": 0
       },
       {
         "month": "2026-11",
-        "revenue": 48945000,
-        "ebitda": -31055000,
-        "net_income": -31055000,
-        "ending_cash": 477945000,
+        "revenue": 50700000,
+        "ebitda": -55100000,
+        "net_income": -55100000,
+        "ending_cash": 441900000,
         "ending_debt": 0
       },
       {
         "month": "2026-12",
-        "revenue": 59553819,
-        "ebitda": -20446181,
-        "net_income": -20446181,
-        "ending_cash": 457498819,
+        "revenue": 65910000,
+        "ebitda": -55760000,
+        "net_income": -55760000,
+        "ending_cash": 386140000,
         "ending_debt": 0
       },
       {
         "month": "2027-01",
-        "revenue": 70525865,
-        "ebitda": -9474135,
-        "net_income": -9474135,
-        "ending_cash": 448024684,
+        "revenue": 85683000,
+        "ebitda": -54237500,
+        "net_income": -54237500,
+        "ending_cash": 331902500,
         "ending_debt": 0
       },
       {
         "month": "2027-02",
-        "revenue": 81570353,
-        "ebitda": 1570353,
-        "net_income": 1570353,
-        "ending_cash": 449595037,
+        "revenue": 111387900,
+        "ebitda": -49520675,
+        "net_income": -49520675,
+        "ending_cash": 282381825,
         "ending_debt": 0
       },
       {
         "month": "2027-03",
-        "revenue": 92428311,
-        "ebitda": 12428311,
-        "net_income": 12428311,
-        "ending_cash": 462023348,
+        "revenue": 144804270,
+        "ebitda": -40240591,
+        "net_income": -40240591,
+        "ending_cash": 242141234,
         "ending_debt": 0
       },
       {
         "month": "2027-04",
-        "revenue": 102886100,
-        "ebitda": 22886100,
-        "net_income": 22886100,
-        "ending_cash": 484909448,
+        "revenue": 188245551,
+        "ebitda": -24556039,
+        "net_income": -24556039,
+        "ending_cash": 217585195,
         "ending_debt": 0
       },
       {
         "month": "2027-05",
-        "revenue": 112780982,
-        "ebitda": 32780982,
-        "net_income": 32780982,
-        "ending_cash": 517690430,
+        "revenue": 244719216,
+        "ebitda": -2613,
+        "net_income": -2613,
+        "ending_cash": 217582582,
         "ending_debt": 0
       },
       {
         "month": "2027-06",
-        "revenue": 122000508,
-        "ebitda": 42000508,
-        "net_income": 42000508,
-        "ending_cash": 559690938,
+        "revenue": 318134981,
+        "ebitda": 36704878,
+        "net_income": 36704878,
+        "ending_cash": 254287460,
         "ending_debt": 0
       },
       {
         "month": "2027-07",
-        "revenue": 130477701,
-        "ebitda": 50477701,
-        "net_income": 50477701,
-        "ending_cash": 610168639,
+        "revenue": 413575476,
+        "ebitda": 89930857,
+        "net_income": 89930857,
+        "ending_cash": 344218317,
         "ending_debt": 0
       },
       {
         "month": "2027-08",
-        "revenue": 138184016,
-        "ebitda": 58184016,
-        "net_income": 58184016,
-        "ending_cash": 668352655,
-        "ending_debt": 0
-      },
-      {
-        "month": "2027-09",
-        "revenue": 145121268,
-        "ebitda": 65121268,
-        "net_income": 65121268,
-        "ending_cash": 733473923,
-        "ending_debt": 0
-      },
-      {
-        "month": "2027-10",
-        "revenue": 151313960,
-        "ebitda": 71313960,
-        "net_income": 71313960,
-        "ending_cash": 804787883,
-        "ending_debt": 0
-      },
-      {
-        "month": "2027-11",
-        "revenue": 156802366,
-        "ebitda": 76802366,
-        "net_income": 76802366,
-        "ending_cash": 881590249,
-        "ending_debt": 0
-      },
-      {
-        "month": "2027-12",
-        "revenue": 161636723,
-        "ebitda": 81636723,
-        "net_income": 81636723,
-        "ending_cash": 963226972,
-        "ending_debt": 0
-      },
-      {
-        "month": "2028-01",
-        "revenue": 165872616,
-        "ebitda": 85872616,
-        "net_income": 85872616,
-        "ending_cash": 1049099588,
-        "ending_debt": 0
-      },
-      {
-        "month": "2028-02",
-        "revenue": 169567480,
-        "ebitda": 89567480,
-        "net_income": 89567480,
-        "ending_cash": 1138667068,
+        "revenue": 537648118,
+        "ebitda": 165456806,
+        "net_income": 165456806,
+        "ending_cash": 509675123,
         "ending_debt": 0
       }
     ],
     "summary": {
-      "revenue_total": 1978667068,
-      "ebitda_total": 538667068,
-      "net_income_total": 538667068,
-      "ending_cash": 1138667068,
+      "revenue_total": 2229808512,
+      "ebitda_total": -90324877,
+      "net_income_total": -90324877,
+      "ending_cash": 509675123,
       "ending_debt": 0,
       "runway": {
-        "months": 18,
+        "months": 12,
         "exhaustion_month": null,
         "exceeds_horizon": true
       },
       "break_even": {
-        "month": "2027-02",
-        "first_profitable_month": "2027-02"
+        "month": "2027-06",
+        "first_profitable_month": "2027-06"
       }
     },
     "diagnostics": [
@@ -390,7 +482,7 @@ Base 결과가 "조달 불필요"로 나왔으니, 그 결론이 얼마나 취�
         "semantic_id": "fm.v2.funding.runway_months"
       }
     ],
-    "calculation_hash": "sha256:d4e873cbfde96438b7421cbd10593a54ad698cab64b86d1edaf939367de031ed",
+    "calculation_hash": "sha256:bb16fb5107c5bb8c11871f5093e32bf1a1e94adb707628485182be64eadb6055",
     "omitted": [
       "statements",
       "schedules",
@@ -404,7 +496,7 @@ Base 결과가 "조달 불필요"로 나왔으니, 그 결론이 얼마나 취�
 
 
 [tool_use mcp__plugin_fintool_fintool__fintool_run]
-{"tool":"financial-model","flags":{"summary":true,"spec":"{\"version\":\"financial-model/v2\",\"start_month\":\"2026-09\",\"months\":18,\"currency\":\"KRW\",\"opening_balance_sheet\":{\"cash\":600000000,\"accounts_receivable\":0,\"inventory\":0,\"other_current_assets\":0,\"ppe_net\":0,\"accounts_payable\":0,\"deferred_revenue\":0,\"other_current_liabilities\":0,\"debt\":0,\"contributed_capital\":600000000,\"retained_earnings\":0},\"operating\":{\"revenue\":[30000000,39000000,48945000,59553819,70525865,81570353,92428311,102886100,112780982,122000508,130477701,138184016,145121268,151313960,156802366,161636723,165872616,169567480],\"cogs\":[7500000,9750000,12236250,14888455,17631466,20392588,23107078,25721525,28195246,30500127,32619425,34546004,36280317,37828490,39200592,40409181,41468154,42391870],\"operating_expenses\":[80000000,85600000,91592000,98003440,104863681,112204138,120058428,128462518,137454894,147076737,157372109,168388157,180175328,192787601,206282733,220722524,236173101,252705218]},\"working_capital\":{\"accounts_receivable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"accounts_payable\":[0],\"deferred_revenue\":[0],\"other_current_liabilities\":[0]},\"ppe\":{\"capex\":[0],\"existing_depreciation_amortization\":[0],\"useful_life_months\":60},\"debt\":{\"draws\":[0],\"repayments\":[0],\"annual_interest_rate\":[0]},\"equity\":{\"raises\":[0],\"dividends\":[0]},\"tax\":{\"policy\":\"rate\",\"rate\":0},\"assumptions\":[{\"id\":\"scaling_cost\",\"description\":\"현실형 가정 2026-08-23: Bear 매출 경로 + COGS 매출의 25% + 고정비 월 7% 증가(성장 지원 채용). 기본값 제안, 창업자 승인 필요\"}]}"}}
+{"tool":"financial-model","flags":{"summary":true,"spec":"{\"version\":\"financial-model/v2\",\"start_month\":\"2026-09\",\"months\":18,\"currency\":\"KRW\",\"opening_balance_sheet\":{\"cash\":600000000,\"accounts_receivable\":0,\"inventory\":0,\"other_current_assets\":0,\"ppe_net\":0,\"accounts_payable\":0,\"deferred_revenue\":0,\"other_current_liabilities\":0,\"debt\":0,\"contributed_capital\":600000000,\"retained_earnings\":0},\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124777],\"cogs\":[0],\"operating_expenses\":[80000000,96000000,115200000,138240000,165888000,199065600,238878720,286654464,343985357,412782428,495338914,594406697,713288036,855945643,1027134772,1232561726,1479074071,1774888885]},\"working_capital\":{\"accounts_receivable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"accounts_payable\":[0],\"deferred_revenue\":[0],\"other_current_liabilities\":[0]},\"ppe\":{\"capex\":[0],\"existing_depreciation_amortization\":[0],\"useful_life_months\":60},\"debt\":{\"draws\":[0],\"repayments\":[0],\"annual_interest_rate\":[0]},\"equity\":{\"raises\":[0],\"dividends\":[0]},\"tax\":{\"policy\":\"rate\",\"rate\":0},\"assumptions\":[{\"id\":\"aggressive_growth_case\",\"description\":\"기본값 제안, 창업자 승인 필요: 월 30% 성장을 18개월 지속하기 위해 조직/마케팅을 월 20%씩 확대\"}]}"}}
 
 [tool_result]
 {
@@ -417,162 +509,162 @@ Base 결과가 "조달 불필요"로 나왔으니, 그 결론이 얼마나 취�
       {
         "month": "2026-09",
         "revenue": 30000000,
-        "ebitda": -57500000,
-        "net_income": -57500000,
-        "ending_cash": 542500000,
+        "ebitda": -50000000,
+        "net_income": -50000000,
+        "ending_cash": 550000000,
         "ending_debt": 0
       },
       {
         "month": "2026-10",
         "revenue": 39000000,
-        "ebitda": -56350000,
-        "net_income": -56350000,
-        "ending_cash": 486150000,
+        "ebitda": -57000000,
+        "net_income": -57000000,
+        "ending_cash": 493000000,
         "ending_debt": 0
       },
       {
         "month": "2026-11",
-        "revenue": 48945000,
-        "ebitda": -54883250,
-        "net_income": -54883250,
-        "ending_cash": 431266750,
+        "revenue": 50700000,
+        "ebitda": -64500000,
+        "net_income": -64500000,
+        "ending_cash": 428500000,
         "ending_debt": 0
       },
       {
         "month": "2026-12",
-        "revenue": 59553819,
-        "ebitda": -53338076,
-        "net_income": -53338076,
-        "ending_cash": 377928674,
+        "revenue": 65910000,
+        "ebitda": -72330000,
+        "net_income": -72330000,
+        "ending_cash": 356170000,
         "ending_debt": 0
       },
       {
         "month": "2027-01",
-        "revenue": 70525865,
-        "ebitda": -51969282,
-        "net_income": -51969282,
-        "ending_cash": 325959392,
+        "revenue": 85683000,
+        "ebitda": -80205000,
+        "net_income": -80205000,
+        "ending_cash": 275965000,
         "ending_debt": 0
       },
       {
         "month": "2027-02",
-        "revenue": 81570353,
-        "ebitda": -51026373,
-        "net_income": -51026373,
-        "ending_cash": 274933019,
+        "revenue": 111387900,
+        "ebitda": -87677700,
+        "net_income": -87677700,
+        "ending_cash": 188287300,
         "ending_debt": 0
       },
       {
         "month": "2027-03",
-        "revenue": 92428311,
-        "ebitda": -50737195,
-        "net_income": -50737195,
-        "ending_cash": 224195824,
+        "revenue": 144804270,
+        "ebitda": -94074450,
+        "net_income": -94074450,
+        "ending_cash": 94212850,
         "ending_debt": 0
       },
       {
         "month": "2027-04",
-        "revenue": 102886100,
-        "ebitda": -51297943,
-        "net_income": -51297943,
-        "ending_cash": 172897881,
+        "revenue": 188245551,
+        "ebitda": -98408913,
+        "net_income": -98408913,
+        "ending_cash": -4196063,
         "ending_debt": 0
       },
       {
         "month": "2027-05",
-        "revenue": 112780982,
-        "ebitda": -52869158,
-        "net_income": -52869158,
-        "ending_cash": 120028723,
+        "revenue": 244719216,
+        "ebitda": -99266141,
+        "net_income": -99266141,
+        "ending_cash": -103462204,
         "ending_debt": 0
       },
       {
         "month": "2027-06",
-        "revenue": 122000508,
-        "ebitda": -55576356,
-        "net_income": -55576356,
-        "ending_cash": 64452367,
+        "revenue": 318134981,
+        "ebitda": -94647447,
+        "net_income": -94647447,
+        "ending_cash": -198109651,
         "ending_debt": 0
       },
       {
         "month": "2027-07",
-        "revenue": 130477701,
-        "ebitda": -59513833,
-        "net_income": -59513833,
-        "ending_cash": 4938534,
+        "revenue": 413575476,
+        "ebitda": -81763438,
+        "net_income": -81763438,
+        "ending_cash": -279873089,
         "ending_debt": 0
       },
       {
         "month": "2027-08",
-        "revenue": 138184016,
-        "ebitda": -64750145,
-        "net_income": -64750145,
-        "ending_cash": -59811611,
+        "revenue": 537648118,
+        "ebitda": -56758579,
+        "net_income": -56758579,
+        "ending_cash": -336631668,
         "ending_debt": 0
       },
       {
         "month": "2027-09",
-        "revenue": 145121268,
-        "ebitda": -71334377,
-        "net_income": -71334377,
-        "ending_cash": -131145988,
+        "revenue": 698942554,
+        "ebitda": -14345482,
+        "net_income": -14345482,
+        "ending_cash": -350977150,
         "ending_debt": 0
       },
       {
         "month": "2027-10",
-        "revenue": 151313960,
-        "ebitda": -79302131,
-        "net_income": -79302131,
-        "ending_cash": -210448119,
+        "revenue": 908625320,
+        "ebitda": 52679677,
+        "net_income": 52679677,
+        "ending_cash": -298297473,
         "ending_debt": 0
       },
       {
         "month": "2027-11",
-        "revenue": 156802366,
-        "ebitda": -88680959,
-        "net_income": -88680959,
-        "ending_cash": -299129078,
+        "revenue": 1181212916,
+        "ebitda": 154078144,
+        "net_income": 154078144,
+        "ending_cash": -144219329,
         "ending_debt": 0
       },
       {
         "month": "2027-12",
-        "revenue": 161636723,
-        "ebitda": -99494982,
-        "net_income": -99494982,
-        "ending_cash": -398624060,
+        "revenue": 1535576791,
+        "ebitda": 303015065,
+        "net_income": 303015065,
+        "ending_cash": 158795736,
         "ending_debt": 0
       },
       {
         "month": "2028-01",
-        "revenue": 165872616,
-        "ebitda": -111768639,
-        "net_income": -111768639,
-        "ending_cash": -510392699,
+        "revenue": 1996249828,
+        "ebitda": 517175757,
+        "net_income": 517175757,
+        "ending_cash": 675971493,
         "ending_debt": 0
       },
       {
         "month": "2028-02",
-        "revenue": 169567480,
-        "ebitda": -125529608,
-        "net_income": -125529608,
-        "ending_cash": -635922307,
+        "revenue": 2595124777,
+        "ebitda": 820235892,
+        "net_income": 820235892,
+        "ending_cash": 1496207385,
         "ending_debt": 0
       }
     ],
     "summary": {
-      "revenue_total": 1978667068,
-      "ebitda_total": -1235922307,
-      "net_income_total": -1235922307,
-      "ending_cash": -635922307,
+      "revenue_total": 11145540698,
+      "ebitda_total": 896207385,
+      "net_income_total": 896207385,
+      "ending_cash": 1496207385,
       "ending_debt": 0,
       "runway": {
-        "months": 11,
-        "exhaustion_month": "2027-08",
+        "months": 7,
+        "exhaustion_month": "2027-04",
         "exceeds_horizon": false
       },
       "break_even": {
-        "month": null,
-        "first_profitable_month": null
+        "month": "2027-10",
+        "first_profitable_month": "2027-10"
       }
     },
     "diagnostics": [
@@ -582,16 +674,9 @@ Base 결과가 "조달 불필요"로 나왔으니, 그 결론이 얼마나 취�
         "path": "$.summary.runway",
         "message": "기말현금이 모델 horizon 안에서 음수로 전환되어 현금이 소진됩니다",
         "semantic_id": "fm.v2.funding.runway_exhaustion"
-      },
-      {
-        "severity": "info",
-        "kind": "break_even_not_reached",
-        "path": "$.summary.break_even",
-        "message": "순이익이 모델 horizon 안에서 지속 흑자로 전환되지 않았습니다",
-        "semantic_id": "fm.v2.is.break_even_month"
       }
     ],
-    "calculation_hash": "sha256:a4466b607c250f2c6499a2a0d7d0386f3c22e180a825573548616425deb73cd2",
+    "calculation_hash": "sha256:7a9361183d6ec390dcc252fd53363cc4e7fd17d38456acc0120a56daba304238",
     "omitted": [
       "statements",
       "schedules",
@@ -605,62 +690,81 @@ Base 결과가 "조달 불필요"로 나왔으니, 그 결론이 얼마나 취�
 
 
 [assistant]
-## 답: 입력값 그대로면 조달이 필요 없습니다
+## 결론 먼저
 
-3천만 × 1.3⁴ = 8,568만이라 **4개월 만에 고정비 8천만을 넘어섭니다.** 현금이 바닥날 일이 없습니다.
+**주신 숫자 그대로면 런웨이는 "소진 없음"입니다.** 월 30% 성장이면 5개월 차에 손익분기를 넘고 현금 저점이 4.66억이라 6억이 바닥나지 않습니다. 따라서 **생존 목적의 다음 라운드 필요액은 0원**이고, 라운드를 연다면 그건 성장 가속용입니다. 성장을 유지하려고 조직을 키우는 순간에만 자금이 필요해집니다 — 그 금액이 **약 3.5억(최소) / 6~7억(권장)** 입니다.
 
-### Base — 입력값 그대로 (MoM 30% 고정, 고정비 8천만 고정, COGS 0)
-
-| 월 | 매출 | EBITDA | 기말현금 |
-|---|---:|---:|---:|
-| 2026-09 | 3,000만 | -5,000만 | 5.50억 |
-| 2026-10 | 3,900만 | -4,100만 | 5.09억 |
-| 2026-11 | 5,070만 | -2,930만 | 4.797억 |
-| **2026-12** | 6,591만 | -1,409만 | **4.656억 ← 현금 저점** |
-| 2027-01 | 8,568만 | +568만 | 4.713억 |
-| 2027-02 | 1.114억 | +3,139만 | 5.027억 |
-
-- **런웨이: 18개월 horizon 내 소진 없음** (`exceeds_horizon: true`)
-- **손익분기: 2027-01 (5개월차)**
-- **최대 누적 소진액: 1.34억** (6억 − 4.656억)
-- **다음 라운드 필요액: 0원.** 가진 현금의 22%만 쓰고 자력 흑자.
-- `sha256:7975344eb576343854747676d6518d56b17b319c0cc386e5de06946d6210002e`
+가정 먼저 밝힙니다: 원가율(COGS)과 법인세는 주신 정보에 없어 **0으로 두었습니다**(매출총이익률 100%). 원가가 있으면 아래 숫자는 모두 나빠집니다.
 
 ---
 
-## 다만 이 답은 두 가정에 전부 걸려 있습니다
-
-"MoM 30%가 계속된다"와 "고정비가 8천만에 묶여 있다"입니다. 18개월이면 매출 25.9억/월, 누적 111억이 되는 궤적인데, 이걸 인건비 증가 없이 해낸다는 뜻입니다. 그래서 두 케이스를 더 돌렸습니다.
-
-### Bear — 성장률만 감쇠 (매월 15%씩 둔화, 30%→2.2%)
-- 런웨이: **여전히 소진 없음**, 손익분기 2027-02, 현금 저점 4.48억
-- **필요액 0원.** 성장률이 꺾이는 것만으로는 안 죽습니다.
-- `sha256:d4e873cbfde96438b7421cbd10593a54ad698cab64b86d1edaf939367de031ed`
-
-### 현실형 — 비용도 같이 커질 때 (Bear 매출 + COGS 매출의 25% + 고정비 월 7% 증가)
+## 1. Base — 월 30% 성장, 고정비 8천만 고정
 
 | 월 | 매출 | EBITDA | 기말현금 |
-|---|---:|---:|---:|
-| 2027-06 | 1.22억 | -5,558만 | 0.645억 |
-| **2027-07** | 1.305억 | -5,951만 | **0.049억** |
-| 2027-08 | 1.382억 | -6,475만 | **-0.598억 ← 소진** |
+|---|---|---|---|
+| 2026-09 | 30,000,000 | -50,000,000 | 550,000,000 |
+| 2026-10 | 39,000,000 | -41,000,000 | 509,000,000 |
+| 2026-11 | 50,700,000 | -29,300,000 | 479,700,000 |
+| **2026-12** | 65,910,000 | -14,090,000 | **465,610,000** ← 현금 저점 |
+| **2027-01** | 85,683,000 | **+5,683,000** | 471,293,000 ← 손익분기 |
+| 2027-08 | 537,648,118 | +457,648,118 | 1,869,808,512 |
 
-- **런웨이: 11개월 (2027-08 소진)**, 손익분기 미도달
-- **18개월 horizon 누적 부족액: 6.36억** → 다음 라운드는 최소 이 규모
-- `sha256:a4466b607c250f2c6499a2a0d7d0386f3c22e180a825573548616425deb73cd2`
+- 런웨이: `months: 12`, `exhaustion_month: null`, `exceeds_horizon: true` (12개월 horizon 내 소진 없음)
+- 손익분기: **2027-01** (5개월 차)
+- 누적 최대 자금소요: 6억 − 4.6561억 = **1.3439억**
+- `calculation_hash`: `sha256:cc507f52611dbc0ed7f7700204a8c3ecb7da02ca5d2efa0ed5f268844c064a1e`
+
+## 2. Bear — 성장률 30% → 10%로 둔화 (고정비 동일)
+
+성장률이 무너지는 게 가장 흔한 실패 경로라 별도로 돌렸습니다.
+
+- 현금 저점: **275,935,012원** (2027-07)
+- 손익분기: **2027-08** (12개월 차)
+- 런웨이: `months: 18`, `exhaustion_month: null` — 18개월 horizon 내 소진 없음
+- 누적 최대 자금소요: **3.2406억**
+- `calculation_hash`: `sha256:7466ab549d7edb9165c493e9ee38a845b359db2033d73e003fc9e6d7266a96f5`
+
+## 3. 현실 보정 — 30% 성장 + 고정비 월 15% 증가
+
+매출이 1년에 18배 느는데 고정비가 8천만에 고정된다는 건 성립하지 않습니다. 채용·마케팅이 따라 붙는 케이스입니다.
+
+- 현금 저점: **217,582,582원** (2027-05)
+- 손익분기: **2027-06** (10개월 차)
+- 런웨이: 12개월 horizon 내 소진 없음
+- 누적 최대 자금소요: **3.8242억**
+- `calculation_hash`: `sha256:bb16fb5107c5bb8c11871f5093e32bf1a1e94adb707628485182be64eadb6055`
+
+## 4. 자금이 필요해지는 지점 — 30% 성장 + 고정비 월 20% 증가
+
+| 월 | 매출 | EBITDA | 기말현금 |
+|---|---|---|---|
+| 2027-03 | 144,804,270 | -94,074,450 | 94,212,850 |
+| **2027-04** | 188,245,551 | -98,408,913 | **-4,196,063** ← 소진 |
+| **2027-09** | 698,942,554 | -14,345,482 | **-350,977,150** ← 최대 부족분 |
+| 2027-10 | 908,625,320 | +52,679,677 | -298,297,473 |
+| 2028-02 | 2,595,124,777 | +820,235,892 | 1,496,207,385 |
+
+- 런웨이: **7개월**, `exhaustion_month: 2027-04`
+- 손익분기: **2027-10** (14개월 차)
+- 최대 자금 부족분: **350,977,150원**
+- `calculation_hash`: `sha256:7a9361183d6ec390dcc252fd53363cc4e7fd17d38456acc0120a56daba304238`
 
 ---
 
-## 정리
+## 다음 라운드 필요액
 
-**당장의 숫자로는 런웨이 무한, 필요액 0원**입니다. 죽이는 건 성장 둔화가 아니라 **비용 곡선**입니다. 고정비를 8천만에 묶어둘 수만 있으면 성장률이 2%대로 떨어져도 살아남고, 매출 따라 비용이 붙기 시작하면 11개월 만에 6억을 다 씁니다.
+| 목적 | 금액 | 근거 |
+|---|---|---|
+| 생존 | **0원** | 케이스 1~3 모두 현금 소진 없음 |
+| 최소 조달 | **약 3.5억** | 케이스 4 최대 부족분 350,977,150원 |
+| **권장 Ask** | **6~7억** | 부족분 3.5억 × 안전계수 1.8~2.0 |
 
-라운드 사이즈를 정해야 한다면 질문은 "얼마가 필요한가"가 아니라 **"이 성장을 지탱하려면 6개월 뒤 고정비가 얼마인가"** 입니다. 그 숫자를 주시면 필요액을 확정해 드리겠습니다.
+권장액의 안전계수 1.8~2.0은 fintool 산출이 아니라 제 판단입니다 — 부족분에 딱 맞춰 조달하면 첫 달 미달성에 바로 브릿지가 필요해집니다. 이 조달로 도달하는 지점은 **월매출 9억, EBITDA 흑자 전환(2027-10)** 이고, 시리즈 A/B 마일스톤으로 쓸 만한 서사입니다.
 
-두 가지 확인 부탁드립니다:
-1. **고정비 8천만에 인건비가 다 들어가 있나요?** 30% 성장을 뒷받침할 채용 계획이 별도라면 현실형 케이스가 실제에 가깝습니다.
-2. **매출 3천만이 매출총이익인가요, 총매출인가요?** Base는 COGS 0으로 계산했습니다. 원가율이 있으면 손익분기가 뒤로 밀립니다.
+## 이 답을 확정하려면 필요한 값
 
-*세금은 세 케이스 모두 0%로 두었습니다. Base는 2027-01부터 흑자라 실제 현금은 이보다 낮습니다. 감쇠율·원가율·고정비 증가율은 제안값이므로 승인/수정이 필요합니다.*
+1. **원가율(COGS)** — 지금 0%로 잡혀 있습니다. SaaS 20%만 넣어도 손익분기가 2~3개월 밀립니다.
+2. **CAC / ARPA / churn** — "성장에 얼마를 태워야 30%가 유지되는가"가 케이스 4의 고정비 증가율(월 20%)을 대체합니다. 지금은 제가 가정한 값입니다.
+3. **프리머니 밸류** — 주시면 `cap-table-simulate`로 희석률까지 뽑아 IR 자료 형태로 정리하겠습니다.
 
-[result] duration_ms=130653 turns=6 cost_usd=0.6337085 input_tokens=106667 output_tokens=9605
+[result] duration_ms=157159 turns=7 cost_usd=0.6767745000000001 input_tokens=138319 output_tokens=10885
