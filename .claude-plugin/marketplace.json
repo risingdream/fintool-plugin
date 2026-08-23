@@ -12,12 +12,19 @@
       "name": "fintool",
       "source": "./plugins/fintool",
       "description": "스타트업 재무 계산(원격 MCP) + startup-finance·valuation·portfolio-risk·fixed-income 스킬, 스타트업 검증 패키지(startup-design·competitors·positioning·pitch)",
-      "version": "0.5.1",
-      "author": { "name": "risingdream" },
+      "version": "0.5.2",
+      "author": {
+        "name": "risingdream"
+      },
       "homepage": "https://github.com/risingdream/fintool-plugin",
       "license": "MIT",
       "category": "productivity",
-      "keywords": ["finance", "mcp", "startup", "ir"]
+      "keywords": [
+        "finance",
+        "mcp",
+        "startup",
+        "ir"
+      ]
     }
   ]
 }

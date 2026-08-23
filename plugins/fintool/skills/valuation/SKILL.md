@@ -6,6 +6,7 @@ description: fintool MCP로 WACC·DCF·배수 가치평가를 한다. 내재가�
 # Valuation
 
 도구는 **원격 MCP**다. `fintool_catalog` → `fintool_run`. 로컬 바이너리를 설치하지 않는다.
+`fintool_catalog`는 인자 없이 부르면 목록만 준다. 플래그는 `{"tool": "wacc"}`처럼 도구를 지정해 받는다.
 
 범위: 가정 → `wacc` → `dcf` → (선택) `equity`.  
 범위 밖: 런웨이·BP·캡테이블·IR HTML (`startup-finance`).
@@ -27,6 +28,16 @@ description: fintool MCP로 WACC·DCF·배수 가치평가를 한다. 내재가�
 ```
 
 가능하면 `workflow validate` 후 `workflow run`을 쓴다. 예: `docs/examples/workflow-wacc-dcf.json`.
+
+## 입력이 빠졌을 때
+
+할인율·영구성장률이 없으면 **가정해서 계산하지 않는다.** WACC 구성요소(무위험수익률·베타·ERP·세전 부채비용·세율·E/D 시장가치)와 영구성장률을 물어보고 멈춘다. FCF·순부채·주식 수만 있는 질문이 전형적이다. 사용자가 "그냥 10%로 해"라고 정하면 그 값을 `source: 사용자 지정 YYYY-MM-DD`로 적고 `dcf`를 돌린다.
+
+`dcf` 호출 예(FCF 연 단위, 원):
+
+```json
+{"tool":"dcf","flags":{"fcf":"1000000000,1200000000,1400000000,1600000000,1800000000","wacc":0.1,"terminal-method":"growth","terminal-growth":0.02,"net-debt":2000000000,"shares":1000000}}
+```
 
 ## 함정
 
