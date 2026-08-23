@@ -1,6 +1,6 @@
 ---
 name: startup-design
-description: Design, validate, and plan a startup from scratch. Covers market research, competitive analysis, business model, brand identity, product definition, financial projections, and validation experiments. Trigger when the user has a startup idea to explore, wants to validate a business concept, needs a business plan or lean canvas, asks for market sizing or competitive landscape, wants brand positioning or go-to-market strategy, or says anything like "I have an idea for..." or "is this idea worth pursuing". Also handles resuming from a previous checkpoint.
+description: 스타트업 아이디어를 설계·검증·계획한다. 시장 리서치, 경쟁 분석, 비즈니스 모델, 브랜드, 제품 정의, 재무 추정, 검증 실험을 다룬다. "창업 아이디어 검증", "사업 아이템 봐줘", "린 캔버스", "사업계획서", "시장 규모 추정", "이 아이디어 될까" 같은 한국어 요청에도 사용한다. Design, validate, and plan a startup from scratch. Covers market research, competitive analysis, business model, brand identity, product definition, financial projections, and validation experiments. Trigger when the user has a startup idea to explore, wants to validate a business concept, needs a business plan or lean canvas, asks for market sizing or competitive landscape, wants brand positioning or go-to-market strategy, or says anything like "I have an idea for..." or "is this idea worth pursuing". Also handles resuming from a previous checkpoint.
 ---
 
 # Startup Design
@@ -36,6 +36,17 @@ Fast Track produces fewer files but still gives the founder a clear go/no-go sig
 ### Language
 
 Default output language is **English**. If the user writes in another language or explicitly requests one, use that language for all outputs instead.
+
+If the user writes in Korean, default every output to Korean.
+
+**Korean market branch.** Treat the target market as Korea when the user writes in Korean about a Korean market, names Korean customers, competitors, or channels, or asks about 정부지원사업 · TIPS · 벤처기업 확인. In that case read the KR references listed below BEFORE the phase that needs them — they replace US-shaped sources, benchmarks, and funding assumptions rather than adding to them:
+
+- `references/kr-research-sources.md` — source tiers, community map, Korean search queries (Phase 3 Research)
+- `references/kr-market-benchmarks.md` — currency and citation labels, US-benchmark portability table (Phase 7 Financial)
+- `references/kr-funding-landscape.md` — stage mapping, government programs, TIPS, KR runway (Phase 7-8)
+- `references/kr-legal-tax.md` — regulation research protocol, certifications, 벤처기업 확인, stock options (Phase 6-8)
+
+If the target market is not Korea, do not open these files. Loading them into a US- or global-market session slows the run and mixes in benchmarks that do not apply.
 
 ---
 
@@ -342,6 +353,8 @@ Update PROGRESS.md.
 Ground the strategy in numbers. Be honest about assumptions — label everything as estimated and explain the reasoning. Pull unit economics benchmarks (CAC, LTV, churn, ACV) from `01-discovery/market-analysis.md` and competitor pricing from `01-discovery/competitor-landscape.md` to anchor projections in real data.
 
 > **Reference:** Read `references/industry-benchmarks.md` for standard metrics by business model type (SaaS, marketplace, e-commerce, etc.). Compare the founder's projections against these benchmarks and flag any that fall outside normal ranges — both too pessimistic and too optimistic.
+
+> **KR branch:** If the target market is Korea, read `references/kr-market-benchmarks.md` BEFORE `industry-benchmarks.md`. It rules which US benchmarks port to Korea unchanged and which must be derived bottom-up instead of copied, and it makes the currency and citation labels mandatory. When government grants are part of the plan, also read `references/kr-funding-landscape.md` §6 — grant money is non-dilutive but spend-restricted and clawback-exposed, so it cannot be dropped into runway as ordinary cash.
 
 ### Two-stage financial model
 

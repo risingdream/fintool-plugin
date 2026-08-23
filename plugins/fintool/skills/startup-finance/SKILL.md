@@ -1,67 +1,200 @@
 ---
 name: startup-finance
-description: fintool MCP로 스타트업 재무모델·시나리오·투자유치 자료를 만든다. 재무보고서, 피칭덱 재무, 런웨이, 자금소요, 캡테이블, LTV/CAC, bear/base/bull을 요청하면 이 스킬을 쓴다. startup-design·startup-pitch 등 스타트업 스킬 진행 중 재무 계산(Phase 7 재무, 검증 실험 판정, 피치 숫자)이 필요한 지점에서도 이 스킬을 쓴다. DCF·WACC·내재가치는 valuation 스킬로 보낸다. 숫자는 추정하지 말고 fintool 봉투만 인용한다.
+description: fintool MCP로 스타트업 재무모델·시나리오·투자유치 자료를 만든다. 재무보고서, 피칭덱 재무, 런웨이, 자금소요, 캡테이블, LTV/CAC, bear/base/bull, 엑셀 워크북을 요청하면 이 스킬을 쓴다. startup-design·startup-pitch 등 스타트업 스킬 진행 중 재무 계산(Phase 7 재무, 검증 실험 판정, 피치 숫자)이 필요한 지점에서도 이 스킬을 쓴다. DCF·WACC·내재가치는 valuation 스킬로 보낸다. 숫자는 추정하지 말고 fintool 봉투만 인용한다.
 ---
 
 # Startup Finance
 
 도구는 **원격 MCP**다. `fintool_catalog`로 스키마를 보고 `fintool_run`으로 실행한다. 로컬 바이너리를 설치하지 않는다.
 
-`fintool_catalog`는 인자 없이 부르면 도구 이름·요약 목록만 준다. 플래그가 필요하면 `{"tool": "business-plan"}`처럼 도구 하나를 지정해 받는다. 오류 메시지로 스키마를 더듬지 않는다.
-
-이 스킬 범위: 인터뷰 → BP/유닛/시나리오/캡테이블 → `report`.  
+이 스킬 범위: 인터뷰 → 드라이버 모델/유닛/시나리오/캡테이블 → `report`·워크북.
 범위 밖: DCF·WACC·기업가치(`valuation`), 포트폴리오 VaR, 채권 프라이싱.
 
 ## 원칙
 
-1. **LLM은 숫자를 만들지 않는다.** 수치는 JSON 봉투만 인용한다.
+1. **LLM은 숫자를 만들지 않는다.** 수치는 JSON 봉투만 인용한다. 성장률을 반영한 월별 배열을 직접 계산해 넣는 것도 위반이다 — `growth`·`cohort` 스케줄을 쓴다.
 2. **가정에 출처를 붙인다.** `source`: `창업자 인터뷰 YYYY-MM-DD`.
 3. **HTML을 직접 쓰지 않는다.** `report` + `bundle.comments`.
 4. **comments**는 인터뷰→모델→계산을 설명하되 새 숫자를 만들지 않는다.
 5. 해시는 자르지 않는다. `business-plan`에는 해시가 없을 수 있다. 있는 것만 전문.
 
+## 도구 선택
+
+| 상황 | 도구 |
+|------|------|
+| 수익 메커니즘이 퍼널·티켓 구간·수수료 상한 등으로 이루어짐 | **`financial-model`** (드라이버 그래프) |
+| 드라이버 3개 이하, 성장률 기반 단순 3개년 | `business-plan` |
+
+**기본은 `financial-model`이다.** 사업의 수익이 "무엇 × 무엇 × 무엇"으로 만들어지는 이상, 그 곱셈을 모델 안에 두어야 시나리오가 의미를 갖는다. 곱셈을 채팅에서 하고 결과만 `revenue-base`에 넣으면 시나리오 축이 하나로 붕괴한다.
+
+## 모드 선택 — cash / accrual
+
+드라이버 그래프는 하나다. `mode`가 가르는 것은 **회계 관점뿐**이다.
+
+| 상황 | 모드 |
+|---|---|
+| 초기 재무추정, "현금이 언제 마르나" | **cash** |
+| 시나리오를 빠르게 여러 개 돌릴 때 | **cash** |
+| 기초 대차대조표·회수조건을 모를 때 | **cash** |
+| 투자자 실사·IR, 재무제표 3종이 필요 | **accrual** |
+| 차입 조달 (은행이 재무제표를 본다) | **accrual** |
+| 운전자본이 크게 도는 사업 (커머스 재고, B2B 장기 회수) | **accrual** |
+| 세금·감가상각이 손익에 유의미 | **accrual** |
+
+**기본은 cash다.** `mode`를 생략하면 cash다. accrual은 추가 입력을 요구하는데, **모르는 값을 0으로 채운 재무상태표는 정보가 없으면서 "재무제표가 나왔다"는 착시를 준다.** AR·재고·AP가 전부 0인 BS를 IR에 싣는 것이 그 착시의 결과다.
+
+### 두 모드를 나란히 낼 때
+
+같은 스펙을 `--mode`만 바꿔 두 번 돌릴 수 있다. accrual 전용 블록이 들어 있어도 cash 모드는 무시한다. 투자 검토 직전처럼 "현금 관점과 회계 관점을 같이 봐야 하는" 국면에서 쓴다.
+
+**차이를 설명할 수 있어야 두 답을 나란히 낼 자격이 있다.** 차이의 원천은 **법인세·감가상각·운전자본 셋뿐**이고, 셋 다 없으면 기말현금이 정확히 일치해야 한다. 안 맞으면 설명이 아니라 스펙을 다시 본다. 각 원천이 어떻게 갈리는지는 `references/accrual-inputs.md`.
+
 ## 흐름
 
 ```
-1. 인터뷰     → 가정 JSON (source 필수)
-2. Base       → business-plan + unit-economics
-3. 시나리오   → named bear/base/bull, 미조달, sample, oat
-4. 캡테이블   → cap-table-simulate
-5. 산출물     → bundle.json + comments → report
+1. 인터뷰     → 수익 메커니즘을 드라이버 체인으로 (source 필수)
+2. 모드 판정  → 기본 cash. accrual이면 추가 인터뷰
+3. Base       → financial-model + unit-economics
+4. 시나리오   → 드라이버 축으로 bear/base/bull, 미조달, oat
+5. 캡테이블   → cap-table-simulate
+6. 산출물     → report(bundle.json + comments) / --workbook
 ```
 
-## 인터뷰 매핑
+## 1단계 — 드라이버 발굴 인터뷰
 
-| 질문 | 플래그 |
-|------|--------|
-| 작년 연매출 / MRR×12 | `revenue-base` |
-| 3년 성장 | `revenue-growth` (연도별 쉼표, 소수) |
-| 매출 100원당 원가 | `cogs-rate` |
-| 월 고정비×12 | `opex` (금액) |
-| 통장 현금 | `cash-begin` |
-| 조달액·프리머니 | 조달은 cash-begin에 합산. 밸류는 `price_per_share` 역산 |
-| 주주·SAFE | cap-table spec |
-| ARPA / churn / CAC | `arpa`, `churn-rate`, `cac` |
+고정 질문 목록을 읽지 말고 **돈이 들어오는 경로를 먼저 묻는다.**
 
-금액은 원(정수). 비율은 소수(`0.07` = 7%). 빠진 항목은 기본값을 제안하고 source에 `기본값 제안, 창업자 승인`.
+> 고객이 돈을 내기까지 어떤 단계를 거치나요? 한 건당 얼마가 들어오고, 그게 무엇에 따라 달라지나요?
 
-## 호출 함정
+답을 드라이버 체인으로 옮긴다. 사업 유형별 체인 예시는 `references/business-models.md`에 있다 — 구독·성공보수·마켓플레이스·커머스·광고·하드웨어 6종. **템플릿을 강제하지 말고 참고만 한다.** 실제 사업은 대개 섞여 있다.
 
-- `fintool_run`의 `spec`은 **문자열**로 직렬화한다.
-- 기본 플래그는 kebab-case. batch `params`는 **snake_case**, 스칼라만.
-- **조달금은 `equity_raise` params에 넣지 않는다.** 전 연도 broadcast. 조달 케이스 `cash-begin` = 현재현금+조달액, 미조달 = 현재현금.
-- named bear/base/bull은 `scenario --mode corners`가 아니다. batch cases를 직접 짠다. scenario는 sample/oat.
-- `nol-carryforward: true`를 기본으로 켠다.
-- unit-economics `subscription`이면 `arpa`, `arpa-period`, `gross-margin`, `churn-rate`, `churn-period`, `cac` 전부 필수. period는 같아야 한다.
-- cap-table `round`는 pre-money가 아니라 `price_per_share`. SAFE가 있으면 2~3회 맞춰 수렴한다.
-- `business-plan.free_cash_flow`를 `dcf`에 넣지 않는다. 그건 valuation 스킬이다.
+체인을 세운 뒤 각 마디의 값을 묻는다. 모르면 기본값을 제안하고 `source`에 `기본값 제안, 창업자 승인`.
+
+공통으로 필요한 것: 통장 현금(`initial_cash`), 조달액(현금에 합산), 월 고정비, 인건비.
+
+**여기까지가 cash 모드에 필요한 전부다.** 드라이버 + 기초현금이면 끝난다.
+
+### accrual로 갈 때만 더 묻는다
+
+모드 판정에서 accrual이 나왔을 때만, 그때 묻는다. **cash로 갈 사업에 아래를 묻지 않는다** — 답을 모르는 창업자에게 물어 0을 받아내면 그 0이 재무제표에 실린다.
+
+| 묻는 것 | 블록 |
+|---|---|
+| 기초 대차대조표 — 현금 외 AR·재고·PP&E·AP·차입금·자본금·이익잉여금 | `opening_balance_sheet` |
+| 회수·지급 조건 (매출채권 회수일, 재고 회전, 매입채무 지급일) | `working_capital` |
+| 유형자산 내용연수, 기존 감가상각 | `ppe` |
+| 차입 상환 계획·이자율 | `debt` |
+| 법인세율·결손금 이월 | `tax` |
+| 증자·배당 계획 | `equity` |
+| 최소현금·리볼버 | `solver` |
+
+**전부 선택 항목이다.** 안 주면 0으로 채우되 엔진이 `default_applied` 경고를 낸다.
+
+```
+경고: working_capital: 전부 0으로 채웠습니다. 매출·비용이 인식과 동시에
+      현금으로 정산된다고 가정한 것입니다
+```
+
+**이 경고를 삼키지 말고 사용자에게 그대로 전달한다.** 자동으로 채운 0과 창업자가 확인한 0은 다르다. 블록별 기본값과 자동 균형 규칙은 `references/accrual-inputs.md`.
+
+자본을 주지 않으면 자산과 같은 금액을 `contributed_capital`로 넣어 균형을 맞춘다. **반면 0을 명시하면 의도로 보고 불균형을 그대로 거부한다** — "모른다"와 "0이다"를 구분하기 위해서다.
+
+## 2단계 — 드라이버 스펙
+
+각 드라이버는 `id`·`label`·`value_type`·`unit`·`schedule`이다. 금액은 원(정수), 비율은 소수(`0.07` = 7%).
+
+| schedule kind | 쓸 때 | 필드 |
+|---|---|---|
+| `monthly` | 전 기간 고정값 (수수료율·전환율 대부분) | `values: [0.3]` |
+| `growth` | 복리 성장 | `base`, `monthly_growth` |
+| `cohort` | 전월 잔량이 이월되는 기반 (구독 고객, 설치 대수) | `initial`, `retention`, 선택 `additions` |
+| `recurring` | 구간 상수 | `value`, `start`·`end` |
+| `one_time` | 단발 | `value`, `month` |
+
+**성장·잔존을 직접 계산해 `monthly.values`에 36개 값으로 넣지 않는다.** `growth`·`cohort`가 그걸 하려고 있다. 배열을 손으로 만드는 순간 원칙 1이 깨진다.
+
+## 3단계 — line item 수식
+
+드라이버를 조합해 매출·원가·비용을 **선언**한다. 채팅에서 곱해 넣지 않는다.
+
+expression은 `ref` | `literal` | `op` 중 하나이고 `op`의 `args`는 정확히 2개다.
+
+| op | 용도 |
+|---|---|
+| `add` `subtract` | 같은 type·unit끼리만 |
+| `multiply` | ratio × 숫자, money × count |
+| `divide` | 숫자 ÷ ratio, 동일타입끼리는 ratio |
+| `min` `max` | **수수료 상한·최소수수료** |
+
+`min`/`max`가 저액 구간 역마진을 계산 가능하게 만든다. 100만원 환급에 30% 수수료지만 상한 20만원이면 `min`, 최소수수료 10만원이면 `max`다. 이 계산이 없으면 역마진을 말로만 지적하게 된다.
+
+### 퍼널 중간 단계는 `metric`으로 노출한다
+
+`category: "metric"`은 어떤 재무 집계에도 들어가지 않는다. 조회→판정→신청→인용 각 단계를 `metric` line item으로 두면 월별 건수가 결과에 나오고, 워크북에도 행이 생긴다.
+
+퍼널 전체를 매출 하나의 중첩 expression에 밀어넣으면 계산은 맞지만 **중간 건수가 결과에서 사라져** 다시 손으로 계산하게 된다. 원칙 1 위반 경로다.
+
+`category`는 `revenue`·`cost`·`workforce`·`investment`·`funding`·`metric` 6개. `subtype`은 자유 문자열이므로 `success_fee`·`take_rate`·`consumable`처럼 의미대로 쓴다.
+
+### statement_role — 회계 역할을 명시한다
+
+`statement_role`은 선택 필드지만 **원가와 판관비를 구분해야 하는 사업에서는 반드시 준다.** 값은 `revenue`·`cogs`·`opex`·`capex`·`equity_raise`·`debt_draw`·`debt_repay`·`metric`.
+
+모드가 처리를 가르는 대표가 `capex`다.
+
+| `statement_role` | cash 모드 | accrual 모드 |
+|---|---|---|
+| `revenue` | 영업현금 유입 | 손익 매출 |
+| `cogs` | 영업현금 유출 | **매출원가 — 매출총이익을 만든다** |
+| `opex` | 영업현금 유출 | 판매관리비 |
+| `capex` | **투자현금 유출, 손익 제외** | **자산화 → 정액 감가상각** |
+| `equity_raise` | 재무현금 유입 | 자본 증자 |
+| `debt_draw` / `debt_repay` | 재무현금 유입/유출 | 차입금 증감 + 이자 |
+| `metric` | 집계 제외, 결과에 노출 | 동일 |
+
+**생략하면 category에서 추론하는데, `cost`는 전부 `opex`로 간다.** 매출원가가 판관비로 분류되어 **매출총이익률이 100%로 나온다.** 순이익과 기말현금은 맞기 때문에 총액만 보면 넘어가고, 그 100%가 IR 자료에 실린다.
+
+엔진이 이 상황을 진단으로 낸다.
+
+```
+warning statement_role_inferred: statement_role을 주지 않아 cost line item을 전부
+  opex로 추론했습니다...
+warning zero_cogs: 매출원가가 0이라 매출총이익률이 100%로 나옵니다...
+```
+
+커머스·하드웨어처럼 매출에 연동되는 원가가 있는 사업은 `statement_role: "cogs"`를 명시한다. 같은 경제를 두 방식으로 돌린 실측(`comparison/explicit-roles` vs `inferred-roles`):
+
+```
+명시  revenue 240,000,000  cogs 108,000,000  매출총이익률  55.0%
+추론  revenue 240,000,000  cogs           0  매출총이익률 100.0%
+```
+
+**순이익과 기말현금은 두 경우가 완전히 같다.** 총액이 맞으니 검토에서 걸러지지 않는다.
+
+## 시나리오
+
+**드라이버 축으로 짠다.** 판정률×평균환급액, 전환율×티켓 같은 2축 그리드가 단일 매출 축보다 의사결정에 쓸모 있다.
+
+- named bear/base/bull은 `scenario --mode corners`가 아니다. batch cases를 직접 짠다.
+- 민감도는 `scenario --mode oat`로 상위 드라이버 ±30%.
+- 미조달 케이스: `initial_cash` = 현재현금만. 조달 케이스: 현재현금 + 조달액.
+- **전 시나리오가 같은 부호(전부 흑자/전부 적자)면 가정을 다시 본다.** 시나리오가 아니라 상수를 흔든 것이다.
+
+## 유닛 이코노믹스
+
+| 사업 형태 | 모델 | 주의 |
+|---|---|---|
+| 반복 결제 | `unit-economics --model subscription` | `arpa`·`arpa-period`·`gross-margin`·`churn-rate`·`churn-period`·`cac` 전부 필수, period 동일 |
+| 단발 거래·성공보수 | `unit-economics --model transaction` | **LTV를 쓰지 않는다.** 재이용이 없으면 건당 공헌이익과 손익분기 건수가 답이다 |
+
+단발 환급에 구독 LTV(연 재이용률)를 붙이지 않는다. 재이용이 실제로 있으면 창업자에게 근거를 묻고 `source`에 남긴다.
 
 ## 산출물
 
 봉투를 `bundle.json`으로 모은다. 형식은 `docs/examples/report/acme.bundle.json`.
 
 ```
-fintool_run tool=report flags={recipe, spec, out}
+fintool_run tool=report flags={recipe, spec, out?}   # out 생략 = 봉투 data.html로 회수
 ```
 
 | 레시피 | 용도 |
@@ -71,8 +204,54 @@ fintool_run tool=report flags={recipe, spec, out}
 | `investor-update` | 기존 투자자 KPI·런웨이 |
 
 `comments` 키는 부품 ID다. `pl-cash-table`, `driver-trace`, `ask-block`, `runway-track`.
-
 조합 명세(`compose`)는 부품 ID 목록만. HTML·JSON 경로·숫자 리터럴 금지.
+
+### HTML 회수 — 원격 MCP
+
+`out`을 주면 HTML은 파일로만 나간다. **원격 MCP에서는 그 파일을 회수할 수 없다.**
+원격이면 `out`을 생략한다. 그러면 완성 HTML이 봉투 `data.html`로 온다.
+
+받은 뒤 할 일은 하나다.
+
+- `data.html`을 **한 글자도 바꾸지 말고 그대로 HTML 아티팩트로 출력한다.**
+- 요약·재작성·발췌 금지. 부품을 빼거나 순서를 바꾸지 않는다. 스타일도 건드리지 않는다.
+- 계산 해시(`data.hashes`, 원 계산의 `calculation_hash`)는 아티팩트 **바깥** 텍스트에 한 번만 인용한다.
+
+로컬 실행이라 파일이 필요하면 `out`을 준다. 두 경우 렌더 결과는 같다.
+
+### 워크북
+
+사용자가 **가정을 직접 바꿔볼 수 있는 스프레드시트**를 원하면 `financial-model`에 `--workbook`을 준다. 값이 아니라 가정 셀과 그것을 참조하는 수식이 나오므로, 받는 쪽에서 셀 하나를 바꾸면 전체가 재계산된다.
+
+시트 구성은 모드에 따라 다르다. 레이아웃은 공통으로 `A=label B=id C=unit D·E·F=파라미터 G~=월`이다.
+
+| 모드 | 시트 |
+|---|---|
+| cash | `Assumptions` · `Model` · `Summary` |
+| accrual | `Assumptions` · `Model` · `Inputs` · `IS` · `BS` · `CF` |
+
+accrual 워크북의 `BS`에는 `balance_check` 행이 있다 — `ROUND(총자산 − 총부채및자본, 2)`. **사용자가 가정을 바꿔도 이 행이 0이면 대차가 Excel 안에서 여전히 맞는다는 뜻이다.**
+
+### 리볼버를 켜면 워크북이 안 나온다
+
+`solver.revolver_enabled: true`면 `supported: false`와 이유가 오고 시트는 비어 있다. 이자↔차입잔액↔현금이 순환 참조를 이루는데 Excel은 반복 계산이 기본으로 꺼져 있기 때문이다.
+
+**사용자가 워크북을 원한다고 밝혔으면 리볼버를 켜기 전에 이 제약을 먼저 알린다.** 다 돌리고 나서 "워크북은 안 됩니다"라고 하지 않는다.
+
+재무 리포트만으로 충분한지, 조작 가능한 워크북이 필요한지 **먼저 묻는다.** 둘은 다른 산출물이다. 계약 전문은 `docs/decisions/workbook-contract.md`.
+
+## 호출 함정
+
+- `fintool_run`의 `spec`은 **문자열**로 직렬화한다.
+- 기본 플래그는 kebab-case. batch `params`는 **snake_case**, 스칼라만.
+- `months`는 12~60이다.
+- `mode`를 생략하면 cash다. `--mode`는 스펙의 `mode`를 덮어쓴다. `cash`·`accrual` 외의 값은 거부된다.
+- **기존 `financial-model/v1`·`v2` 스펙도 그대로 받는다.** 다만 그 두 버전에 `--mode`를 주면 거부된다 — v1은 cash, v2는 accrual로 고정이다. 모드를 바꿔 돌리려면 스펙을 새 형식으로 옮긴다.
+- expression은 **같은 월 값만** 참조한다. 전월 참조는 `expression_cycle`로 거부된다 — 시간 재귀는 `growth`·`cohort` 스케줄로 푼다.
+- 재무 line item의 `value_type`은 `money`다. `count`·`ratio`는 `metric`에서만.
+- `business-plan`을 쓸 때: **조달금을 `equity_raise` params에 넣지 않는다.** 전 연도 broadcast된다. `nol-carryforward: true`를 기본으로 켠다.
+- cap-table `round`는 pre-money가 아니라 `price_per_share`. SAFE가 있으면 2~3회 맞춰 수렴한다.
+- `business-plan.free_cash_flow`를 `dcf`에 넣지 않는다. 그건 valuation 스킬이다.
 
 ## startup-skill 연결
 
@@ -81,48 +260,28 @@ fintool_run tool=report flags={recipe, spec, out}
 
 | 트리거 | fintool 호출 |
 |--------|--------------|
-| Phase 7 프로젝션 (M1–12 / Y1–3) | `business-plan` (연간) / `financial-model` (월별 정밀) |
+| Phase 7 프로젝션 (M1–12 / Y1–3) | `financial-model` (드라이버, 기본 cash) / `business-plan` (단순 연간) |
+| Phase 7 재무제표 3종·BS 균형 | `financial-model --mode accrual` |
 | Phase 7 민감도 ±30% | `scenario --mode oat` |
 | Phase 7 conservative/base/optimistic | named bear/base/bull batch (`--mode corners` 아님) |
 | Phase 7 CAC·LTV·churn | `unit-economics --model subscription` |
 | Phase 7 break-even | `unit-economics --model transaction` |
-| Phase 7 runway·자금소요 | 연간: `business-plan` 미조달/조달 케이스 + `montecarlo --failure-rate`. 월 단위: `financial-model` v2 `summary: true` |
+| Phase 7 runway·자금소요 | `financial-model` 미조달/조달 케이스 + `montecarlo --failure-rate` |
 | Phase 8 실험 pass/fail 판정 | `stats --mode test --test independence --method fisher-exact` |
-| pitch Ask·런웨이 | `business-plan` 자금소요액 |
+| pitch Ask·런웨이 | `financial-model` 자금소요액 |
 | pitch 희석 | `cap-table-simulate` |
 | 덱·IR 산출물 | `report` (`pitch-deck` / `investor-update`) |
+| 사용자가 직접 조작할 모델 | `financial-model --workbook` |
 
 - `[Assumption]`/`[Estimate]` 라벨은 `assumptions[].source`에 출처로 남긴다. 고객 인터뷰 게이트 통과 전 재무는 Stage A(가정 기반)임을 명시한다.
 - TAM/SAM/SOM·RICE 같은 자명한 산술은 fintool 없이 계산하고 가정 출처를 명시한다.
 - 서드파티 SKILL.md는 수정하지 않는다(업데이트 시 덮어써짐). 유지보수는 이 섹션만 한다.
 
-## 월별 런웨이: `financial-model` v2
-
-질문이 **월 단위**(월 매출·월 고정비·월 성장률)면 연간 `business-plan` 대신 `financial-model` v2를 쓴다. 월별 현금 저점·손익분기 월·런웨이와 `calculation_hash`가 나온다. 반드시 `summary: true`로 받는다(전체 결과는 수십만 자).
-
-최소 spec(12개월, 월 30% 성장 예시). `months`는 12~60. 이 형태에서 `months`와 숫자만 바꾼다. 배열은 길이 1(전 기간 동일) 또는 `months` 길이.
-
-```json
-{"tool":"financial-model","flags":{"summary":true,"spec":"{
-  \"version\":\"financial-model/v2\",\"start_month\":\"2026-09\",\"months\":12,\"currency\":\"KRW\",
-  \"opening_balance_sheet\":{\"cash\":600000000,\"accounts_receivable\":0,\"inventory\":0,\"other_current_assets\":0,\"ppe_net\":0,
-    \"accounts_payable\":0,\"deferred_revenue\":0,\"other_current_liabilities\":0,\"debt\":0,\"contributed_capital\":600000000,\"retained_earnings\":0},
-  \"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118],\"cogs\":[0],\"operating_expenses\":[80000000]},
-  \"working_capital\":{\"accounts_receivable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"accounts_payable\":[0],\"deferred_revenue\":[0],\"other_current_liabilities\":[0]},
-  \"ppe\":{\"capex\":[0],\"existing_depreciation_amortization\":[0],\"useful_life_months\":60},
-  \"debt\":{\"draws\":[0],\"repayments\":[0],\"annual_interest_rate\":[0]},
-  \"equity\":{\"raises\":[0],\"dividends\":[0]},
-  \"tax\":{\"policy\":\"rate\",\"rate\":0},
-  \"assumptions\":[{\"id\":\"founder_input\",\"description\":\"창업자 인터뷰 2026-08-23\"}]
-}"}}
-```
-
-- **기초 현금은 `opening_balance_sheet.cash`와 `contributed_capital`에 같은 값**으로 넣는다. 빠뜨리면 런웨이가 0개월로 나온다.
-- 성장률은 엔진이 전개하지 않는다. `revenue`를 `months` 길이로 직접 계산해 넣는다(3천만×1.3ⁿ).
-- `revenue` 길이는 1 또는 `months`. 중간 길이는 오류다. `months`는 12~60.
-- 인용은 `data.monthly[]`(월·매출·EBITDA·순이익·기말현금)·`data.summary.runway`·`data.summary.break_even`·`data.calculation_hash`. 해시는 전문.
-- bear/base/bull은 `revenue` 배열만 바꿔 3번 호출한다.
-
 ## 확장
 
 가격 실험: `pricing`. 밸류: `valuation` 스킬.
+
+| 참고 | 내용 |
+|---|---|
+| `references/business-models.md` | 사업 유형별 드라이버 체인 6종 + 유형별 모드 권고 |
+| `references/accrual-inputs.md` | accrual 전용 블록 7종, 기본값·자동 균형 규칙, 불변식 |

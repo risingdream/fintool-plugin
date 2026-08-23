@@ -1,6 +1,6 @@
 ---
 name: startup-positioning
-description: Market positioning strategy using the April Dunford framework, enriched with JTBD discovery, Moore positioning statement, and Neumeier's Onliness Test. Produces a complete positioning document, positioning statement, competitive alternatives map, and market category analysis. Use when the user wants to define or refine their market positioning, find their unique position, differentiate from competitors, craft a positioning statement, choose a market category, or figure out "how should we position this product." Triggers for "positioning", "how to position", "market position", "differentiation strategy", "positioning statement", "competitive positioning", "category strategy", "where do we fit in the market", "how are we different", "unique value proposition", or any request to define, sharpen, or rethink positioning. Works standalone — no prior startup-design or startup-competitors session needed, but leverages their output if available.
+description: 시장 포지셔닝·차별화·카테고리 전략을 수립한다. "포지셔닝", "뭐가 다른가", "가치제안" 요청에도 사용한다. Market positioning strategy using the April Dunford framework, enriched with JTBD discovery, Moore positioning statement, and Neumeier's Onliness Test. Produces a complete positioning document, positioning statement, competitive alternatives map, and market category analysis. Use when the user wants to define or refine their market positioning, find their unique position, differentiate from competitors, craft a positioning statement, choose a market category, or figure out "how should we position this product." Triggers for "positioning", "how to position", "market position", "differentiation strategy", "positioning statement", "competitive positioning", "category strategy", "where do we fit in the market", "how are we different", "unique value proposition", or any request to define, sharpen, or rethink positioning. Works standalone — no prior startup-design or startup-competitors session needed, but leverages their output if available.
 ---
 
 # Startup Positioning
@@ -18,6 +18,15 @@ The process: understand the product and its customers, research competitive alte
 ### Language
 
 Default output language is **English**. If the user writes in another language or explicitly requests one, use that language for all outputs instead.
+
+If the user writes in Korean, default every output to Korean.
+
+**Korean market branch.** Treat the target market as Korea when the user writes in Korean about a Korean market, names Korean customers, competitors, or channels, or asks about 정부지원사업 · TIPS · 벤처기업 확인. In that case read the KR references listed below BEFORE the phase that needs them — they replace US-shaped sources, benchmarks, and funding assumptions rather than adding to them:
+
+- `../startup-design/references/kr-research-sources.md` — §4 switching-story queries, §6 category framing without US analyst categories (Wave 1-2)
+- `../startup-design/references/kr-market-benchmarks.md` — §1 currency and citation labels when positioning cites numbers
+
+If the target market is not Korea, do not open these files. Loading them into a US- or global-market session slows the run and mixes in benchmarks that do not apply.
 
 ---
 
@@ -134,6 +143,8 @@ Two agents (or two sequential blocks):
 Two agents (or two sequential blocks):
 
 **B1: Market Category Analysis** — Identify 3-5 candidate market categories. For each: what do buyers expect from this category, who are the leaders, what's the competitive dynamic, how mature is it? Apply Dunford's category types: head-to-head (existing category), big fish/small pond (subcategory), or category creation. Assess which frame makes your unique strengths matter most.
+
+> **KR branch:** If the market is Korea, read `../startup-design/references/kr-research-sources.md` §6 first. Gartner Magic Quadrant / Forrester Wave categories, which this analysis normally leans on to establish buyer expectations, do not cover most Korean categories — §6 gives the substitute method for establishing what Korean buyers expect from a category. §4 gives the Korean switching-story queries that Wave 1's alternatives map depends on.
 
 **B2: Trend & Timing Analysis** — Identify relevant trends: technology shifts, behavioral changes, regulatory moves. For each: is it real or hype, how does it affect buyer expectations, does it make your positioning stronger or weaker? Assess timing — are you early, on-time, or late to the trend? Only include trends that genuinely change how buyers evaluate solutions.
 

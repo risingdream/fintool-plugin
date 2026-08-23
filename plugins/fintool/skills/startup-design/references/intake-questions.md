@@ -17,6 +17,7 @@ Ask these in a conversational flow, not as a rigid checklist. Group related ques
 - Are you solo or do you have co-founders? What are their strengths?
 - How much time can you dedicate? Full-time or side project?
 - What's your budget/runway situation?
+- *(KR)* 정부지원사업 수혜 이력이 있나요? 예비창업패키지 · 초기창업패키지 · 창업도약패키지 · TIPS · R&D 과제 중 선정된 것, 남은 집행 잔액, 중복 수행 제한에 걸리는 과제. 있으면 `references/kr-funding-landscape.md` §4·§6을 읽고 runway 계산에 반영한다.
 
 **The Market**
 - Who is your ideal customer? Be as specific as possible.

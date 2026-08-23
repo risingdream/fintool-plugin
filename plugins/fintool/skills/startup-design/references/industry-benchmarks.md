@@ -63,4 +63,6 @@ Use these as reference points when evaluating a founder's financial projections.
    - If projections assume 1% monthly churn for an SMB SaaS → flag as optimistic, explain that 3-5% is typical
    - If projections assume 50% gross margin for a pure software product → flag as pessimistic, ask what's driving costs
 4. **Cite the benchmark** when flagging: "Industry benchmark for B2B SaaS monthly churn is 2-5%; your model assumes 0.5% which would place you in the top 1% of all SaaS companies"
+   - **Label the region and the source on every citation.** The tables above are US-derived. Write `(US, {source}, {year})` or `(한국, {출처}, {연도})` on each benchmark you quote — citing a US figure bare as "the industry benchmark" is an unsourced claim and violates `references/honesty-protocol.md`. If the source or year is unknown, say so instead of implying one.
+   - **For Korean markets, do not quote these tables directly.** Read `references/kr-market-benchmarks.md` §2 first — it rules per metric which US benchmarks port to Korea and which must be derived bottom-up (§4) because the structural drivers differ.
 5. **Note that early-stage startups often perform worse** than benchmarks — these represent what good companies achieve at scale, not what a pre-revenue startup should expect on day one

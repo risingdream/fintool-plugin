@@ -24,6 +24,8 @@ Rank every finding by source reliability:
 
 A Tier 3 source saying "the market is $5B" is not reliable. A Tier 1 report saying the same thing is.
 
+**KR branch — if the target market is Korea:** read `kr-research-sources.md` §2 before ranking anything. The tiers above are US-shaped — Gartner, SEC filings, Crunchbase, and G2 have little or no coverage of Korean startups, and the substitutes rank differently (KOSIS · DART · 중기부·창업진흥원 공고 for Tier 1, 벤처투자정보센터 · 혁신의숲 · 플래텀 · 벤처스퀘어 for Tier 2, 네이버 카페·블로그 · 앱스토어 리뷰 · 잡플래닛 for Tier 3). §1 also grades every source by machine accessibility: `thevc.kr` returns 403 to automated fetches, so a failed fetch there means "not collected" and must be reported that way — never as "no data exists".
+
 ## Cross-Referencing
 
 Never trust a single source for important claims. For every key finding:

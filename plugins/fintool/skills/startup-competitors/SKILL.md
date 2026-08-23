@@ -1,6 +1,6 @@
 ---
 name: startup-competitors
-description: Deep competitive intelligence for any market. Analyzes competitors' products, pricing, customer sentiment, GTM strategy, and growth signals using real web data. Produces battle cards, pricing landscape, and feature matrix. Use when the user wants to understand their competitive landscape, analyze competitors, compare products in a market, or research who they're competing against. Triggers for "who are my competitors", "competitive analysis", "competitor research", "battle cards", "pricing comparison", "competitor pricing", "market players", "competitive intelligence", "competitive landscape", "who else is in this space", "competitive moat", or any request to profile, compare, or map competitors in a category. Works standalone — no prior startup-design session needed.
+description: 경쟁 구도를 실제 웹 데이터로 분석해 배틀카드·가격 지도·기능 매트릭스를 만든다. "경쟁사 분석", "경쟁사 가격 비교", "우리 경쟁사가 누구야", "배틀카드", "해자" 같은 한국어 요청에도 사용한다. Deep competitive intelligence for any market. Analyzes competitors' products, pricing, customer sentiment, GTM strategy, and growth signals using real web data. Produces battle cards, pricing landscape, and feature matrix. Use when the user wants to understand their competitive landscape, analyze competitors, compare products in a market, or research who they're competing against. Triggers for "who are my competitors", "competitive analysis", "competitor research", "battle cards", "pricing comparison", "competitor pricing", "market players", "competitive intelligence", "competitive landscape", "who else is in this space", "competitive moat", or any request to profile, compare, or map competitors in a category. Works standalone — no prior startup-design session needed.
 ---
 
 # Startup Competitors
@@ -18,6 +18,15 @@ The process is focused: understand the product, research competitors deeply acro
 ### Language
 
 Default output language is **English**. If the user writes in another language or explicitly requests one, use that language for all outputs instead.
+
+If the user writes in Korean, default every output to Korean.
+
+**Korean market branch.** Treat the target market as Korea when the user writes in Korean about a Korean market, names Korean customers, competitors, or channels, or asks about 정부지원사업 · TIPS · 벤처기업 확인. In that case read the KR references listed below BEFORE the phase that needs them — they replace US-shaped sources, benchmarks, and funding assumptions rather than adding to them:
+
+- `../startup-design/references/kr-research-sources.md` — §3·§4 replace the G2/Reddit/HN mining targets with Korean equivalents; §5 lists KR competitor data sources (Wave 1-3)
+- `../startup-design/references/kr-market-benchmarks.md` — §1 currency and citation labels for pricing work (Wave 1 A2)
+
+If the target market is not Korea, do not open these files. Loading them into a US- or global-market session slows the run and mixes in benchmarks that do not apply.
 
 ---
 
@@ -120,6 +129,8 @@ Two agents (or two sequential blocks):
 
 **A2: Pricing Intelligence** — For each competitor: reverse-engineer the pricing model. Not just "it costs $49/mo" but: what's the value metric (per seat? per usage? flat?), how do tiers differentiate, what pricing psychology do they use (anchoring, decoy, charm pricing), what's the switching cost (technical, contractual, emotional). Build a tier-by-tier comparison.
 
+> **KR branch:** For Korean competitors, follow the currency rule in `../startup-design/references/kr-market-benchmarks.md` §1 — quote 원 as published, state whether the figure is VAT 별도 or 포함, and never silently convert to USD. Korean SaaS pricing is often "문의" rather than published; §5 of `../startup-design/references/kr-research-sources.md` lists where the real numbers surface (공공 조달 계약 공고, 나라장터 낙찰 내역, 사업자 대상 제휴 공지).
+
 ### Wave 2: Customer Sentiment Mining
 
 > **Reference:** Read `references/research-wave-2-sentiment-mining.md` for agent templates.
@@ -129,6 +140,8 @@ Two agents (or two sequential blocks):
 **B1: Review Mining** — Mine G2, Capterra, TrustRadius, Product Hunt, and App Store reviews for each competitor. Extract patterns: what do people praise? What do they complain about? What features do they request? Organize by competitor and by pain theme. Include verbatim quotes.
 
 **B2: Forum & Community Mining** — Mine Reddit, Indie Hackers, Hacker News, Quora, and niche communities. Find: complaints about existing tools, "what do you use for X?" threads, migration stories, workaround discussions. Build a **language map** — the exact words customers use to describe their problems and desires. Identify **churn signals** — why people leave each competitor.
+
+> **KR branch:** If the competitors are Korean, G2 / Capterra / TrustRadius and Reddit / Indie Hackers / HN have near-zero coverage of them — running B1 and B2 as written returns "no data" and the synthesis silently treats that as "no complaints". Read `../startup-design/references/kr-research-sources.md` §3·§4 first. It maps the substitutes (네이버 카페·블로그, 앱스토어·구글플레이 리뷰, 잡플래닛, 디스콰이엇, 클리앙, okky) and gives the Korean query templates. §5 lists KR competitor data sources that are more precise than the US equivalents (DART 감사보고서, 채용공고, 혁신의숲). §1 grades each source by machine accessibility — a blocked fetch means "not collected", never "nothing exists".
 
 ### Wave 3: GTM & Strategic Signals
 

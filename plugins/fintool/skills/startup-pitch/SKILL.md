@@ -1,6 +1,6 @@
 ---
 name: startup-pitch
-description: Build investor-ready pitch scripts in multiple formats (10-min, 5-min, 2-min, 1-min elevator, investor email). Produces pitch narratives, Q&A preparation, pitch scoring rubric, and optional investor roleplay practice. Use when the user wants to create a pitch, prepare for investor meetings, craft a startup pitch, write a fundraising narrative, or practice their pitch. Triggers for "pitch deck", "investor pitch", "pitch my startup", "fundraising deck", "seed deck", "how to pitch", "investor meeting", "demo day", "prepare pitch", "pitch script", "elevator pitch for investors", "pitch practice", "practice my pitch", "investor roleplay", or any request to present a startup to investors, accelerators, or partners. Works standalone — no prior startup-design session needed, but leverages its output if available.
+description: 투자자용 피치 스크립트·예상 Q&A·롤플레이를 만든다. "IR 덱", "피치덱", "투자유치 발표 준비", "데모데이 발표", "엘리베이터 피치" 같은 한국어 요청에도 사용한다. Build investor-ready pitch scripts in multiple formats (10-min, 5-min, 2-min, 1-min elevator, investor email). Produces pitch narratives, Q&A preparation, pitch scoring rubric, and optional investor roleplay practice. Use when the user wants to create a pitch, prepare for investor meetings, craft a startup pitch, write a fundraising narrative, or practice their pitch. Triggers for "pitch deck", "investor pitch", "pitch my startup", "fundraising deck", "seed deck", "how to pitch", "investor meeting", "demo day", "prepare pitch", "pitch script", "elevator pitch for investors", "pitch practice", "practice my pitch", "investor roleplay", or any request to present a startup to investors, accelerators, or partners. Works standalone — no prior startup-design session needed, but leverages its output if available.
 ---
 
 # Startup Pitch
@@ -26,6 +26,17 @@ Three principles govern every output this skill produces:
 ### Language
 
 Default output language is **English**. If the user writes in another language or explicitly requests one, use that language for all outputs instead.
+
+If the user writes in Korean, default every output to Korean.
+
+**Korean market branch.** Treat the target market as Korea when the user writes in Korean about a Korean market, names Korean customers, competitors, or channels, or asks about 정부지원사업 · TIPS · 벤처기업 확인. In that case read the KR references listed below BEFORE the phase that needs them — they replace US-shaped sources, benchmarks, and funding assumptions rather than adding to them:
+
+- `../startup-design/references/kr-funding-landscape.md` — stage mapping, government programs, TIPS, review criteria, KR runway, Ask wording (Wave 1, pitch construction, roleplay)
+- `../startup-design/references/kr-research-sources.md` — §2 source tiers and the KR investor lookup sources (Wave 1-2)
+- `../startup-design/references/kr-market-benchmarks.md` — §1 currency and citation labels for traction and market-size slides
+- `../startup-design/references/kr-legal-tax.md` — 벤처기업 확인, certifications, stock options when investors ask about structure
+
+If the target market is not Korea, do not open these files. Loading them into a US- or global-market session slows the run and mixes in benchmarks that do not apply.
 
 ---
 
@@ -157,6 +168,8 @@ If WebSearch is unavailable, fall back to **Knowledge-Based Mode**: use training
 Two agents (or two sequential blocks):
 
 **A1: Investor & Audience Intelligence** — Research the target audience (VC firms, angels, accelerators). What are they investing in? What thesis do they follow? What metrics matter at this stage? What are red flags for them? What's the current fundraising climate in this space? Build an audience profile that shapes how the pitch is framed.
+
+> **KR branch:** If the round is being raised in Korea, read `../startup-design/references/kr-funding-landscape.md` before this agent runs. §1 gives the KR entry points that have no US equivalent (「중앙부처 및 지자체 창업지원사업 통합공고」, 창업기획자 등록 명단, 한국벤처투자 출자사업 공고 → 모태펀드 자펀드 운용사). §2 maps 예비창업 · 초기창업 · 창업도약 · TIPS · 시드 · 시리즈 A onto the US stage ladder — they are not 1:1, and describing a Korean round with US stage assumptions produces an Ask that no Korean investor recognizes. §9 is the lookup list of private funding sources. §8 defines what counts as early traction in Korea (정부과제 선정 이력, 특허, 대기업 PoC).
 
 **A2: Comparable & Narrative Research** — Find comparable companies that pitched successfully in this space. What story did they tell? What analogies worked? What "X for Y" framing resonated? What market trends can the pitch ride? Find the narrative hooks — the facts, trends, or insights that make investors lean forward.
 
@@ -357,6 +370,8 @@ If the user accepts:
 - **Seed VC** — Traction-obsessed, looking for product-market fit signals. Asks about metrics, retention, growth rate. Wants to see momentum.
 - **Series A VC** — Scalability + market size obsessed. Asks about unit economics, competitive moats, expansion path. Thinking about the next round already.
 - **Accelerator Partner** — Looking for coachability + speed of execution. Asks about what you've learned, how fast you ship, what you'd do with mentorship.
+- **TIPS 운영사 심사역 (KR)** — Screens on technology and IP, not traction. Asks what is actually patented, who on the team can build it, and why the 운영사 should put its own money in first. See `../startup-design/references/kr-funding-landscape.md` §4·§5.
+- **정부과제 평가위원 (KR)** — Screens on 사업비 집행 계획, 수행 능력, and 중복 수행 여부. Asks how each budget line maps to a deliverable, what happens if a milestone slips, and how the 정산 will be documented. See `../startup-design/references/kr-funding-landscape.md` §5.
 
 **Roleplay flow:**
 1. The user delivers their pitch (any format)

@@ -24,6 +24,8 @@ Rank every finding by source reliability:
 
 For positioning research, Tier 3 sources are ESPECIALLY valuable — customer reviews and forum posts reveal how buyers describe their problems and what "better" means to them. This is the language map that drives positioning. But don't use them for hard numbers.
 
+**KR branch — if the target market is Korea:** read `../startup-design/references/kr-research-sources.md` §2 before ranking anything. The tiers above are US-shaped — Gartner, SEC filings, Crunchbase, and G2 have little or no coverage of Korean startups, and the substitutes rank differently (KOSIS · DART · 중기부·창업진흥원 공고 for Tier 1, 벤처투자정보센터 · 혁신의숲 · 플래텀 · 벤처스퀘어 for Tier 2, 네이버 카페·블로그 · 앱스토어 리뷰 · 잡플래닛 for Tier 3). §1 also grades every source by machine accessibility: `thevc.kr` returns 403 to automated fetches, so a failed fetch there means "not collected" and must be reported that way — never as "no data exists".
+
 ## Positioning-Specific Search Strategies
 
 When researching alternatives and buyer behavior:
