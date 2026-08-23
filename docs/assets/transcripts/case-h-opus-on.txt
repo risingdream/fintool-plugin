@@ -1,0 +1,877 @@
+# prompt
+국내 채권 포트폴리오 시가 5,000억 원, 수정듀레이션 4.2다. 금리 하락을 예상해 목표 수정듀레이션을 7.5로 올리려 한다. 3년 국채선물 가격 112.50, 계약승수 1억 원, 최근월물 수정듀레이션 8.6이다. 필요한 선물 계약 수와 방향을 구하고, 실제로 금리가 전 구간 50bp 하락했을 때 헤지 전후 포트폴리오 손익이 어떻게 달라지는지 알려줘. 이 듀레이션 오버레이가 갖는 한계도 짚어줘.
+
+# run: plugin ON (fintool@fintool-plugin 0.5.4) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-opus-5 · 2026-08-23
+
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "tools",
+  "data": {
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "amort",
+        "kind": "calculator",
+        "summary": "상환 스케줄 전체와 구간 누적을 한 번에 낸다 (엑셀 IPMT·PPMT·CUMIPMT·CUMPRINC·ISPMT)",
+        "usage": "fintool amort [flags]",
+        "flags": []
+      },
+      {
+        "name": "attribution",
+        "kind": "calculator",
+        "summary": "Brinson active return과 수정듀레이션 기반 고정수익 성과 귀속을 계산한다",
+        "usage": "fintool attribution --model brinson|fixed-income --input \u003cJSON|@file.json\u003e [flags]",
+        "flags": []
+      },
+      {
+        "name": "bond",
+        "kind": "calculator",
+        "summary": "채권 가격·수익률·스프레드·듀레이션·convexity·경과이자",
+        "usage": "fintool bond [flags]",
+        "flags": []
+      },
+      {
+        "name": "business-plan",
+        "kind": "calculator",
+        "aliases": [
+          "bp"
+        ],
+        "summary": "사업계획 가정을 연 단위 손익·운전자본·현금흐름으로 전개하고 자금소요와 흑자전환 시점을 낸다",
+        "usage": "fintool business-plan [flags]",
+        "flags": []
+      },
+      {
+        "name": "cap-table-simulate",
+        "kind": "calculator",
+        "summary": "full cap table·SAFE·전환증권·옵션풀 전환 시나리오를 결정론적으로 계산한다",
+        "usage": "fintool cap-table-simulate [flags]",
+        "flags": []
+      },
+      {
+        "name": "capital-budget",
+        "kind": "calculator",
+        "summary": "복수 투자안의 NPV·IRR·MIRR·회수기간·PI·EAA를 계산하고 지표별 순위를 비교한다",
+        "usage": "fintool capital-budget [flags]",
+        "flags": []
+      },
+      {
+        "name": "convertible",
+        "kind": "calculator",
+        "summary": "전환사채(CB)를 Tsiveriotis-Fernandes 이항 트리로 평가한다 (신용스프레드·콜·풋 반영)",
+        "usage": "fintool convertible [flags]",
+        "flags": []
+      },
+      {
+        "name": "coupon",
+        "kind": "calculator",
+        "summary": "결제일이 놓인 이표 구간과 남은 이표 횟수를 한 번에 구한다 (엑셀 COUPPCD·COUPNCD·COUPNUM·COUPDAYBS·COUPDAYS·COUPDAYSNC)",
+        "usage": "fintool coupon [flags]",
+        "flags": []
+      },
+      {
+        "name": "credit",
+        "kind": "calculator",
+        "summary": "Merton 구조모형의 부도확률과 distance to default (자산가치·부채·자산변동성에서 산출)",
+        "usage": "fintool credit [flags]",
+        "flags": []
+      },
+      {
+        "name": "curve",
+        "kind": "calculator",
+        "summary": "수익률곡선 부트스트래핑, 스팟↔포워드 변환, Nelson-Siegel·Svensson 피팅, Z-spread",
+        "usage": "fintool curve [flags]",
+        "flags": []
+      },
+      {
+        "name": "dcf",
+        "kind": "calculator",
+        "summary": "명시적 FCF와 terminal value를 할인해 기업가치·주주가치·주당가치와 민감도를 구한다",
+        "usage": "fintool dcf [flags]",
+        "flags": []
+      },
+      {
+        "name": "decision-tree",
+        "kind": "calculator",
+        "summary": "JSON 의사결정 트리를 rollback해 노드별 EMV, 선택 가지, EVPI를 구한다",
+        "usage": "fintool decision-tree [flags]",
+        "flags": []
+      },
+      {
+        "name": "depreciate",
+        "kind": "calculator",
+        "summary": "감가상각 스케줄 전체를 낸다 (엑셀 SLN·SYD·DB·DDB·VDB·AMORDEGRC·AMORLINC)",
+        "usage": "fintool depreciate [flags]",
+        "flags": []
+      },
+      {
+        "name": "derivative",
+        "kind": "calculator",
+        "summary": "선도·선물·스왑·금리옵션의 가격과 가치, 목표 위험 헤지 계약 수를 계산한다",
+        "usage": "fintool derivative [flags]",
+        "flags": []
+      },
+      {
+        "name": "discount",
+        "kind": "calculator",
+        "summary": "할인채와 단기 국채의 가격·수익률·할인율 (엑셀 DISC·INTRATE·RECEIVED·PRICEDISC·YIELDDISC·TBILLEQ·TBILLPRICE·TBILLYIELD)",
+        "usage": "fintool discount [flags]",
+        "flags": []
+      },
+      {
+        "name": "equity",
+        "kind": "calculator",
+        "summary": "DDM·FCF·배수·잔여이익·사기업·SOTP 주식가치를 계산한다",
+        "usage": "fintool equity --model ddm|fcf|multiples|residual|private|sotp [flags]",
+        "flags": []
+      },
+      {
+        "name": "financial-model",
+        "kind": "calculator",
+        "summary": "strict financial-model/v1·v2·v3 입력을 12~60개월 월별 재무제표로 계산한다",
+        "usage": "fintool financial-model [flags]",
+        "flags": []
+      },
+      {
+        "name": "fsa",
+        "kind": "calculator",
+        "summary": "EPS·재무비율·FCFF/FCFE·현금흐름 연결과 핵심 회계 정규화를 계산한다",
+        "usage": "fintool fsa --solve eps|ratios|cashflow|adjust [flags]",
+        "flags": []
+      },
+      {
+        "name": "fx",
+        "kind": "calculator",
+        "summary": "현물·cross·선도환율, 국제 패리티, bid-offer, 삼각재정, forward MTM과 carry를 계산한다",
+        "usage": "fintool fx [flags]",
+        "flags": []
+      },
+      {
+        "name": "irr",
+        "kind": "calculator",
+        "summary": "순현재가치를 0으로 만드는 내부수익률을 구한다. --dates를 주면 불규칙 날짜 기준이다 (엑셀 IRR·XIRR)",
+        "usage": "fintool irr [flags]",
+        "flags": []
+      },
+      {
+        "name": "montecarlo",
+        "kind": "calculator",
+        "aliases": [
+          "mc"
+        ],
+        "summary": "자산 경로를 시뮬레이션해 만기 잔액 분포와 목표 달성 확률을 계산한다 (GBM/부트스트랩/팻테일/점프/다자산)",
+        "usage": "fintool montecarlo [flags]",
+        "flags": []
+      },
+      {
+        "name": "npv",
+        "kind": "calculator",
+        "summary": "현금흐름의 순현재가치를 구한다. --dates를 주면 불규칙 날짜 기준으로 계산한다 (엑셀 NPV·XNPV)",
+        "usage": "fintool npv [flags]",
+        "flags": []
+      },
+      {
+        "name": "option",
+        "kind": "calculator",
+        "summary": "옵션 가격·그릭스·IV와 만기 payoff·풋-콜 패리티·표준 전략을 계산한다",
+        "usage": "fintool option [flags]",
+        "flags": []
+      },
+      {
+        "name": "perf",
+        "kind": "calculator",
+        "summary": "수익률 시계열의 성과 지표를 한 번에 낸다 (CAGR·Sharpe·Sortino·Calmar·MDD·베타·알파 등)",
+        "usage": "fintool perf [flags]",
+        "flags": []
+      },
+      {
+        "name": "portfolio",
+        "kind": "calculator",
+        "summary": "포트폴리오 최적화·CAPM·Roy safety-first·목표·부채 면역화 지표를 계산한다",
+        "usage": "fintool portfolio [flags]",
+        "flags": []
+      },
+      {
+        "name": "pricing",
+        "kind": "calculator",
+        "summary": "상수 가격탄력성으로 제안 가격의 예상 판매량과 기준 대비 손익·보전 임계값을 계산한다",
+        "usage": "fintool pricing [flags]",
+        "flags": []
+      },
+      {
+        "name": "private-markets",
+        "kind": "calculator",
+        "summary": "사모펀드 성과·waterfall과 비상장 주식·부채·실물자산 가치를 계산한다",
+        "usage": "fintool private-markets --mode fund|vc|growth|buyout|debt|asset [flags]",
+        "flags": []
+      },
+      {
+        "name": "rate-convert",
+        "kind": "calculator",
+        "summary": "이자율 표기를 변환하고 성장률·소요 기간을 구한다 (엑셀 EFFECT·NOMINAL·RRI·PDURATION·FVSCHEDULE)",
+        "usage": "fintool rate-convert [flags]",
+        "flags": []
+      },
+      {
+        "name": "regression",
+        "kind": "calculator",
+        "summary": "CFA Level I·II OLS·ANOVA·예측구간·회귀진단과 이항 로지스틱 회귀를 계산한다",
+        "usage": "fintool regression --model ols|logistic --input \u003cJSON|@file.json\u003e [flags]",
+        "flags": []
+      },
+      {
+        "name": "report",
+        "kind": "calculator",
+        "summary": "fintool JSON 봉투를 고정 부품 HTML로 바인딩한다",
+        "usage": "fintool report [flags]",
+        "flags": []
+      },
+      {
+        "name": "scenario",
+        "kind": "workflow_primitive",
+        "summary": "시나리오 가정의 정합성을 검증하고 실행할 파라미터 조합을 전개한다",
+        "usage": "fintool scenario [flags]",
+        "flags": []
+      },
+      {
+        "name": "stats",
+        "kind": "calculator",
+        "summary": "CFA Level I 기술통계·확률·신뢰구간·가설검정을 명시적 모드로 계산한다",
+        "usage": "fintool stats --mode describe|probability|infer|test [flags]",
+        "flags": []
+      },
+      {
+        "name": "timeseries",
+        "kind": "calculator",
+        "summary": "CFA 시계열 추세·AR(1/2)·계절성·RMSE 비교·ARCH 분산 예측을 계산한다",
+        "usage": "fintool timeseries --mode trend|ar|seasonal|compare|arch (--returns \u003cseries\u003e|--prices \u003cseries\u003e) [flags]",
+        "flags": []
+      },
+      {
+        "name": "trade-cost",
+        "kind": "calculator",
+        "summary": "quoted/effective spread, VWAP 거래비용, implementation shortfall을 계산한다",
+        "usage": "fintool trade-cost [flags]",
+        "flags": []
+      },
+      {
+        "name": "tvm",
+        "kind": "calculator",
+        "summary": "화폐의 시간가치 방정식을 풀어 pv/fv/pmt/nper/rate 중 하나를 구한다 (엑셀 PV·FV·PMT·NPER·RATE)",
+        "usage": "fintool tvm [flags]",
+        "flags": []
+      },
+      {
+        "name": "unit-economics",
+        "kind": "calculator",
+        "summary": "구독형 LTV·LTV/CAC·CAC 회수기간 또는 거래형 공헌이익·손익분기점을 계산한다",
+        "usage": "fintool unit-economics --model subscription|transaction [flags]",
+        "flags": []
+      },
+      {
+        "name": "var",
+        "kind": "calculator",
+        "summary": "수익률 시계열에서 VaR와 CVaR(Expected Shortfall)를 구한다 (historical/parametric/montecarlo)",
+        "usage": "fintool var [flags]",
+        "flags": []
+      },
+      {
+        "name": "vol",
+        "kind": "calculator",
+        "summary": "수익률 시계열의 변동성을 추정한다 (realized·EWMA·GARCH(1,1))",
+        "usage": "fintool vol [flags]",
+        "flags": []
+      },
+      {
+        "name": "wacc",
+        "kind": "calculator",
+        "summary": "CAPM 자기자본비용과 세후 부채비용을 시장가치로 가중해 WACC를 계산한다",
+        "usage": "fintool wacc [flags]",
+        "flags": []
+      },
+      {
+        "name": "workflow",
+        "kind": "orchestrator",
+        "summary": "명시적 타입 참조로 여러 재무 도구와 scenario 케이스를 연결한다",
+        "usage": "fintool workflow",
+        "flags": [],
+        "subcommands": [
+          {
+            "name": "explain",
+            "kind": "orchestrator",
+            "summary": "실행 순서와 typed 참조·집계 연결을 JSON으로 설명한다",
+            "usage": "fintool workflow explain [flags]",
+            "flags": []
+          },
+          {
+            "name": "run",
+            "kind": "orchestrator",
+            "summary": "검증된 워크플로를 실행하고 단계별 원본 봉투와 출처를 보존한다",
+            "usage": "fintool workflow run [flags]",
+            "flags": []
+          },
+          {
+            "name": "validate",
+            "kind": "orchestrator",
+            "summary": "워크플로 구조와 모든 참조·타입 호환성을 실행 전에 검사한다",
+            "usage": "fintool workflow validate [flags]",
+            "flags": []
+          }
+        ]
+      }
+    ]
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{"tool":"derivative"}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "tools",
+  "data": {
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "derivative",
+        "kind": "calculator",
+        "summary": "선도·선물·스왑·금리옵션의 가격과 가치, 목표 위험 헤지 계약 수를 계산한다",
+        "usage": "fintool derivative [flags]",
+        "example": "  # 배당수익률이 있는 주식 forward\n  fintool derivative --instrument forward --underlying equity \\\n    --spot 100 --rate 0.05 --yield 0.02 --maturity 1 --contract-price 101\n\n  # discount factor에서 payer interest-rate swap 가치\n  fintool derivative --instrument interest-rate-swap --position payer \\\n    --notional 1000000 --fixed-rate 0.04 --start-discount-factor 1 \\\n    --discount-factors 0.98,0.95 --accruals 0.5,0.5\n\n  # caplet Black-76 가격\n  fintool derivative --instrument rate-option --option-type caplet \\\n    --forward-rate 0.052 --strike 0.05 --vol 0.20 --maturity 1 \\\n    --accrual 0.5 --discount-factor 0.95 --notional 1000000\n\n  # beta 1.2 포트폴리오를 0.8로 낮추는 futures 계약 수\n  fintool derivative --instrument hedge --hedge-method beta \\\n    --portfolio-value 10000000 --current-beta 1.2 --target-beta 0.8 \\\n    --futures-price 4000 --multiplier 50",
+        "flags": [
+          {
+            "name": "accrual",
+            "type": "float64",
+            "default": "0",
+            "description": "rate forward·caplet의 연 단위 이자계산기간"
+          },
+          {
+            "name": "accruals",
+            "type": "string",
+            "default": "",
+            "description": "interest-rate swap 지급기간별 accrual. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다"
+          },
+          {
+            "name": "annuity",
+            "type": "float64",
+            "default": "0",
+            "description": "swaption 고정 leg의 할인 accrual 합"
+          },
+          {
+            "name": "contract-price",
+            "type": "float64",
+            "default": "0",
+            "description": "기존 forward·future 약정가격. 생략하면 현재 공정가격"
+          },
+          {
+            "name": "contract-size",
+            "type": "float64",
+            "default": "0",
+            "description": "통화 futures 한 계약의 기초통화 수량"
+          },
+          {
+            "name": "correlation",
+            "type": "float64",
+            "default": "0",
+            "description": "minimum-variance hedge 현물과 futures 수익률 상관계수"
+          },
+          {
+            "name": "current-beta",
+            "type": "float64",
+            "default": "0",
+            "description": "헤지 전 포트폴리오 beta"
+          },
+          {
+            "name": "current-duration",
+            "type": "float64",
+            "default": "0",
+            "description": "헤지 전 포트폴리오 modified duration"
+          },
+          {
+            "name": "discount-factor",
+            "type": "float64",
+            "default": "0",
+            "description": "caplet·floorlet 지급일 할인계수"
+          },
+          {
+            "name": "discount-factors",
+            "type": "string",
+            "default": "",
+            "description": "interest-rate swap 지급일 할인계수. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다"
+          },
+          {
+            "name": "domestic",
+            "type": "string",
+            "default": "",
+            "description": "currency forward의 국내통화 3자리 코드"
+          },
+          {
+            "name": "domestic-cashflows",
+            "type": "string",
+            "default": "",
+            "description": "currency swap 국내통화 leg 현금흐름. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다"
+          },
+          {
+            "name": "domestic-discount-factors",
+            "type": "string",
+            "default": "",
+            "description": "currency swap 국내통화 leg 할인계수. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다"
+          },
+          {
+            "name": "domestic-rate",
+            "type": "float64",
+            "default": "0",
+            "description": "currency forward 국내통화 연속복리 금리"
+          },
+          {
+            "name": "end-discount-factor",
+            "type": "float64",
+            "default": "0",
+            "description": "rate forward 종료일 할인계수"
+          },
+          {
+            "name": "exposure",
+            "type": "float64",
+            "default": "0",
+            "description": "통화 노출. long foreign은 양수, short foreign은 음수"
+          },
+          {
+            "name": "fixed-rate",
+            "type": "float64",
+            "default": "0",
+            "description": "swap 약정 고정금리. 생략하면 현재 par rate"
+          },
+          {
+            "name": "foreign",
+            "type": "string",
+            "default": "",
+            "description": "currency forward의 외국통화 3자리 코드"
+          },
+          {
+            "name": "foreign-cashflows",
+            "type": "string",
+            "default": "",
+            "description": "currency swap 외국통화 leg 현금흐름. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다"
+          },
+          {
+            "name": "foreign-discount-factors",
+            "type": "string",
+            "default": "",
+            "description": "currency swap 외국통화 leg 할인계수. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다"
+          },
+          {
+            "name": "foreign-rate",
+            "type": "float64",
+            "default": "0",
+            "description": "currency forward 외국통화 연속복리 금리"
+          },
+          {
+            "name": "forward-rate",
+            "type": "float64",
+            "default": "0",
+            "description": "Black-76 금리옵션·swaption의 forward rate"
+          },
+          {
+            "name": "futures-duration",
+            "type": "float64",
+            "default": "0",
+            "description": "duration hedge futures 기초자산의 modified duration"
+          },
+          {
+            "name": "futures-price",
+            "type": "float64",
+            "default": "0",
+            "description": "헤지 futures 가격 또는 지수 레벨"
+          },
+          {
+            "name": "futures-vol",
+            "type": "float64",
+            "default": "0",
+            "description": "minimum-variance hedge futures 수익률 변동성"
+          },
+          {
+            "name": "hedge-method",
+            "type": "string",
+            "default": "",
+            "description": "hedge 계산법 (beta|duration|currency|min-variance)"
+          },
+          {
+            "name": "hedge-ratio",
+            "type": "float64",
+            "default": "1",
+            "description": "통화 노출 중 헤지할 비율. 기본값 1"
+          },
+          {
+            "name": "income-pv",
+            "type": "float64",
+            "default": "0",
+            "description": "bond forward 만기 전 현금수입의 현재가치"
+          },
+          {
+            "name": "initial-spot",
+            "type": "float64",
+            "default": "0",
+            "description": "equity swap 계약의 기준 주가"
+          },
+          {
+            "name": "instrument",
+            "type": "string",
+            "default": "",
+            "description": "계산 종류 (forward|future|interest-rate-swap|currency-swap|equity-swap|rate-option|swaption|hedge)"
+          },
+          {
+            "name": "maturity",
+            "type": "float64",
+            "default": "0",
+            "description": "잔존만기 또는 옵션 만기(년 단위 소수)"
+          },
+          {
+            "name": "multiplier",
+            "type": "float64",
+            "default": "0",
+            "description": "futures 가격 1포인트당 계약 통화가치"
+          },
+          {
+            "name": "notional",
+            "type": "float64",
+            "default": "1",
+            "description": "계약 명목 또는 기초자산 단위 수. 기본값 1"
+          },
+          {
+            "name": "option-type",
+            "type": "string",
+            "default": "",
+            "description": "rate-option은 caplet|floorlet, swaption은 payer|receiver"
+          },
+          {
+            "name": "portfolio-value",
+            "type": "float64",
+            "default": "0",
+            "description": "beta·duration·minimum-variance hedge의 포트폴리오 가치"
+          },
+          {
+            "name": "position",
+            "type": "string",
+            "default": "",
+            "description": "계약 방향. forward·option은 long|short, swap은 payer|receiver 또는 receive-*|pay-*"
+          },
+          {
+            "name": "rate",
+            "type": "float64",
+            "default": "0",
+            "description": "연속복리 무위험이자율(연율 소수)"
+          },
+          {
+            "name": "spot",
+            "type": "float64",
+            "default": "0",
+            "description": "현물가격 또는 foreign 1단위당 domestic 환율"
+          },
+          {
+            "name": "spot-vol",
+            "type": "float64",
+            "default": "0",
+            "description": "minimum-variance hedge 현물 수익률 변동성"
+          },
+          {
+            "name": "start-discount-factor",
+            "type": "float64",
+            "default": "1",
+            "description": "rate forward 또는 swap floating leg 시작일 할인계수. 기본값 1"
+          },
+          {
+            "name": "strike",
+            "type": "float64",
+            "default": "0",
+            "description": "금리옵션·swaption 행사가격(연율 소수)"
+          },
+          {
+            "name": "target-beta",
+            "type": "float64",
+            "default": "0",
+            "description": "목표 포트폴리오 beta"
+          },
+          {
+            "name": "target-duration",
+            "type": "float64",
+            "default": "0",
+            "description": "목표 포트폴리오 modified duration"
+          },
+          {
+            "name": "underlying",
+            "type": "string",
+            "default": "",
+            "description": "forward·future 기초자산 (equity|bond|currency|rate)"
+          },
+          {
+            "name": "vol",
+            "type": "float64",
+            "default": "0",
+            "description": "Black-76 로그정규 변동성(연율 소수)"
+          },
+          {
+            "name": "yield",
+            "type": "float64",
+            "default": "0",
+            "description": "주식의 연속 배당수익률(연율 소수)"
+          }
+        ],
+        "workflow": {
+          "batch": false,
+          "inputs": {
+            "accrual": {
+              "type": "number"
+            },
+            "accruals": {
+              "type": "string"
+            },
+            "annuity": {
+              "type": "number"
+            },
+            "contract-price": {
+              "type": "number"
+            },
+            "contract-size": {
+              "type": "number"
+            },
+            "correlation": {
+              "type": "number"
+            },
+            "current-beta": {
+              "type": "number"
+            },
+            "current-duration": {
+              "type": "number"
+            },
+            "discount-factor": {
+              "type": "number"
+            },
+            "discount-factors": {
+              "type": "string"
+            },
+            "domestic": {
+              "type": "string"
+            },
+            "domestic-cashflows": {
+              "type": "string"
+            },
+            "domestic-discount-factors": {
+              "type": "string"
+            },
+            "domestic-rate": {
+              "type": "number"
+            },
+            "end-discount-factor": {
+              "type": "number"
+            },
+            "exposure": {
+              "type": "number"
+            },
+            "fixed-rate": {
+              "type": "number"
+            },
+            "foreign": {
+              "type": "string"
+            },
+            "foreign-cashflows": {
+              "type": "string"
+            },
+            "foreign-discount-factors": {
+              "type": "string"
+            },
+            "foreign-rate": {
+              "type": "number"
+            },
+            "forward-rate": {
+              "type": "number"
+            },
+            "futures-duration": {
+              "type": "number"
+            },
+            "futures-price": {
+              "type": "number"
+            },
+            "futures-vol": {
+              "type": "number"
+            },
+            "hedge-method": {
+              "type": "string"
+            },
+            "hedge-ratio": {
+              "type": "number"
+            },
+            "income-pv": {
+              "type": "number"
+            },
+            "initial-spot": {
+              "type": "number"
+            },
+            "instrument": {
+              "type": "string"
+            },
+            "maturity": {
+              "type": "number"
+            },
+            "multiplier": {
+              "type": "number"
+            },
+            "notional": {
+              "type": "number"
+            },
+            "option-type": {
+              "type": "string"
+            },
+            "portfolio-value": {
+              "type": "number"
+            },
+            "position": {
+              "type": "string"
+            },
+            "rate": {
+              "type": "number"
+            },
+            "spot": {
+              "type": "number"
+            },
+            "spot-vol": {
+              "type": "number"
+            },
+            "start-discount-factor": {
+              "type": "number"
+            },
+            "strike": {
+              "type": "number"
+            },
+            "target-beta": {
+              "type": "number"
+            },
+            "target-duration": {
+              "type": "number"
+            },
+            "underlying": {
+              "type": "string"
+            },
+            "vol": {
+              "type": "number"
+            },
+            "yield": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"derivative","flags":{"instrument":"hedge","hedge-method":"duration","portfolio-value":500000000000,"current-duration":4.2,"target-duration":7.5,"futures-price":112.5,"futures-duration":8.6,"multiplier":1000000}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "derivative",
+  "data": {
+    "instrument": "hedge",
+    "hedge": {
+      "method": "duration",
+      "hedge_ratio": 3.3,
+      "contracts": 1705.4263565891472,
+      "nearest_whole_contracts": 1705,
+      "direction": "long",
+      "convention": "(target_duration-current_duration) × portfolio_value ÷ futures_dollar_duration"
+    }
+  }
+}
+
+
+[assistant]
+## 1. 필요 선물 계약 수
+
+fintool `derivative --instrument hedge --hedge-method duration` 봉투:
+
+```
+hedge_ratio(듀레이션 갭)     : 3.3
+contracts                    : 1705.4263565891472
+nearest_whole_contracts      : 1705
+direction                    : long
+convention: (target_duration - current_duration) × portfolio_value ÷ futures_dollar_duration
+```
+
+**→ 3년 국채선물 1,705계약 매수(long)**
+
+듀레이션을 **올리는** 것이므로 방향은 매수입니다. 금리 하락 시 선물 가격이 올라 현물 평가익에 추가 이익이 얹힙니다.
+
+### DV01로 검산
+
+| 항목 | 값 |
+|---|---|
+| 현물 DV01 (4.2 × 5,000억 × 1bp) | 2억 1,000만 원/bp |
+| 목표 DV01 (7.5 × 5,000억 × 1bp) | 3억 7,500만 원/bp |
+| **메워야 할 갭** | **1억 6,500만 원/bp** |
+| 선물 1계약 계약가치 (112.50 × 1억/100) | 1억 1,250만 원 |
+| 선물 1계약 DV01 (8.6 × 1.125억 × 1bp) | 96,750 원/bp |
+| 필요 계약수 | 165,000,000 ÷ 96,750 = **1,705.43계약** |
+
+1,705계약의 명목 노출은 **1,918억 원**(포트폴리오 시가의 38.4%)입니다.
+
+---
+
+## 2. 전 구간 50bp 하락 시 손익 (1차 근사)
+
+| 구분 | 손익 | 대비 수익률 |
+|---|---|---|
+| 현물 포트폴리오 (D=4.2) | +105억 0,000만 원 | +2.100% |
+| 선물 1,705계약 (8.6 × 0.5% × 1.125억 × 1,705) | +82억 4,794만 원 | +1.650% |
+| **오버레이 후 합계** | **+187억 4,794만 원** | **+3.750%** |
+| (참고) D=7.5 이론값 | +187억 5,000만 원 | +3.750% |
+
+- 헤지 전 대비 **+82.5억 원**, 손익 규모가 **1.79배**로 확대됩니다.
+- 정수 반올림(1,705.43 → 1,705)으로 인한 오차는 206만 원으로 무시할 수준입니다.
+
+---
+
+## 3. 이 듀레이션 오버레이의 한계
+
+**① 선물 듀레이션 8.6은 3년 국채선물 값으로 보기 어렵습니다**
+KTB 3년 선물 CTD의 수정듀레이션은 통상 2.7~2.9 수준이고, 8.6은 10년 선물에 가까운 숫자입니다. 주신 값 그대로 계산했지만, 실제 듀레이션이 2.8이라면 필요 계약수는 **약 5,238계약**으로 3배 이상 늘고 명목 노출도 5,893억 원이 됩니다. 발주 전 CTD 기준 BPV/전환계수를 반드시 재확인하십시오.
+
+**② 병행이동 가정 — 커브 리스크가 그대로 남습니다**
+"전 구간 50bp"는 문제의 전제일 뿐, 실제로는 커브가 트위스트합니다. 3년 선물은 커브의 특정 만기 구간만 헤지하므로, 포트폴리오가 장기물 중심이면 키레이트 듀레이션 불일치가 발생합니다. 불 스티프닝(단기만 하락)이 오면 선물 이익은 나지만 현물은 거의 안 움직여 목표에 크게 못 미칩니다.
+
+**③ 컨벡시티 무시 — 1차 근사일 뿐입니다**
+듀레이션만 쓴 선형 추정입니다. 하락 시엔 실제 이익이 위 표보다 크지만(유리한 오차), 컨벡시티가 큰 포지션일수록 괴리가 커집니다. 컨벡시티 60 가정 시 0.5 × 60 × 0.005² ≈ +0.075%(약 3.75억) 추가분이 누락돼 있습니다.
+
+**④ 대칭적 손실 — 이건 헤지가 아니라 방향성 베팅입니다**
+금리가 반대로 50bp **상승**하면 손실도 -105억에서 **-187.5억**으로 똑같이 확대됩니다. "헤지"라는 이름을 붙이지만 실질은 레버리지 확대입니다.
+
+**⑤ 일일정산 현금흐름 — 유동성 리스크가 새로 생깁니다**
+현물 채권 평가손은 미실현이지만 선물은 매일 현금으로 정산됩니다. 금리 상승 국면에서 1,705계약 기준 1bp당 9,675만 원이 현금 유출되고, 50bp 상승 시 48억 원을 실제로 납입해야 합니다. 개시·유지증거금과 마진콜 대응 현금을 별도로 확보해야 합니다.
+
+**⑥ 크레딧 스프레드는 헤지되지 않습니다**
+포트폴리오에 회사채·여전채가 섞여 있다면 국채선물은 무위험금리 리스크만 조정합니다. 금리 하락과 스프레드 확대가 동시에 오면(위기 국면의 전형적 패턴) 현물 이익이 기대에 못 미치는데 선물 이익만 온전히 나거나, 반대로 어긋납니다.
+
+**⑦ 롤오버 비용과 듀레이션 드리프트**
+최근월물만 유동성이 있어 분기마다 롤해야 하고, 그때마다 캘린더 스프레드 비용과 신규 CTD의 듀레이션 변화를 반영해 계약수를 다시 잡아야 합니다. 또 시간이 지나면 현물 듀레이션 자체가 짧아지므로 목표 7.5 유지에는 주기적 리밸런싱이 필수입니다.
+
+[result] duration_ms=94337 turns=4 cost_usd=0.440048 input_tokens=104223 output_tokens=6005

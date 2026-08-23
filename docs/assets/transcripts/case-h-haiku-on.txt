@@ -1,0 +1,463 @@
+# prompt
+국내 채권 포트폴리오 시가 5,000억 원, 수정듀레이션 4.2다. 금리 하락을 예상해 목표 수정듀레이션을 7.5로 올리려 한다. 3년 국채선물 가격 112.50, 계약승수 1억 원, 최근월물 수정듀레이션 8.6이다. 필요한 선물 계약 수와 방향을 구하고, 실제로 금리가 전 구간 50bp 하락했을 때 헤지 전후 포트폴리오 손익이 어떻게 달라지는지 알려줘. 이 듀레이션 오버레이가 갖는 한계도 짚어줘.
+
+# run: plugin ON (fintool@fintool-plugin 0.5.4) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-haiku-4-5-20251001 · 2026-08-23
+
+[assistant]
+금융 계산 도구를 사용하여 이 듀레이션 오버레이 전략을 분석하겠습니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{"tool":"fixed-income"}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "tools",
+  "error": {
+    "code": "invalid_input",
+    "message": "알 수 없는 도구 \"fixed-income\"입니다. fintool tools --brief로 목록을 확인하세요"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "tools",
+  "data": {
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "amort",
+        "kind": "calculator",
+        "summary": "상환 스케줄 전체와 구간 누적을 한 번에 낸다 (엑셀 IPMT·PPMT·CUMIPMT·CUMPRINC·ISPMT)",
+        "usage": "fintool amort [flags]",
+        "flags": []
+      },
+      {
+        "name": "attribution",
+        "kind": "calculator",
+        "summary": "Brinson active return과 수정듀레이션 기반 고정수익 성과 귀속을 계산한다",
+        "usage": "fintool attribution --model brinson|fixed-income --input \u003cJSON|@file.json\u003e [flags]",
+        "flags": []
+      },
+      {
+        "name": "bond",
+        "kind": "calculator",
+        "summary": "채권 가격·수익률·스프레드·듀레이션·convexity·경과이자",
+        "usage": "fintool bond [flags]",
+        "flags": []
+      },
+      {
+        "name": "business-plan",
+        "kind": "calculator",
+        "aliases": [
+          "bp"
+        ],
+        "summary": "사업계획 가정을 연 단위 손익·운전자본·현금흐름으로 전개하고 자금소요와 흑자전환 시점을 낸다",
+        "usage": "fintool business-plan [flags]",
+        "flags": []
+      },
+      {
+        "name": "cap-table-simulate",
+        "kind": "calculator",
+        "summary": "full cap table·SAFE·전환증권·옵션풀 전환 시나리오를 결정론적으로 계산한다",
+        "usage": "fintool cap-table-simulate [flags]",
+        "flags": []
+      },
+      {
+        "name": "capital-budget",
+        "kind": "calculator",
+        "summary": "복수 투자안의 NPV·IRR·MIRR·회수기간·PI·EAA를 계산하고 지표별 순위를 비교한다",
+        "usage": "fintool capital-budget [flags]",
+        "flags": []
+      },
+      {
+        "name": "convertible",
+        "kind": "calculator",
+        "summary": "전환사채(CB)를 Tsiveriotis-Fernandes 이항 트리로 평가한다 (신용스프레드·콜·풋 반영)",
+        "usage": "fintool convertible [flags]",
+        "flags": []
+      },
+      {
+        "name": "coupon",
+        "kind": "calculator",
+        "summary": "결제일이 놓인 이표 구간과 남은 이표 횟수를 한 번에 구한다 (엑셀 COUPPCD·COUPNCD·COUPNUM·COUPDAYBS·COUPDAYS·COUPDAYSNC)",
+        "usage": "fintool coupon [flags]",
+        "flags": []
+      },
+      {
+        "name": "credit",
+        "kind": "calculator",
+        "summary": "Merton 구조모형의 부도확률과 distance to default (자산가치·부채·자산변동성에서 산출)",
+        "usage": "fintool credit [flags]",
+        "flags": []
+      },
+      {
+        "name": "curve",
+        "kind": "calculator",
+        "summary": "수익률곡선 부트스트래핑, 스팟↔포워드 변환, Nelson-Siegel·Svensson 피팅, Z-spread",
+        "usage": "fintool curve [flags]",
+        "flags": []
+      },
+      {
+        "name": "dcf",
+        "kind": "calculator",
+        "summary": "명시적 FCF와 terminal value를 할인해 기업가치·주주가치·주당가치와 민감도를 구한다",
+        "usage": "fintool dcf [flags]",
+        "flags": []
+      },
+      {
+        "name": "decision-tree",
+        "kind": "calculator",
+        "summary": "JSON 의사결정 트리를 rollback해 노드별 EMV, 선택 가지, EVPI를 구한다",
+        "usage": "fintool decision-tree [flags]",
+        "flags": []
+      },
+      {
+        "name": "depreciate",
+        "kind": "calculator",
+        "summary": "감가상각 스케줄 전체를 낸다 (엑셀 SLN·SYD·DB·DDB·VDB·AMORDEGRC·AMORLINC)",
+        "usage": "fintool depreciate [flags]",
+        "flags": []
+      },
+      {
+        "name": "derivative",
+        "kind": "calculator",
+        "summary": "선도·선물·스왑·금리옵션의 가격과 가치, 목표 위험 헤지 계약 수를 계산한다",
+        "usage": "fintool derivative [flags]",
+        "flags": []
+      },
+      {
+        "name": "discount",
+        "kind": "calculator",
+        "summary": "할인채와 단기 국채의 가격·수익률·할인율 (엑셀 DISC·INTRATE·RECEIVED·PRICEDISC·YIELDDISC·TBILLEQ·TBILLPRICE·TBILLYIELD)",
+        "usage": "fintool discount [flags]",
+        "flags": []
+      },
+      {
+        "name": "equity",
+        "kind": "calculator",
+        "summary": "DDM·FCF·배수·잔여이익·사기업·SOTP 주식가치를 계산한다",
+        "usage": "fintool equity --model ddm|fcf|multiples|residual|private|sotp [flags]",
+        "flags": []
+      },
+      {
+        "name": "financial-model",
+        "kind": "calculator",
+        "summary": "strict financial-model 입력을 12~60개월 월별 재무제표로 계산한다. cash·accrual 두 회계 모드",
+        "usage": "fintool financial-model [flags]",
+        "flags": []
+      },
+      {
+        "name": "fsa",
+        "kind": "calculator",
+        "summary": "EPS·재무비율·FCFF/FCFE·현금흐름 연결과 핵심 회계 정규화를 계산한다",
+        "usage": "fintool fsa --solve eps|ratios|cashflow|adjust [flags]",
+        "flags": []
+      },
+      {
+        "name": "fx",
+        "kind": "calculator",
+        "summary": "현물·cross·선도환율, 국제 패리티, bid-offer, 삼각재정, forward MTM과 carry를 계산한다",
+        "usage": "fintool fx [flags]",
+        "flags": []
+      },
+      {
+        "name": "irr",
+        "kind": "calculator",
+        "summary": "순현재가치를 0으로 만드는 내부수익률을 구한다. --dates를 주면 불규칙 날짜 기준이다 (엑셀 IRR·XIRR)",
+        "usage": "fintool irr [flags]",
+        "flags": []
+      },
+      {
+        "name": "montecarlo",
+        "kind": "calculator",
+        "aliases": [
+          "mc"
+        ],
+        "summary": "자산 경로를 시뮬레이션해 만기 잔액 분포와 목표 달성 확률을 계산한다 (GBM/부트스트랩/팻테일/점프/다자산)",
+        "usage": "fintool montecarlo [flags]",
+        "flags": []
+      },
+      {
+        "name": "npv",
+        "kind": "calculator",
+        "summary": "현금흐름의 순현재가치를 구한다. --dates를 주면 불규칙 날짜 기준으로 계산한다 (엑셀 NPV·XNPV)",
+        "usage": "fintool npv [flags]",
+        "flags": []
+      },
+      {
+        "name": "option",
+        "kind": "calculator",
+        "summary": "옵션 가격·그릭스·IV와 만기 payoff·풋-콜 패리티·표준 전략을 계산한다",
+        "usage": "fintool option [flags]",
+        "flags": []
+      },
+      {
+        "name": "perf",
+        "kind": "calculator",
+        "summary": "수익률 시계열의 성과 지표를 한 번에 낸다 (CAGR·Sharpe·Sortino·Calmar·MDD·베타·알파 등)",
+        "usage": "fintool perf [flags]",
+        "flags": []
+      },
+      {
+        "name": "portfolio",
+        "kind": "calculator",
+        "summary": "포트폴리오 최적화·CAPM·Roy safety-first·목표·부채 면역화 지표를 계산한다",
+        "usage": "fintool portfolio [flags]",
+        "flags": []
+      },
+      {
+        "name": "pricing",
+        "kind": "calculator",
+        "summary": "상수 가격탄력성으로 제안 가격의 예상 판매량과 기준 대비 손익·보전 임계값을 계산한다",
+        "usage": "fintool pricing [flags]",
+        "flags": []
+      },
+      {
+        "name": "private-markets",
+        "kind": "calculator",
+        "summary": "사모펀드 성과·waterfall과 비상장 주식·부채·실물자산 가치를 계산한다",
+        "usage": "fintool private-markets --mode fund|vc|growth|buyout|debt|asset [flags]",
+        "flags": []
+      },
+      {
+        "name": "rate-convert",
+        "kind": "calculator",
+        "summary": "이자율 표기를 변환하고 성장률·소요 기간을 구한다 (엑셀 EFFECT·NOMINAL·RRI·PDURATION·FVSCHEDULE)",
+        "usage": "fintool rate-convert [flags]",
+        "flags": []
+      },
+      {
+        "name": "regression",
+        "kind": "calculator",
+        "summary": "CFA Level I·II OLS·ANOVA·예측구간·회귀진단과 이항 로지스틱 회귀를 계산한다",
+        "usage": "fintool regression --model ols|logistic --input \u003cJSON|@file.json\u003e [flags]",
+        "flags": []
+      },
+      {
+        "name": "report",
+        "kind": "calculator",
+        "summary": "fintool JSON 봉투를 고정 부품 HTML로 바인딩한다",
+        "usage": "fintool report [flags]",
+        "flags": []
+      },
+      {
+        "name": "scenario",
+        "kind": "workflow_primitive",
+        "summary": "시나리오 가정의 정합성을 검증하고 실행할 파라미터 조합을 전개한다",
+        "usage": "fintool scenario [flags]",
+        "flags": []
+      },
+      {
+        "name": "stats",
+        "kind": "calculator",
+        "summary": "CFA Level I 기술통계·확률·신뢰구간·가설검정을 명시적 모드로 계산한다",
+        "usage": "fintool stats --mode describe|probability|infer|test [flags]",
+        "flags": []
+      },
+      {
+        "name": "timeseries",
+        "kind": "calculator",
+        "summary": "CFA 시계열 추세·AR(1/2)·계절성·RMSE 비교·ARCH 분산 예측을 계산한다",
+        "usage": "fintool timeseries --mode trend|ar|seasonal|compare|arch (--returns \u003cseries\u003e|--prices \u003cseries\u003e) [flags]",
+        "flags": []
+      },
+      {
+        "name": "trade-cost",
+        "kind": "calculator",
+        "summary": "quoted/effective spread, VWAP 거래비용, implementation shortfall을 계산한다",
+        "usage": "fintool trade-cost [flags]",
+        "flags": []
+      },
+      {
+        "name": "tvm",
+        "kind": "calculator",
+        "summary": "화폐의 시간가치 방정식을 풀어 pv/fv/pmt/nper/rate 중 하나를 구한다 (엑셀 PV·FV·PMT·NPER·RATE)",
+        "usage": "fintool tvm [flags]",
+        "flags": []
+      },
+      {
+        "name": "unit-economics",
+        "kind": "calculator",
+        "summary": "구독형 LTV·LTV/CAC·CAC 회수기간 또는 거래형 공헌이익·손익분기점을 계산한다",
+        "usage": "fintool unit-economics --model subscription|transaction [flags]",
+        "flags": []
+      },
+      {
+        "name": "var",
+        "kind": "calculator",
+        "summary": "수익률 시계열에서 VaR와 CVaR(Expected Shortfall)를 구한다 (historical/parametric/montecarlo)",
+        "usage": "fintool var [flags]",
+        "flags": []
+      },
+      {
+        "name": "vol",
+        "kind": "calculator",
+        "summary": "수익률 시계열의 변동성을 추정한다 (realized·EWMA·GARCH(1,1))",
+        "usage": "fintool vol [flags]",
+        "flags": []
+      },
+      {
+        "name": "wacc",
+        "kind": "calculator",
+        "summary": "CAPM 자기자본비용과 세후 부채비용을 시장가치로 가중해 WACC를 계산한다",
+        "usage": "fintool wacc [flags]",
+        "flags": []
+      },
+      {
+        "name": "workflow",
+        "kind": "orchestrator",
+        "summary": "명시적 타입 참조로 여러 재무 도구와 scenario 케이스를 연결한다",
+        "usage": "fintool workflow",
+        "flags": [],
+        "subcommands": [
+          {
+            "name": "explain",
+            "kind": "orchestrator",
+            "summary": "실행 순서와 typed 참조·집계 연결을 JSON으로 설명한다",
+            "usage": "fintool workflow explain [flags]",
+            "flags": []
+          },
+          {
+            "name": "run",
+            "kind": "orchestrator",
+            "summary": "검증된 워크플로를 실행하고 단계별 원본 봉투와 출처를 보존한다",
+            "usage": "fintool workflow run [flags]",
+            "flags": []
+          },
+          {
+            "name": "validate",
+            "kind": "orchestrator",
+            "summary": "워크플로 구조와 모든 참조·타입 호환성을 실행 전에 검사한다",
+            "usage": "fintool workflow validate [flags]",
+            "flags": []
+          }
+        ]
+      }
+    ]
+  }
+}
+
+
+[assistant]
+`derivative` 도구를 사용하여 듀레이션 오버레이 헤지를 계산하겠습니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"derivative","flags":{"underlying_type":"bond_portfolio","underlying_value":50000000000,"underlying_duration":4.2,"target_duration":7.5,"futures_price":112.5,"futures_contract_size":100000000,"futures_duration":8.6,"solve":"hedge_contracts"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "fintool_run",
+  "error": {
+    "code": "invalid_input",
+    "message": "알 수 없는 플래그 \"futures_contract_size\"입니다"
+  }
+}
+
+[assistant]
+직접 계산하여 분석하겠습니다.
+
+## 1. 필요한 선물 계약 수와 방향 계산
+
+### 기본 공식
+```
+필요한 현물 추가량 = (목표 MD - 현재 MD) × 포트폴리오 시가
+                  = (7.5 - 4.2) × 500억
+                  = 1,650억 원분 위험도
+
+선물 한 계약 현물가 = (112.50 / 100) × 1억 = 1.1250억 원
+
+선물 한 계약의 위험도 = 1.1250억 × 8.6 = 9.675억 원
+
+필요한 계약 수 = 1,650 / 9.675 ≈ 170.5계약
+```
+
+**결론: 선물 170.5계약(보통 170~171) 매수**
+- **방향**: 매수(Long) - 금리 하락 시 이익을 얻기 위해
+
+---
+
+## 2. 금리 50bp 하락 시 손익 비교
+
+### A. 헤지 전(현물 포트폴리오만)
+```
+DV01 = 포트폴리오 시가 × MD / 10,000
+     = 500억 × 4.2 / 10,000 
+     = 210만 원/bp
+
+50bp 하락 시 손익 = 210만 × 50 = 1.05억 원
+```
+
+### B. 헤지 후(현물 + 선물 170계약 매수)
+```
+선물 한 계약 DV01 = 1.1250억 × 8.6 / 10,000 = 96.75만 원/bp
+
+170계약의 DV01 = 170 × 96.75만 = 1.6448억 원/bp
+
+선물 손익(50bp 하락) = 1.6448억 × 50 = 8.224억 원
+
+헤지 후 순손익 = 1.05억 + 8.224억 = 9.274억 원
+```
+
+**비교표**
+| 항목 | 손익 |
+|------|------|
+| 헤지 전 | 1.05억 원 |
+| 헤지 후 | 9.27억 원 |
+| **추가 이익** | **8.22억 원** |
+
+---
+
+## 3. 듀레이션 오버레이의 한계
+
+### 1) **곡률(Convexity) 무시**
+- DV01은 금리 변화에 선형을 가정하지만, 실제는 비선형
+- 금리 변화가 50bp 이상 크면 오차 확대
+- 더 정확하려면 : 손익 = DV01 × Δr + ½ × Convexity × (Δr)²
+
+### 2) **기저 위험(Basis Risk)**
+- 3년 국채선물 ≠ 포트폴리오 구성 채권들의 평균 특성
+- 선물은 표준화(CTD: Cheapest-to-Deliver 가정)
+- 신용도, 만기, 유동성 미스매치로 추적오차 발생
+
+### 3) **포트폴리오 동적 변화**
+- 이표 지급, 상환, 손익실현, 신규 투자 시 MD 자동 변화
+- 목표 MD 유지 시 주기적 재조정(Rebalancing) 필요
+- 실제 듀레이션 드리프트 발생
+
+### 4) **선물 롤오버(Roll) 비용**
+- 3년 국채선물은 만기가 3~4개월로 짧음
+- 주기적으로 만기 물자를 교체해야 함
+- 롤오버 시 기저 손실(Roll Yield 악화)
+
+### 5) **금리곡선 변화(Non-Parallel Shift)**
+- MD는 전 구간 평행이동 가정
+- 실제: 단기와 장기 금리가 다르게 움직임
+- **키 레이트 듀레이션(Key Rate Duration)** 사용이 더 정확
+
+### 6) **파이낸싱 비용 차이(Carry)**
+- 현물 채권 보유 비용 ≠ 선물 포지션 자금조달 비용
+- 레포 금리, 거래비용 차이로 장기 성과 악화
+
+### 7) **재조정 빈도 트레이드오프**
+- 너무 자주 조정: 거래비용↑
+- 너무 드물게 조정: 추적오차↑
+
+---
+
+## 결론
+이 오버레이 전략은 **금리 방향성 베팅에는 효과적**이지만, **비용(롤오버, 레포)과 기저위험을 고려한 능동적 관리**가 필수입니다. 특히 선물 가격이 현물과 완전히 동조하지 않으므로 **월 1~2회 리밸런싱**과 **기저 모니터링**이 권장됩니다.
+
+[result] duration_ms=61737 turns=4 cost_usd=0.062442 input_tokens=62666 output_tokens=7421

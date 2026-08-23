@@ -1,0 +1,214 @@
+# prompt
+내년부터 5년 FCF 10억, 12억, 14억, 16억, 18억, 순부채 20억, 발행주식 100만 주. DCF로 주당가치는?
+
+# run: plugin ON (fintool@fintool-plugin 0.5.4) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-sonnet-5 · 2026-08-23
+
+[tool_use Skill]
+{"skill":"fintool:valuation"}
+
+[tool_result]
+Launching skill: fintool:valuation
+
+[assistant]
+FCF 5년치와 순부채, 발행주식수는 주어졌지만 할인율(WACC)과 영구성장률이 없어 가정을 세워 계산하겠습니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"dcf","flags":{"fcf":"1000000000,1200000000,1400000000,1600000000,1800000000","wacc":0.09,"terminal-method":"growth","terminal-growth":0.02,"net-debt":2000000000,"shares":1000000,"wacc-range":"0.07,0.11","terminal-growth-range":"0.01,0.03"}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "dcf",
+  "data": {
+    "terminal_method": "growth",
+    "wacc": 0.09,
+    "terminal_growth": 0.02,
+    "net_debt": 2000000000,
+    "shares": 1000000,
+    "first_cashflow_at": 1,
+    "cashflow_timing": "year_end",
+    "day_count": "annual_index",
+    "forecast_years": 5,
+    "flows": [
+      {
+        "year": 1,
+        "years_from_valuation": 1,
+        "fcf": 1000000000,
+        "discount_factor": 0.9174311926605504,
+        "present_value": 917431192.6605504
+      },
+      {
+        "year": 2,
+        "years_from_valuation": 2,
+        "fcf": 1200000000,
+        "discount_factor": 0.84167999326656,
+        "present_value": 1010015991.9198719
+      },
+      {
+        "year": 3,
+        "years_from_valuation": 3,
+        "fcf": 1400000000,
+        "discount_factor": 0.7721834800610642,
+        "present_value": 1081056872.0854897
+      },
+      {
+        "year": 4,
+        "years_from_valuation": 4,
+        "fcf": 1600000000,
+        "discount_factor": 0.7084252110651964,
+        "present_value": 1133480337.7043142
+      },
+      {
+        "year": 5,
+        "years_from_valuation": 5,
+        "fcf": 1800000000,
+        "discount_factor": 0.6499313862983452,
+        "present_value": 1169876495.3370214
+      }
+    ],
+    "explicit_forecast_pv": 5311860889.707248,
+    "terminal_value": 26228571428.57143,
+    "terminal_present_value": 17046771789.1966,
+    "enterprise_value": 22358632678.903847,
+    "equity_value": 20358632678.903847,
+    "value_per_share": 20358.632678903847,
+    "terminal_value_share": 0.7624246095013147,
+    "sensitivity": {
+      "terminal_method": "growth",
+      "row_axis": "wacc",
+      "column_axis": "terminal_growth",
+      "wacc_range": [
+        0.07,
+        0.09,
+        0.11
+      ],
+      "terminal_growth_range": [
+        0.01,
+        0.02,
+        0.03
+      ],
+      "rows": [
+        {
+          "wacc": 0.07,
+          "cells": [
+            {
+              "wacc": 0.07,
+              "terminal_growth": 0.01,
+              "enterprise_value": 27233011641.529175,
+              "equity_value": 25233011641.529175,
+              "value_per_share": 25233.011641529174,
+              "is_base": false
+            },
+            {
+              "wacc": 0.07,
+              "terminal_growth": 0.02,
+              "enterprise_value": 31810382913.814327,
+              "equity_value": 29810382913.814327,
+              "value_per_share": 29810.382913814326,
+              "is_base": false
+            },
+            {
+              "wacc": 0.07,
+              "terminal_growth": 0.03,
+              "enterprise_value": 38676439822.24205,
+              "equity_value": 36676439822.24205,
+              "value_per_share": 36676.43982224205,
+              "is_base": false
+            }
+          ]
+        },
+        {
+          "wacc": 0.09,
+          "cells": [
+            {
+              "wacc": 0.09,
+              "terminal_growth": 0.01,
+              "enterprise_value": 20081551643.337143,
+              "equity_value": 18081551643.337143,
+              "value_per_share": 18081.55164333714,
+              "is_base": false
+            },
+            {
+              "wacc": 0.09,
+              "terminal_growth": 0.02,
+              "enterprise_value": 22358632678.903847,
+              "equity_value": 20358632678.903847,
+              "value_per_share": 20358.632678903847,
+              "is_base": true
+            },
+            {
+              "wacc": 0.09,
+              "terminal_growth": 0.03,
+              "enterprise_value": 25394740726.32612,
+              "equity_value": 23394740726.32612,
+              "value_per_share": 23394.74072632612,
+              "is_base": false
+            }
+          ]
+        },
+        {
+          "wacc": 0.11,
+          "cells": [
+            {
+              "wacc": 0.11,
+              "terminal_growth": 0.01,
+              "enterprise_value": 15809642847.857098,
+              "equity_value": 13809642847.857098,
+              "value_per_share": 13809.642847857098,
+              "is_base": false
+            },
+            {
+              "wacc": 0.11,
+              "terminal_growth": 0.02,
+              "enterprise_value": 17127104796.147099,
+              "equity_value": 15127104796.147099,
+              "value_per_share": 15127.104796147098,
+              "is_base": false
+            },
+            {
+              "wacc": 0.11,
+              "terminal_growth": 0.03,
+              "enterprise_value": 18773932231.509598,
+              "equity_value": 16773932231.509598,
+              "value_per_share": 16773.932231509596,
+              "is_base": false
+            }
+          ]
+        }
+      ]
+    },
+    "convention": "FCF[0]은 1년차 말 현금흐름이다. terminal value는 마지막 명시적 현금흐름 시점에 발생한다."
+  }
+}
+
+
+[assistant]
+**가정: WACC 9%, 영구성장률(g) 2% — 회사 규모·업종 정보가 없어 제가 임의로 정한 값입니다 (한국 상장 중견기업 통상 범위 기준, 기본값 제안 2026-08-23).**
+
+## 결과 (base case)
+
+| 항목 | 값 |
+|---|---|
+| 명시적 예측기간(5년) 현재가치 합 | 약 53.1억 원 |
+| 잔존가치(터미널) 현재가치 | 약 170.5억 원 |
+| **기업가치(EV)** | 약 223.6억 원 |
+| 순부채 차감 | -20억 원 |
+| **자기자본 가치(Equity Value)** | 약 203.6억 원 |
+| 발행주식수 | 100만 주 |
+| **주당가치** | 약 **20,359원** |
+
+잔존가치가 전체 가치의 76%를 차지해, 결과가 g와 WACC 가정에 매우 민감합니다.
+
+## 민감도 (WACC × 영구성장률, 주당가치)
+
+| WACC \ g | 1% | 2% | 3% |
+|---|---|---|---|
+| 7% | 25,233원 | 29,810원 | 36,676원 |
+| **9%** | 18,082원 | **20,359원** | 23,395원 |
+| 11% | 13,810원 | 15,127원 | 16,774원 |
+
+WACC 7~11%, g 1~3% 범위에서 주당가치는 대략 **13,800원 ~ 36,700원**까지 폭넓게 움직입니다.
+
+실제 회사의 자기자본비용(무위험이자율, 베타, 시장위험프리미엄), 세후 부채비용, 목표 g를 알려주시면 그 값으로 다시 정확히 계산해드리겠습니다.
+
+[result] duration_ms=16907 turns=4 cost_usd=0.0911028 input_tokens=78121 output_tokens=1132

@@ -1,0 +1,74 @@
+# prompt
+은퇴 자산 25억 원. 매년 초 1.2억 원을 인출하고 인출액은 매년 2.5%씩 늘린다. 포트폴리오 기대수익률 연 5.5%, 변동성 12%, 물가상승률 2%, 기간 30년. 실질 기준으로 자산 고갈 확률과 고갈 시점 분포를 구하고, 고갈된 경로와 살아남은 경로의 초기 5년 수익률이 어떻게 달랐는지(수익률 순서 위험) 알려줘.
+
+# run: plugin OFF · claude -p --tools "" --setting-sources "" (전역 CLAUDE.md 배제) · claude-sonnet-5 · 2026-08-23
+
+[assistant]
+이 작업은 몬테카를로 시뮬레이션(수천 개의 수익률 경로를 생성해 자산 소진 확률·시점을 계산하고, 초기 5년 수익률과 고갈 여부의 상관관계를 분석)이 필요한데, 지금 제게 연결된 도구는 Google Calendar와 Slack뿐이라 코드를 실행할 환경(Python 등)이 없습니다. 실제로 실행하지 않고 숫자를 지어내는 건 드리고 싶지 않아서, 그대로 실행 가능한 스크립트와 계산 로직을 드릴게요. 로컬에 Python(numpy)만 있으면 바로 돌려서 정확한 결과를 얻으실 수 있습니다.
+
+## 모델 설정 (실질 기준)
+
+- 명목수익률 R ~ 로그정규분포, 산술평균 5.5%, 표준편차 12%
+- 물가상승률 2%로 고정(확정적) → 실질수익률 r = (1+R)/1.02 − 1
+- 로그수익률 환산: σ_log² = ln(1+(0.12/1.055)²) ≈ 0.01285 → σ_log ≈ 11.34%
+  μ_log(명목) = ln(1.055) − 0.5·σ_log² ≈ 4.71%
+  μ_log(실질) = μ_log(명목) − ln(1.02) ≈ 2.73%
+- 인출액: 매년 초 1.2억(명목), 매년 2.5%씩 증가 → 실질로는 매년 (1.025/1.02−1)≈0.49%씩 증가
+- 매년 초 인출 후 남은 잔액에 그 해 실질수익률 적용 (연금-선불 방식)
+- 고갈 = 인출 시점에 잔액이 인출액보다 작아지는 경우
+
+## 실행 가능한 시뮬레이션 코드
+
+```python
+import numpy as np
+
+np.random.seed(42)
+n_sims = 50_000
+n_years = 30
+
+A0 = 2_500_000_000   # 25억
+W0 = 120_000_000     # 1.2억
+w_growth_real = 1.025/1.02 - 1   # 실질 인출증가율 ≈0.49%
+
+mu_log_real = np.log(1.055) - 0.5*np.log(1+(0.12/1.055)**2) - np.log(1.02)
+sigma_log = np.sqrt(np.log(1+(0.12/1.055)**2))
+
+# 실질 로그수익률 경로 생성
+log_returns = np.random.normal(mu_log_real, sigma_log, size=(n_sims, n_years))
+real_returns = np.exp(log_returns) - 1
+
+ruin_year = np.full(n_sims, -1)   # -1 = 생존
+balance = np.full(n_sims, A0, dtype=float)
+alive = np.ones(n_sims, dtype=bool)
+
+for t in range(n_years):
+    withdrawal = W0 * (1 + w_growth_real) ** t
+    remaining = balance - withdrawal
+    newly_ruined = alive & (remaining <= 0)
+    ruin_year[newly_ruined] = t + 1          # 몇 년차에 고갈됐는지(1-indexed)
+    alive[newly_ruined] = False
+    balance[alive] = remaining[alive] * (1 + real_returns[alive, t])
+
+ruin_prob = (ruin_year != -1).mean()
+print(f"자산 고갈 확률: {ruin_prob:.1%}")
+
+ruined_years = ruin_year[ruin_year != -1]
+print("고갈 시점 분포(연차) 백분위:",
+      np.percentile(ruined_years, [10,25,50,75,90]))
+
+# 수익률 순서 위험: 초기 5년 평균 실질수익률 비교
+first5_avg = real_returns[:, :5].mean(axis=1)
+ruined_mask = ruin_year != -1
+print("고갈 경로 초기5년 평균수익률:", first5_avg[ruined_mask].mean())
+print("생존 경로 초기5년 평균수익률:", first5_avg[~ruined_mask].mean())
+```
+
+## 결과를 해석할 때 기대할 수 있는 방향성 (실제 수치는 실행 후 확인)
+
+- **초기 인출률 4.8%**(1.2억/25억)에, 인출액이 물가보다도 더 빠르게(명목 2.5% > 물가 2%) 늘어나는 구조이고, 실질 기대수익률이 약 3.3%(산술) 수준에 변동성 12%로 상당히 크기 때문에, 전통적인 "4% 룰" 대비 고갈 확률이 눈에 띄게 높게 나올 가능성이 큽니다. 대략 20~40%대 범위를 예상하되, 정확한 값은 위 코드 실행 결과로 확인하셔야 합니다.
+- **고갈 시점 분포**는 한쪽으로 치우친(right-skewed) 형태가 될 겁니다. 초반에 나쁜 수익률이 겹치면 10~15년차 근방에서 조기 고갈이 몰리고, 초반을 버틴 경로는 후반부에 완만하게 남은 자산을 소진하거나 끝까지 생존하는 이분법적 패턴이 나타나는 게 일반적입니다.
+- **수익률 순서 위험**: 고갈된 경로들의 초기 5년 평균 실질수익률은 생존 경로보다 확연히 낮게 나올 것입니다. 이는 자산이 아직 큰 상태에서 인출과 손실이 동시에 발생하면 인출금이 자산에서 차지하는 비중이 커져 이후 회복이 구조적으로 어려워지기 때문(초기 손실의 복리 파괴력)입니다. 전체 30년 평균수익률은 고갈·생존 경로 간 차이가 크지 않더라도, 처음 5년만 떼어보면 차이가 뚜렷하게 나타나는 것이 이 현상의 핵심입니다.
+
+코드를 실행해 실제 수치를 얻으시면, 그 결과(고갈확률, 백분위, 초기5년 평균수익률 차이)를 다시 알려주시면 해석과 인출전략 조정(예: 인출률을 4%대 초반으로 낮추거나 가드레일 방식 도입) 관련해서 더 구체적으로 도와드릴 수 있습니다.
+
+[result] duration_ms=61495 turns=1 cost_usd=0.0659482 input_tokens=33936 output_tokens=5608

@@ -1,0 +1,590 @@
+# prompt
+기관 매수 주문 50만 주다. 매수 결정 시점 주가 47,200원, 주문이 시장에 도달한 시점 47,450원. 체결은 47,510원에 18만 주, 47,680원에 15만 주, 47,820원에 12만 주로 부분 체결됐고 나머지 5만 주는 미체결로 취소했다. 당일 종가 48,100원, 수수료·세금 등 명시적 비용 380만 원. Implementation shortfall을 지연비용·거래비용·기회비용·명시비용으로 분해하고 각각 bp로도 알려줘.
+
+# run: plugin ON (fintool@fintool-plugin 0.5.4) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-haiku-4-5-20251001 · 2026-08-23
+
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "tools",
+  "data": {
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "amort",
+        "kind": "calculator",
+        "summary": "상환 스케줄 전체와 구간 누적을 한 번에 낸다 (엑셀 IPMT·PPMT·CUMIPMT·CUMPRINC·ISPMT)",
+        "usage": "fintool amort [flags]",
+        "flags": []
+      },
+      {
+        "name": "attribution",
+        "kind": "calculator",
+        "summary": "Brinson active return과 수정듀레이션 기반 고정수익 성과 귀속을 계산한다",
+        "usage": "fintool attribution --model brinson|fixed-income --input \u003cJSON|@file.json\u003e [flags]",
+        "flags": []
+      },
+      {
+        "name": "bond",
+        "kind": "calculator",
+        "summary": "채권 가격·수익률·스프레드·듀레이션·convexity·경과이자",
+        "usage": "fintool bond [flags]",
+        "flags": []
+      },
+      {
+        "name": "business-plan",
+        "kind": "calculator",
+        "aliases": [
+          "bp"
+        ],
+        "summary": "사업계획 가정을 연 단위 손익·운전자본·현금흐름으로 전개하고 자금소요와 흑자전환 시점을 낸다",
+        "usage": "fintool business-plan [flags]",
+        "flags": []
+      },
+      {
+        "name": "cap-table-simulate",
+        "kind": "calculator",
+        "summary": "full cap table·SAFE·전환증권·옵션풀 전환 시나리오를 결정론적으로 계산한다",
+        "usage": "fintool cap-table-simulate [flags]",
+        "flags": []
+      },
+      {
+        "name": "capital-budget",
+        "kind": "calculator",
+        "summary": "복수 투자안의 NPV·IRR·MIRR·회수기간·PI·EAA를 계산하고 지표별 순위를 비교한다",
+        "usage": "fintool capital-budget [flags]",
+        "flags": []
+      },
+      {
+        "name": "convertible",
+        "kind": "calculator",
+        "summary": "전환사채(CB)를 Tsiveriotis-Fernandes 이항 트리로 평가한다 (신용스프레드·콜·풋 반영)",
+        "usage": "fintool convertible [flags]",
+        "flags": []
+      },
+      {
+        "name": "coupon",
+        "kind": "calculator",
+        "summary": "결제일이 놓인 이표 구간과 남은 이표 횟수를 한 번에 구한다 (엑셀 COUPPCD·COUPNCD·COUPNUM·COUPDAYBS·COUPDAYS·COUPDAYSNC)",
+        "usage": "fintool coupon [flags]",
+        "flags": []
+      },
+      {
+        "name": "credit",
+        "kind": "calculator",
+        "summary": "Merton 구조모형의 부도확률과 distance to default (자산가치·부채·자산변동성에서 산출)",
+        "usage": "fintool credit [flags]",
+        "flags": []
+      },
+      {
+        "name": "curve",
+        "kind": "calculator",
+        "summary": "수익률곡선 부트스트래핑, 스팟↔포워드 변환, Nelson-Siegel·Svensson 피팅, Z-spread",
+        "usage": "fintool curve [flags]",
+        "flags": []
+      },
+      {
+        "name": "dcf",
+        "kind": "calculator",
+        "summary": "명시적 FCF와 terminal value를 할인해 기업가치·주주가치·주당가치와 민감도를 구한다",
+        "usage": "fintool dcf [flags]",
+        "flags": []
+      },
+      {
+        "name": "decision-tree",
+        "kind": "calculator",
+        "summary": "JSON 의사결정 트리를 rollback해 노드별 EMV, 선택 가지, EVPI를 구한다",
+        "usage": "fintool decision-tree [flags]",
+        "flags": []
+      },
+      {
+        "name": "depreciate",
+        "kind": "calculator",
+        "summary": "감가상각 스케줄 전체를 낸다 (엑셀 SLN·SYD·DB·DDB·VDB·AMORDEGRC·AMORLINC)",
+        "usage": "fintool depreciate [flags]",
+        "flags": []
+      },
+      {
+        "name": "derivative",
+        "kind": "calculator",
+        "summary": "선도·선물·스왑·금리옵션의 가격과 가치, 목표 위험 헤지 계약 수를 계산한다",
+        "usage": "fintool derivative [flags]",
+        "flags": []
+      },
+      {
+        "name": "discount",
+        "kind": "calculator",
+        "summary": "할인채와 단기 국채의 가격·수익률·할인율 (엑셀 DISC·INTRATE·RECEIVED·PRICEDISC·YIELDDISC·TBILLEQ·TBILLPRICE·TBILLYIELD)",
+        "usage": "fintool discount [flags]",
+        "flags": []
+      },
+      {
+        "name": "equity",
+        "kind": "calculator",
+        "summary": "DDM·FCF·배수·잔여이익·사기업·SOTP 주식가치를 계산한다",
+        "usage": "fintool equity --model ddm|fcf|multiples|residual|private|sotp [flags]",
+        "flags": []
+      },
+      {
+        "name": "financial-model",
+        "kind": "calculator",
+        "summary": "strict financial-model 입력을 12~60개월 월별 재무제표로 계산한다. cash·accrual 두 회계 모드",
+        "usage": "fintool financial-model [flags]",
+        "flags": []
+      },
+      {
+        "name": "fsa",
+        "kind": "calculator",
+        "summary": "EPS·재무비율·FCFF/FCFE·현금흐름 연결과 핵심 회계 정규화를 계산한다",
+        "usage": "fintool fsa --solve eps|ratios|cashflow|adjust [flags]",
+        "flags": []
+      },
+      {
+        "name": "fx",
+        "kind": "calculator",
+        "summary": "현물·cross·선도환율, 국제 패리티, bid-offer, 삼각재정, forward MTM과 carry를 계산한다",
+        "usage": "fintool fx [flags]",
+        "flags": []
+      },
+      {
+        "name": "irr",
+        "kind": "calculator",
+        "summary": "순현재가치를 0으로 만드는 내부수익률을 구한다. --dates를 주면 불규칙 날짜 기준이다 (엑셀 IRR·XIRR)",
+        "usage": "fintool irr [flags]",
+        "flags": []
+      },
+      {
+        "name": "montecarlo",
+        "kind": "calculator",
+        "aliases": [
+          "mc"
+        ],
+        "summary": "자산 경로를 시뮬레이션해 만기 잔액 분포와 목표 달성 확률을 계산한다 (GBM/부트스트랩/팻테일/점프/다자산)",
+        "usage": "fintool montecarlo [flags]",
+        "flags": []
+      },
+      {
+        "name": "npv",
+        "kind": "calculator",
+        "summary": "현금흐름의 순현재가치를 구한다. --dates를 주면 불규칙 날짜 기준으로 계산한다 (엑셀 NPV·XNPV)",
+        "usage": "fintool npv [flags]",
+        "flags": []
+      },
+      {
+        "name": "option",
+        "kind": "calculator",
+        "summary": "옵션 가격·그릭스·IV와 만기 payoff·풋-콜 패리티·표준 전략을 계산한다",
+        "usage": "fintool option [flags]",
+        "flags": []
+      },
+      {
+        "name": "perf",
+        "kind": "calculator",
+        "summary": "수익률 시계열의 성과 지표를 한 번에 낸다 (CAGR·Sharpe·Sortino·Calmar·MDD·베타·알파 등)",
+        "usage": "fintool perf [flags]",
+        "flags": []
+      },
+      {
+        "name": "portfolio",
+        "kind": "calculator",
+        "summary": "포트폴리오 최적화·CAPM·Roy safety-first·목표·부채 면역화 지표를 계산한다",
+        "usage": "fintool portfolio [flags]",
+        "flags": []
+      },
+      {
+        "name": "pricing",
+        "kind": "calculator",
+        "summary": "상수 가격탄력성으로 제안 가격의 예상 판매량과 기준 대비 손익·보전 임계값을 계산한다",
+        "usage": "fintool pricing [flags]",
+        "flags": []
+      },
+      {
+        "name": "private-markets",
+        "kind": "calculator",
+        "summary": "사모펀드 성과·waterfall과 비상장 주식·부채·실물자산 가치를 계산한다",
+        "usage": "fintool private-markets --mode fund|vc|growth|buyout|debt|asset [flags]",
+        "flags": []
+      },
+      {
+        "name": "rate-convert",
+        "kind": "calculator",
+        "summary": "이자율 표기를 변환하고 성장률·소요 기간을 구한다 (엑셀 EFFECT·NOMINAL·RRI·PDURATION·FVSCHEDULE)",
+        "usage": "fintool rate-convert [flags]",
+        "flags": []
+      },
+      {
+        "name": "regression",
+        "kind": "calculator",
+        "summary": "CFA Level I·II OLS·ANOVA·예측구간·회귀진단과 이항 로지스틱 회귀를 계산한다",
+        "usage": "fintool regression --model ols|logistic --input \u003cJSON|@file.json\u003e [flags]",
+        "flags": []
+      },
+      {
+        "name": "report",
+        "kind": "calculator",
+        "summary": "fintool JSON 봉투를 고정 부품 HTML로 바인딩한다",
+        "usage": "fintool report [flags]",
+        "flags": []
+      },
+      {
+        "name": "scenario",
+        "kind": "workflow_primitive",
+        "summary": "시나리오 가정의 정합성을 검증하고 실행할 파라미터 조합을 전개한다",
+        "usage": "fintool scenario [flags]",
+        "flags": []
+      },
+      {
+        "name": "stats",
+        "kind": "calculator",
+        "summary": "CFA Level I 기술통계·확률·신뢰구간·가설검정을 명시적 모드로 계산한다",
+        "usage": "fintool stats --mode describe|probability|infer|test [flags]",
+        "flags": []
+      },
+      {
+        "name": "timeseries",
+        "kind": "calculator",
+        "summary": "CFA 시계열 추세·AR(1/2)·계절성·RMSE 비교·ARCH 분산 예측을 계산한다",
+        "usage": "fintool timeseries --mode trend|ar|seasonal|compare|arch (--returns \u003cseries\u003e|--prices \u003cseries\u003e) [flags]",
+        "flags": []
+      },
+      {
+        "name": "trade-cost",
+        "kind": "calculator",
+        "summary": "quoted/effective spread, VWAP 거래비용, implementation shortfall을 계산한다",
+        "usage": "fintool trade-cost [flags]",
+        "flags": []
+      },
+      {
+        "name": "tvm",
+        "kind": "calculator",
+        "summary": "화폐의 시간가치 방정식을 풀어 pv/fv/pmt/nper/rate 중 하나를 구한다 (엑셀 PV·FV·PMT·NPER·RATE)",
+        "usage": "fintool tvm [flags]",
+        "flags": []
+      },
+      {
+        "name": "unit-economics",
+        "kind": "calculator",
+        "summary": "구독형 LTV·LTV/CAC·CAC 회수기간 또는 거래형 공헌이익·손익분기점을 계산한다",
+        "usage": "fintool unit-economics --model subscription|transaction [flags]",
+        "flags": []
+      },
+      {
+        "name": "var",
+        "kind": "calculator",
+        "summary": "수익률 시계열에서 VaR와 CVaR(Expected Shortfall)를 구한다 (historical/parametric/montecarlo)",
+        "usage": "fintool var [flags]",
+        "flags": []
+      },
+      {
+        "name": "vol",
+        "kind": "calculator",
+        "summary": "수익률 시계열의 변동성을 추정한다 (realized·EWMA·GARCH(1,1))",
+        "usage": "fintool vol [flags]",
+        "flags": []
+      },
+      {
+        "name": "wacc",
+        "kind": "calculator",
+        "summary": "CAPM 자기자본비용과 세후 부채비용을 시장가치로 가중해 WACC를 계산한다",
+        "usage": "fintool wacc [flags]",
+        "flags": []
+      },
+      {
+        "name": "workflow",
+        "kind": "orchestrator",
+        "summary": "명시적 타입 참조로 여러 재무 도구와 scenario 케이스를 연결한다",
+        "usage": "fintool workflow",
+        "flags": [],
+        "subcommands": [
+          {
+            "name": "explain",
+            "kind": "orchestrator",
+            "summary": "실행 순서와 typed 참조·집계 연결을 JSON으로 설명한다",
+            "usage": "fintool workflow explain [flags]",
+            "flags": []
+          },
+          {
+            "name": "run",
+            "kind": "orchestrator",
+            "summary": "검증된 워크플로를 실행하고 단계별 원본 봉투와 출처를 보존한다",
+            "usage": "fintool workflow run [flags]",
+            "flags": []
+          },
+          {
+            "name": "validate",
+            "kind": "orchestrator",
+            "summary": "워크플로 구조와 모든 참조·타입 호환성을 실행 전에 검사한다",
+            "usage": "fintool workflow validate [flags]",
+            "flags": []
+          }
+        ]
+      }
+    ]
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{"tool":"trade-cost"}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "tools",
+  "data": {
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "trade-cost",
+        "kind": "calculator",
+        "summary": "quoted/effective spread, VWAP 거래비용, implementation shortfall을 계산한다",
+        "usage": "fintool trade-cost [flags]",
+        "example": "  # 매수 체결의 quoted/effective spread\n  fintool trade-cost --solve spread --side buy \\\n    --bid 99 --ask 101 --execution-price 100.6\n\n  # 체결 VWAP을 시장 VWAP과 비교\n  fintool trade-cost --solve vwap --side buy \\\n    --execution-prices 10.10,10.20 --execution-quantities 400,600 \\\n    --market-prices 10.00,10.10 --market-volumes 1000,1000\n\n  # 부분 체결 주문의 implementation shortfall 분해\n  fintool trade-cost --solve shortfall --side buy \\\n    --order-quantity 1000 --decision-price 10 --arrival-price 10.05 \\\n    --execution-prices 10.08,10.12 --execution-quantities 400,300 \\\n    --close-price 10.20 --explicit-costs 15",
+        "flags": [
+          {
+            "name": "arrival-price",
+            "type": "float64",
+            "default": "0",
+            "description": "shortfall의 주문이 시장에 도착한 시점 가격(currency_per_unit)"
+          },
+          {
+            "name": "ask",
+            "type": "float64",
+            "default": "0",
+            "description": "spread 계산의 매도호가(currency_per_unit)"
+          },
+          {
+            "name": "bid",
+            "type": "float64",
+            "default": "0",
+            "description": "spread 계산의 매수호가(currency_per_unit)"
+          },
+          {
+            "name": "close-price",
+            "type": "float64",
+            "default": "0",
+            "description": "shortfall의 측정 종료 시점 가격(currency_per_unit)"
+          },
+          {
+            "name": "decision-price",
+            "type": "float64",
+            "default": "0",
+            "description": "shortfall의 투자결정 시점 가격(currency_per_unit)"
+          },
+          {
+            "name": "execution-price",
+            "type": "float64",
+            "default": "0",
+            "description": "spread 계산의 실제 체결가격(currency_per_unit)"
+          },
+          {
+            "name": "execution-prices",
+            "type": "string",
+            "default": "",
+            "description": "vwap·shortfall의 체결가격. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다"
+          },
+          {
+            "name": "execution-quantities",
+            "type": "string",
+            "default": "",
+            "description": "vwap·shortfall의 체결별 수량. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다"
+          },
+          {
+            "name": "explicit-costs",
+            "type": "float64",
+            "default": "0",
+            "description": "수수료·세금 등 명시적 비용(currency, 0 이상)"
+          },
+          {
+            "name": "market-prices",
+            "type": "string",
+            "default": "",
+            "description": "vwap 벤치마크 시장가격. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다"
+          },
+          {
+            "name": "market-volumes",
+            "type": "string",
+            "default": "",
+            "description": "vwap 시장가격별 거래량. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다"
+          },
+          {
+            "name": "order-quantity",
+            "type": "float64",
+            "default": "0",
+            "description": "shortfall의 최초 주문수량(units)"
+          },
+          {
+            "name": "side",
+            "type": "string",
+            "default": "buy",
+            "description": "거래 방향 (buy|sell). buy=+1, sell=-1"
+          },
+          {
+            "name": "solve",
+            "type": "string",
+            "default": "spread",
+            "description": "계산 종류 (spread|vwap|shortfall)"
+          }
+        ],
+        "workflow": {
+          "batch": false,
+          "inputs": {
+            "arrival-price": {
+              "type": "number"
+            },
+            "ask": {
+              "type": "number"
+            },
+            "bid": {
+              "type": "number"
+            },
+            "close-price": {
+              "type": "number"
+            },
+            "decision-price": {
+              "type": "number"
+            },
+            "execution-price": {
+              "type": "number"
+            },
+            "execution-prices": {
+              "type": "string"
+            },
+            "execution-quantities": {
+              "type": "string"
+            },
+            "explicit-costs": {
+              "type": "number"
+            },
+            "market-prices": {
+              "type": "string"
+            },
+            "market-volumes": {
+              "type": "string"
+            },
+            "order-quantity": {
+              "type": "number"
+            },
+            "side": {
+              "type": "string"
+            },
+            "solve": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"trade-cost","flags":{"solve":"shortfall","side":"buy","order-quantity":500000,"decision-price":47200,"arrival-price":47450,"execution-prices":"47510,47680,47820","execution-quantities":"180000,150000,120000","close-price":48100,"explicit-costs":3800000,"format":"json"}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "trade-cost",
+  "data": {
+    "solve": "shortfall",
+    "convention": {
+      "side": "buy",
+      "side_sign": 1,
+      "cost_sign": "positive_cost_negative_saving"
+    },
+    "units": {
+      "price": "currency_per_unit",
+      "quantity": "units",
+      "cost": "currency",
+      "rate": "basis_points"
+    },
+    "shortfall": {
+      "order_quantity": 500000,
+      "executed_quantity": 450000,
+      "unexecuted_quantity": 50000,
+      "decision_price": 47200,
+      "arrival_price": 47450,
+      "close_price": 48100,
+      "execution_vwap": 47649.333333333336,
+      "decision_notional": 23600000000,
+      "explicit_cost": {
+        "amount": 3800000,
+        "basis_points": 1.6101694915254237
+      },
+      "delay_cost": {
+        "amount": 112500000,
+        "basis_points": 47.66949152542373
+      },
+      "trading_cost": {
+        "amount": 89700000,
+        "basis_points": 38.00847457627118
+      },
+      "opportunity_cost": {
+        "amount": 45000000,
+        "basis_points": 19.06779661016949
+      },
+      "implementation_shortfall": {
+        "amount": 251000000,
+        "basis_points": 106.35593220338984
+      },
+      "identity_residual": 0
+    }
+  }
+}
+
+
+[assistant]
+기관 매수 주문의 Implementation Shortfall을 4가지 비용 요소로 분해했습니다.
+
+## Implementation Shortfall 분석
+
+| 비용 요소 | 금액 | Basis Points |
+|---------|------|-------------|
+| **지연비용** (Delay Cost) | 112,500,000원 | 47.67bp |
+| **거래비용** (Trading Cost) | 89,700,000원 | 38.01bp |
+| **기회비용** (Opportunity Cost) | 45,000,000원 | 19.07bp |
+| **명시비용** (Explicit Cost) | 3,800,000원 | 1.61bp |
+| **합계** | **251,000,000원** | **106.36bp** |
+
+### 각 구성요소 설명
+
+**1. 지연비용 (112.5백만 원, 47.67bp)**
+- 의사결정 시점(47,200원) → 주문 도달 시점(47,450원) 사이의 시장 움직임
+- 250원 × 450,000주(체결분) = 112,500,000원
+- 시장이 불리한 방향으로 움직인 시간 비용
+
+**2. 거래비용 (89.7백만 원, 38.01bp)**
+- 실제 체결 평균가(47,649.33원) vs 주문 도달 시점(47,450원)
+- 199.33원 × 450,000주 = 89,700,000원
+- Market impact(시장충격)와 호가 스프레드로 인한 비용
+
+**3. 기회비용 (45백만 원, 19.07bp)**
+- 미체결 부분(50,000주)이 당일 종가(48,100원)까지 오른 손실기회
+- 실행 불완전성으로 인한 손실
+
+**4. 명시비용 (3.8백만 원, 1.61bp)**
+- 수수료·세금 등 직접 지출 비용
+
+**기준:** 의사결정 시점 주가 × 전체 주문량 = 47,200원 × 500,000주 = 236억 원
+
+전체 Implementation Shortfall **106.36bp**는 이 거래의 총 비용이 기준 금액의 약 1.06%임을 의미합니다.
+
+[result] duration_ms=46936 turns=4 cost_usd=0.0484962 input_tokens=71474 output_tokens=3622

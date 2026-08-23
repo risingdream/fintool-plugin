@@ -1,0 +1,577 @@
+# prompt
+액면 100억 원, 표면금리 연 1%(연 1회 이표), 만기 3년(2026-08-23 발행, 2029-08-23 만기), 전환가 20,000원, 현재 주가 18,000원, 주가 변동성 35%, 무위험금리 3.2%, 이 회사 일반채 신용스프레드 4%. 이 전환사채 가치는?
+
+# run: plugin ON (fintool@fintool-plugin 0.5.4) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-haiku-4-5-20251001 · 2026-08-23
+
+[assistant]
+전환사채 가치 평가 문제네요. fintool 카탈로그를 먼저 확인하겠습니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "tools",
+  "data": {
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "amort",
+        "kind": "calculator",
+        "summary": "상환 스케줄 전체와 구간 누적을 한 번에 낸다 (엑셀 IPMT·PPMT·CUMIPMT·CUMPRINC·ISPMT)",
+        "usage": "fintool amort [flags]",
+        "flags": []
+      },
+      {
+        "name": "attribution",
+        "kind": "calculator",
+        "summary": "Brinson active return과 수정듀레이션 기반 고정수익 성과 귀속을 계산한다",
+        "usage": "fintool attribution --model brinson|fixed-income --input \u003cJSON|@file.json\u003e [flags]",
+        "flags": []
+      },
+      {
+        "name": "bond",
+        "kind": "calculator",
+        "summary": "채권 가격·수익률·스프레드·듀레이션·convexity·경과이자",
+        "usage": "fintool bond [flags]",
+        "flags": []
+      },
+      {
+        "name": "business-plan",
+        "kind": "calculator",
+        "aliases": [
+          "bp"
+        ],
+        "summary": "사업계획 가정을 연 단위 손익·운전자본·현금흐름으로 전개하고 자금소요와 흑자전환 시점을 낸다",
+        "usage": "fintool business-plan [flags]",
+        "flags": []
+      },
+      {
+        "name": "cap-table-simulate",
+        "kind": "calculator",
+        "summary": "full cap table·SAFE·전환증권·옵션풀 전환 시나리오를 결정론적으로 계산한다",
+        "usage": "fintool cap-table-simulate [flags]",
+        "flags": []
+      },
+      {
+        "name": "capital-budget",
+        "kind": "calculator",
+        "summary": "복수 투자안의 NPV·IRR·MIRR·회수기간·PI·EAA를 계산하고 지표별 순위를 비교한다",
+        "usage": "fintool capital-budget [flags]",
+        "flags": []
+      },
+      {
+        "name": "convertible",
+        "kind": "calculator",
+        "summary": "전환사채(CB)를 Tsiveriotis-Fernandes 이항 트리로 평가한다 (신용스프레드·콜·풋 반영)",
+        "usage": "fintool convertible [flags]",
+        "flags": []
+      },
+      {
+        "name": "coupon",
+        "kind": "calculator",
+        "summary": "결제일이 놓인 이표 구간과 남은 이표 횟수를 한 번에 구한다 (엑셀 COUPPCD·COUPNCD·COUPNUM·COUPDAYBS·COUPDAYS·COUPDAYSNC)",
+        "usage": "fintool coupon [flags]",
+        "flags": []
+      },
+      {
+        "name": "credit",
+        "kind": "calculator",
+        "summary": "Merton 구조모형의 부도확률과 distance to default (자산가치·부채·자산변동성에서 산출)",
+        "usage": "fintool credit [flags]",
+        "flags": []
+      },
+      {
+        "name": "curve",
+        "kind": "calculator",
+        "summary": "수익률곡선 부트스트래핑, 스팟↔포워드 변환, Nelson-Siegel·Svensson 피팅, Z-spread",
+        "usage": "fintool curve [flags]",
+        "flags": []
+      },
+      {
+        "name": "dcf",
+        "kind": "calculator",
+        "summary": "명시적 FCF와 terminal value를 할인해 기업가치·주주가치·주당가치와 민감도를 구한다",
+        "usage": "fintool dcf [flags]",
+        "flags": []
+      },
+      {
+        "name": "decision-tree",
+        "kind": "calculator",
+        "summary": "JSON 의사결정 트리를 rollback해 노드별 EMV, 선택 가지, EVPI를 구한다",
+        "usage": "fintool decision-tree [flags]",
+        "flags": []
+      },
+      {
+        "name": "depreciate",
+        "kind": "calculator",
+        "summary": "감가상각 스케줄 전체를 낸다 (엑셀 SLN·SYD·DB·DDB·VDB·AMORDEGRC·AMORLINC)",
+        "usage": "fintool depreciate [flags]",
+        "flags": []
+      },
+      {
+        "name": "derivative",
+        "kind": "calculator",
+        "summary": "선도·선물·스왑·금리옵션의 가격과 가치, 목표 위험 헤지 계약 수를 계산한다",
+        "usage": "fintool derivative [flags]",
+        "flags": []
+      },
+      {
+        "name": "discount",
+        "kind": "calculator",
+        "summary": "할인채와 단기 국채의 가격·수익률·할인율 (엑셀 DISC·INTRATE·RECEIVED·PRICEDISC·YIELDDISC·TBILLEQ·TBILLPRICE·TBILLYIELD)",
+        "usage": "fintool discount [flags]",
+        "flags": []
+      },
+      {
+        "name": "equity",
+        "kind": "calculator",
+        "summary": "DDM·FCF·배수·잔여이익·사기업·SOTP 주식가치를 계산한다",
+        "usage": "fintool equity --model ddm|fcf|multiples|residual|private|sotp [flags]",
+        "flags": []
+      },
+      {
+        "name": "financial-model",
+        "kind": "calculator",
+        "summary": "strict financial-model 입력을 12~60개월 월별 재무제표로 계산한다. cash·accrual 두 회계 모드",
+        "usage": "fintool financial-model [flags]",
+        "flags": []
+      },
+      {
+        "name": "fsa",
+        "kind": "calculator",
+        "summary": "EPS·재무비율·FCFF/FCFE·현금흐름 연결과 핵심 회계 정규화를 계산한다",
+        "usage": "fintool fsa --solve eps|ratios|cashflow|adjust [flags]",
+        "flags": []
+      },
+      {
+        "name": "fx",
+        "kind": "calculator",
+        "summary": "현물·cross·선도환율, 국제 패리티, bid-offer, 삼각재정, forward MTM과 carry를 계산한다",
+        "usage": "fintool fx [flags]",
+        "flags": []
+      },
+      {
+        "name": "irr",
+        "kind": "calculator",
+        "summary": "순현재가치를 0으로 만드는 내부수익률을 구한다. --dates를 주면 불규칙 날짜 기준이다 (엑셀 IRR·XIRR)",
+        "usage": "fintool irr [flags]",
+        "flags": []
+      },
+      {
+        "name": "montecarlo",
+        "kind": "calculator",
+        "aliases": [
+          "mc"
+        ],
+        "summary": "자산 경로를 시뮬레이션해 만기 잔액 분포와 목표 달성 확률을 계산한다 (GBM/부트스트랩/팻테일/점프/다자산)",
+        "usage": "fintool montecarlo [flags]",
+        "flags": []
+      },
+      {
+        "name": "npv",
+        "kind": "calculator",
+        "summary": "현금흐름의 순현재가치를 구한다. --dates를 주면 불규칙 날짜 기준으로 계산한다 (엑셀 NPV·XNPV)",
+        "usage": "fintool npv [flags]",
+        "flags": []
+      },
+      {
+        "name": "option",
+        "kind": "calculator",
+        "summary": "옵션 가격·그릭스·IV와 만기 payoff·풋-콜 패리티·표준 전략을 계산한다",
+        "usage": "fintool option [flags]",
+        "flags": []
+      },
+      {
+        "name": "perf",
+        "kind": "calculator",
+        "summary": "수익률 시계열의 성과 지표를 한 번에 낸다 (CAGR·Sharpe·Sortino·Calmar·MDD·베타·알파 등)",
+        "usage": "fintool perf [flags]",
+        "flags": []
+      },
+      {
+        "name": "portfolio",
+        "kind": "calculator",
+        "summary": "포트폴리오 최적화·CAPM·Roy safety-first·목표·부채 면역화 지표를 계산한다",
+        "usage": "fintool portfolio [flags]",
+        "flags": []
+      },
+      {
+        "name": "pricing",
+        "kind": "calculator",
+        "summary": "상수 가격탄력성으로 제안 가격의 예상 판매량과 기준 대비 손익·보전 임계값을 계산한다",
+        "usage": "fintool pricing [flags]",
+        "flags": []
+      },
+      {
+        "name": "private-markets",
+        "kind": "calculator",
+        "summary": "사모펀드 성과·waterfall과 비상장 주식·부채·실물자산 가치를 계산한다",
+        "usage": "fintool private-markets --mode fund|vc|growth|buyout|debt|asset [flags]",
+        "flags": []
+      },
+      {
+        "name": "rate-convert",
+        "kind": "calculator",
+        "summary": "이자율 표기를 변환하고 성장률·소요 기간을 구한다 (엑셀 EFFECT·NOMINAL·RRI·PDURATION·FVSCHEDULE)",
+        "usage": "fintool rate-convert [flags]",
+        "flags": []
+      },
+      {
+        "name": "regression",
+        "kind": "calculator",
+        "summary": "CFA Level I·II OLS·ANOVA·예측구간·회귀진단과 이항 로지스틱 회귀를 계산한다",
+        "usage": "fintool regression --model ols|logistic --input \u003cJSON|@file.json\u003e [flags]",
+        "flags": []
+      },
+      {
+        "name": "report",
+        "kind": "calculator",
+        "summary": "fintool JSON 봉투를 고정 부품 HTML로 바인딩한다",
+        "usage": "fintool report [flags]",
+        "flags": []
+      },
+      {
+        "name": "scenario",
+        "kind": "workflow_primitive",
+        "summary": "시나리오 가정의 정합성을 검증하고 실행할 파라미터 조합을 전개한다",
+        "usage": "fintool scenario [flags]",
+        "flags": []
+      },
+      {
+        "name": "stats",
+        "kind": "calculator",
+        "summary": "CFA Level I 기술통계·확률·신뢰구간·가설검정을 명시적 모드로 계산한다",
+        "usage": "fintool stats --mode describe|probability|infer|test [flags]",
+        "flags": []
+      },
+      {
+        "name": "timeseries",
+        "kind": "calculator",
+        "summary": "CFA 시계열 추세·AR(1/2)·계절성·RMSE 비교·ARCH 분산 예측을 계산한다",
+        "usage": "fintool timeseries --mode trend|ar|seasonal|compare|arch (--returns \u003cseries\u003e|--prices \u003cseries\u003e) [flags]",
+        "flags": []
+      },
+      {
+        "name": "trade-cost",
+        "kind": "calculator",
+        "summary": "quoted/effective spread, VWAP 거래비용, implementation shortfall을 계산한다",
+        "usage": "fintool trade-cost [flags]",
+        "flags": []
+      },
+      {
+        "name": "tvm",
+        "kind": "calculator",
+        "summary": "화폐의 시간가치 방정식을 풀어 pv/fv/pmt/nper/rate 중 하나를 구한다 (엑셀 PV·FV·PMT·NPER·RATE)",
+        "usage": "fintool tvm [flags]",
+        "flags": []
+      },
+      {
+        "name": "unit-economics",
+        "kind": "calculator",
+        "summary": "구독형 LTV·LTV/CAC·CAC 회수기간 또는 거래형 공헌이익·손익분기점을 계산한다",
+        "usage": "fintool unit-economics --model subscription|transaction [flags]",
+        "flags": []
+      },
+      {
+        "name": "var",
+        "kind": "calculator",
+        "summary": "수익률 시계열에서 VaR와 CVaR(Expected Shortfall)를 구한다 (historical/parametric/montecarlo)",
+        "usage": "fintool var [flags]",
+        "flags": []
+      },
+      {
+        "name": "vol",
+        "kind": "calculator",
+        "summary": "수익률 시계열의 변동성을 추정한다 (realized·EWMA·GARCH(1,1))",
+        "usage": "fintool vol [flags]",
+        "flags": []
+      },
+      {
+        "name": "wacc",
+        "kind": "calculator",
+        "summary": "CAPM 자기자본비용과 세후 부채비용을 시장가치로 가중해 WACC를 계산한다",
+        "usage": "fintool wacc [flags]",
+        "flags": []
+      },
+      {
+        "name": "workflow",
+        "kind": "orchestrator",
+        "summary": "명시적 타입 참조로 여러 재무 도구와 scenario 케이스를 연결한다",
+        "usage": "fintool workflow",
+        "flags": [],
+        "subcommands": [
+          {
+            "name": "explain",
+            "kind": "orchestrator",
+            "summary": "실행 순서와 typed 참조·집계 연결을 JSON으로 설명한다",
+            "usage": "fintool workflow explain [flags]",
+            "flags": []
+          },
+          {
+            "name": "run",
+            "kind": "orchestrator",
+            "summary": "검증된 워크플로를 실행하고 단계별 원본 봉투와 출처를 보존한다",
+            "usage": "fintool workflow run [flags]",
+            "flags": []
+          },
+          {
+            "name": "validate",
+            "kind": "orchestrator",
+            "summary": "워크플로 구조와 모든 참조·타입 호환성을 실행 전에 검사한다",
+            "usage": "fintool workflow validate [flags]",
+            "flags": []
+          }
+        ]
+      }
+    ]
+  }
+}
+
+
+[assistant]
+완벽합니다! `convertible` 도구가 있네요. 이 도구로 전환사채를 평가할 수 있습니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{"tool":"convertible"}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "tools",
+  "data": {
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "convertible",
+        "kind": "calculator",
+        "summary": "전환사채(CB)를 Tsiveriotis-Fernandes 이항 트리로 평가한다 (신용스프레드·콜·풋 반영)",
+        "usage": "fintool convertible [flags]",
+        "example": "  # 액면 100억, 표면 1% 연 1회, 3년, 전환가 20,000, 주가 18,000, σ 35%, rf 3.2%, 스프레드 4%\n  fintool convertible --face 10000000000 --coupon-rate 0.01 --frequency 1 --maturity 3 \\\n    --conversion-price 20000 --spot 18000 --vol 0.35 --rate 0.032 --spread 0.04 --steps 500\n\n  # 발행사 콜(2년차부터 액면 105%)과 투자자 풋(1.5년차부터 액면 100%)\n  fintool convertible --face 10000000000 --coupon-rate 0.01 --frequency 1 --maturity 3 \\\n    --conversion-price 20000 --spot 18000 --vol 0.35 --rate 0.032 --spread 0.04 \\\n    --call-price 10500000000 --call-start 2 --put-price 10000000000 --put-start 1.5\n\n  # 만기보장수익률 조항: 만기 상환 106%\n  fintool convertible --face 100 --coupon-rate 0 --maturity 3 --redemption 1.06 \\\n    --conversion-ratio 5 --spot 18 --vol 0.3 --rate 0.03 --spread 0.05\n\n  # 사람이 읽는 표로\n  fintool convertible --face 100 --coupon-rate 0.02 --frequency 2 --maturity 5 \\\n    --conversion-price 25 --spot 20 --vol 0.3 --rate 0.03 --spread 0.03 --format table",
+        "flags": [
+          {
+            "name": "call-price",
+            "type": "float64",
+            "default": "0",
+            "description": "발행사 콜 가격(액면 기준 금액). 0이면 콜 없음"
+          },
+          {
+            "name": "call-start",
+            "type": "float64",
+            "default": "0",
+            "description": "콜 가능 시작 시점(년)"
+          },
+          {
+            "name": "conversion-price",
+            "type": "float64",
+            "default": "0",
+            "description": "전환가. --conversion-ratio와 하나만 준다"
+          },
+          {
+            "name": "conversion-ratio",
+            "type": "float64",
+            "default": "0",
+            "description": "액면 전체를 전환했을 때 받는 주식 수"
+          },
+          {
+            "name": "coupon-rate",
+            "type": "float64",
+            "default": "0",
+            "description": "연 표면금리(소수. 0.01 = 1%)"
+          },
+          {
+            "name": "dividend",
+            "type": "float64",
+            "default": "0",
+            "description": "연속 배당수익률 q(소수)"
+          },
+          {
+            "name": "face",
+            "type": "float64",
+            "default": "0",
+            "description": "액면. 상환·이표·콜·풋 금액의 기준"
+          },
+          {
+            "name": "frequency",
+            "type": "int",
+            "default": "1",
+            "description": "연간 이표 횟수. 0이면 무이표"
+          },
+          {
+            "name": "maturity",
+            "type": "float64",
+            "default": "0",
+            "description": "잔존만기(년)"
+          },
+          {
+            "name": "put-price",
+            "type": "float64",
+            "default": "0",
+            "description": "투자자 풋 가격(액면 기준 금액). 0이면 풋 없음"
+          },
+          {
+            "name": "put-start",
+            "type": "float64",
+            "default": "0",
+            "description": "풋 가능 시작 시점(년). 그때부터 만기까지 행사 가능"
+          },
+          {
+            "name": "rate",
+            "type": "float64",
+            "default": "0",
+            "description": "무위험 이자율(연속복리 연율 소수)"
+          },
+          {
+            "name": "redemption",
+            "type": "float64",
+            "default": "1",
+            "description": "만기 상환율(액면 대비 소수. 1.06 = 106%). 만기보장수익률 조항은 여기로"
+          },
+          {
+            "name": "spot",
+            "type": "float64",
+            "default": "0",
+            "description": "현재 주가"
+          },
+          {
+            "name": "spread",
+            "type": "float64",
+            "default": "0",
+            "description": "발행사 신용스프레드(연율 소수). 현금 성분 할인에만 더해진다"
+          },
+          {
+            "name": "steps",
+            "type": "int",
+            "default": "500",
+            "description": "이항 트리 스텝 수(1~10000). O(steps²)"
+          },
+          {
+            "name": "vol",
+            "type": "float64",
+            "default": "0",
+            "description": "주가 연 변동성(소수. 0.35 = 35%)"
+          }
+        ],
+        "workflow": {
+          "batch": false,
+          "inputs": {
+            "call-price": {
+              "type": "number"
+            },
+            "call-start": {
+              "type": "number"
+            },
+            "conversion-price": {
+              "type": "number"
+            },
+            "conversion-ratio": {
+              "type": "number"
+            },
+            "coupon-rate": {
+              "type": "number"
+            },
+            "dividend": {
+              "type": "number"
+            },
+            "face": {
+              "type": "number"
+            },
+            "frequency": {
+              "type": "number"
+            },
+            "maturity": {
+              "type": "number"
+            },
+            "put-price": {
+              "type": "number"
+            },
+            "put-start": {
+              "type": "number"
+            },
+            "rate": {
+              "type": "number"
+            },
+            "redemption": {
+              "type": "number"
+            },
+            "spot": {
+              "type": "number"
+            },
+            "spread": {
+              "type": "number"
+            },
+            "steps": {
+              "type": "number"
+            },
+            "vol": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"convertible","flags":{"face":10000000000,"coupon-rate":0.01,"frequency":1,"maturity":3,"conversion-price":20000,"spot":18000,"vol":0.35,"rate":0.032,"spread":0.04,"steps":500,"format":"table"}}
+
+[tool_result]
+convertible — Tsiveriotis-Fernandes (만기 3년, 500스텝)
+
+  value                       10,764,990,730.90
+  value_pct_face                        107.65%
+  equity_component             5,346,924,332.86   무위험 할인
+  debt_component               5,418,066,398.05   무위험+스프레드 할인
+
+  bond_floor                   8,317,567,484.31
+  parity                       9,000,000,000.00   500000.0000주 × 주가
+  premium_over_parity                    19.61%
+  premium_over_bond                      29.42%
+  delta                             338803.3857
+  component_method_value      10,429,314,832.23   분해법(채권+무위험 콜) 비교용
+
+  sha256:217dee536d906280a54343762bac1c5554cff3296da18135067f485d4c527dd7
+
+[assistant]
+**전환사채 가치는 약 107.65억 원**입니다.
+
+## 평가 결과 (Tsiveriotis-Fernandes 이항 트리 모형)
+
+| 항목 | 값 |
+|------|-----|
+| **전환사채 가치** | **10,764,990,731원** (107.65%) |
+| 주식 성분 | 5,346,924,333원 |
+| 채권 성분 | 5,418,066,398원 |
+| **채권 하한선** | 8,317,567,484원 |
+| **전환 패리티** | 9,000,000,000원 (500,000주 × 18,000원) |
+| 패리티 대비 프리미엄 | 19.61% |
+| 채권 하한선 대비 프리미엄 | 29.42% |
+
+## 해석
+
+1. **채권 성분 > 주식 성분**: 현재 주가(18,000원)가 전환가(20,000원)보다 낮아서, 채권으로서의 가치가 더 중요합니다.
+
+2. **프리미엄 구조**:
+   - 채권 하한선(8.3조 원) 위로 약 29%의 프리미엄 → 신용스프레드(4%)로 인한 손실보다 주식 옵션의 가치가 더 큼
+   - 전환 패리티(9조 원) 위로 약 20% 프리미엄 → 주가가 전환가를 넘을 가능성이 높다고 평가
+
+3. **주목할 점**: 표면금리 1%는 상당히 낮지만, 35% 변동성과 3년 만기로 인한 옵션 가치가 보상하고 있습니다.
+
+[result] duration_ms=37015 turns=4 cost_usd=0.0392892 input_tokens=69207 output_tokens=2117

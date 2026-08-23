@@ -1,0 +1,16 @@
+# prompt
+내년부터 5년 FCF 10억, 12억, 14억, 16억, 18억, 순부채 20억, 발행주식 100만 주. DCF로 주당가치는?
+
+# run: plugin OFF · claude -p --tools "" --setting-sources "" (전역 CLAUDE.md 배제) · claude-sonnet-5 · 2026-08-23
+
+[assistant]
+DCF 계산을 위해서는 추가 정보가 필요합니다.
+
+1. **할인율(WACC)**: 몇 %를 적용할까요? (예: 8%, 10% 등)
+2. **5년 이후 잔존가치(Terminal Value)**: 
+   - 영구성장률(perpetuity growth) 가정 방식인지, 아니면 5년치 FCF만 반영하고 잔존가치는 0으로 볼지?
+   - 영구성장률이라면 몇 %로 가정할까요?
+
+이 두 가지를 알려주시면 바로 계산해서 주당 가치를 산출하겠습니다.
+
+[result] duration_ms=5776 turns=1 cost_usd=0.01058 input_tokens=18036 output_tokens=454

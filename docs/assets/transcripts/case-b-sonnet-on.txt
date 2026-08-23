@@ -1,0 +1,91 @@
+# prompt
+액면 100억 원, 표면금리 연 1%(연 1회 이표), 만기 3년(2026-08-23 발행, 2029-08-23 만기), 전환가 20,000원, 현재 주가 18,000원, 주가 변동성 35%, 무위험금리 3.2%, 이 회사 일반채 신용스프레드 4%. 이 전환사채 가치는?
+
+# run: plugin ON (fintool@fintool-plugin 0.5.4) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-sonnet-5 · 2026-08-23
+
+[assistant]
+전환사채 가치 평가를 위해 fintool의 fixed-income 스킬을 사용하겠습니다.
+
+[tool_use Skill]
+{"skill":"fintool:fixed-income"}
+
+[tool_result]
+Launching skill: fintool:fixed-income
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"convertible","flags":{"face":10000000000,"coupon-rate":0.01,"frequency":1,"maturity":3,"conversion-price":20000,"spot":18000,"vol":0.35,"rate":0.032,"spread":0.04,"steps":500}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "convertible",
+  "data": {
+    "model": "tsiveriotis-fernandes",
+    "inputs": {
+      "face": 10000000000,
+      "coupon_rate": 0.01,
+      "frequency": 1,
+      "maturity": 3,
+      "redemption": 1,
+      "conversion_price": 20000,
+      "spot": 18000,
+      "vol": 0.35,
+      "rate": 0.032,
+      "spread": 0.04,
+      "dividend": 0,
+      "steps": 500
+    },
+    "value": 10764990730.903393,
+    "equity_component": 5346924332.8570795,
+    "debt_component": 5418066398.046313,
+    "value_pct_face": 107.64990730903392,
+    "conversion_ratio": 500000,
+    "parity": 9000000000,
+    "bond_floor": 8317567484.310382,
+    "premium_over_parity": 0.19611008121148799,
+    "premium_over_bond": 0.29424747694679265,
+    "delta": 338803.38569968985,
+    "component_method_value": 10429314832.234562,
+    "steps": 500,
+    "convention": "Tsiveriotis-Fernandes 이항 트리. 주식 성분은 무위험금리, 현금 성분은 무위험금리+신용스프레드로 할인한다. CRR: u = e^(σ√dt), d = 1/u, p = (e^((r−q)dt) − d)/(u − d). 이표는 지급일이 속한 스텝의 현금 성분에 더한다. 노드 판정 순서: 발행사 콜(보유자는 전환으로 대응) → 보유자 풋 → 보유자 전환. 금리·스프레드·변동성은 연속복리 상수다.",
+    "assumptions": [
+      "주가는 변동성이 일정한 기하브라운운동을 따른다. 점프·변동성 스마일은 없다",
+      "무위험금리와 신용스프레드는 만기까지 상수다. 스프레드가 주가와 함께 움직이는 효과는 없다",
+      "부도 시 회수율은 모형에 없다. 신용위험은 현금 성분의 할인율로만 들어간다",
+      "전환 시 희석 효과(주식 수 증가에 따른 주가 하락)는 반영하지 않는다",
+      "리픽싱(전환가 조정) 조항은 반영하지 않는다. 조건이 있다면 별도 시나리오로 전환가를 바꿔 평가한다"
+    ],
+    "calculation_hash": "sha256:217dee536d906280a54343762bac1c5554cff3296da18135067f485d4c527dd7"
+  }
+}
+
+
+[assistant]
+## 전환사채 가치 평가 결과 (Tsiveriotis-Fernandes 이항모형)
+
+**CB 이론가치: 약 107.65억 원 (액면 대비 107.65%)**
+
+| 항목 | 금액 | 비고 |
+|---|---|---|
+| **CB 가치** | 107.65억 원 | 액면 100억 × 107.65% |
+| 채권가치 성분(Debt component) | 54.18억 원 | 무위험금리+스프레드로 할인 |
+| 주식가치 성분(Equity component) | 53.47억 원 | 무위험금리로 할인 |
+| 채권 바닥(Bond Floor) | 83.18억 원 | 순수 회사채(1%+4%=5% 할인)로서의 최소가치 |
+| 전환가치(Parity) | 90.00억 원 | 500,000주 × 18,000원 |
+| 패리티 대비 프리미엄 | +19.6% | CB가 지금 당장 전환하는 것보다 유리 |
+| 채권가치 대비 프리미엄 | +29.4% | 채권으로만 봐도 프리미엄 존재 |
+| Delta | 약 33.9만 | 주가 1원 변동 시 CB가치 변동분 근사 |
+
+**해석**
+- 전환가 20,000원 대비 현재 주가 18,000원(전환가 대비 90%)이라 **패리티(9,000백만원) < CB가치**로, 아직 전환권이 등가격(ATM) 근처에서 상당한 시간가치를 가지고 있습니다.
+- 채권 바닥(83.18억)이 액면(100억)보다 낮은 이유는 표면금리 1%가 요구수익률(무위험 3.2%+스프레드 4%=5.2%)보다 크게 낮기 때문입니다 — 순수 채권으로서는 할인채입니다.
+- 그럼에도 CB 전체 가치(107.65억)가 액면을 넘는 것은 35%라는 높은 변동성 덕분에 전환옵션의 시간가치가 채권 디스카운트(약 -16.8억)를 상쇄하고도 남기 때문입니다.
+
+**모형 가정 (참고)**
+- 부도 시 회수율 미반영, 신용위험은 현금흐름 할인율에만 반영
+- 전환 시 희석효과, 리픽싱(전환가 조정) 조항 미반영 — 리픽싱 조건이 있다면 전환가를 낮춘 시나리오로 별도 재평가 필요
+- 주가는 일정 변동성의 기하브라운운동 가정 (점프·변동성 스마일 없음)
+
+콜/풋 옵션이나 리픽싱(refixing) 조항이 있다면 알려주시면 반영해서 다시 계산해 드리겠습니다.
+
+[result] duration_ms=18623 turns=4 cost_usd=0.08635480000000001 input_tokens=76115 output_tokens=1300

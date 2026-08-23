@@ -1,0 +1,4178 @@
+# prompt
+은퇴 자산 25억 원. 매년 초 1.2억 원을 인출하고 인출액은 매년 2.5%씩 늘린다. 포트폴리오 기대수익률 연 5.5%, 변동성 12%, 물가상승률 2%, 기간 30년. 실질 기준으로 자산 고갈 확률과 고갈 시점 분포를 구하고, 고갈된 경로와 살아남은 경로의 초기 5년 수익률이 어떻게 달랐는지(수익률 순서 위험) 알려줘.
+
+# run: plugin ON (fintool@fintool-plugin 0.5.4) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-opus-5 · 2026-08-23
+
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "tools",
+  "data": {
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "amort",
+        "kind": "calculator",
+        "summary": "상환 스케줄 전체와 구간 누적을 한 번에 낸다 (엑셀 IPMT·PPMT·CUMIPMT·CUMPRINC·ISPMT)",
+        "usage": "fintool amort [flags]",
+        "flags": []
+      },
+      {
+        "name": "attribution",
+        "kind": "calculator",
+        "summary": "Brinson active return과 수정듀레이션 기반 고정수익 성과 귀속을 계산한다",
+        "usage": "fintool attribution --model brinson|fixed-income --input \u003cJSON|@file.json\u003e [flags]",
+        "flags": []
+      },
+      {
+        "name": "bond",
+        "kind": "calculator",
+        "summary": "채권 가격·수익률·스프레드·듀레이션·convexity·경과이자",
+        "usage": "fintool bond [flags]",
+        "flags": []
+      },
+      {
+        "name": "business-plan",
+        "kind": "calculator",
+        "aliases": [
+          "bp"
+        ],
+        "summary": "사업계획 가정을 연 단위 손익·운전자본·현금흐름으로 전개하고 자금소요와 흑자전환 시점을 낸다",
+        "usage": "fintool business-plan [flags]",
+        "flags": []
+      },
+      {
+        "name": "cap-table-simulate",
+        "kind": "calculator",
+        "summary": "full cap table·SAFE·전환증권·옵션풀 전환 시나리오를 결정론적으로 계산한다",
+        "usage": "fintool cap-table-simulate [flags]",
+        "flags": []
+      },
+      {
+        "name": "capital-budget",
+        "kind": "calculator",
+        "summary": "복수 투자안의 NPV·IRR·MIRR·회수기간·PI·EAA를 계산하고 지표별 순위를 비교한다",
+        "usage": "fintool capital-budget [flags]",
+        "flags": []
+      },
+      {
+        "name": "convertible",
+        "kind": "calculator",
+        "summary": "전환사채(CB)를 Tsiveriotis-Fernandes 이항 트리로 평가한다 (신용스프레드·콜·풋 반영)",
+        "usage": "fintool convertible [flags]",
+        "flags": []
+      },
+      {
+        "name": "coupon",
+        "kind": "calculator",
+        "summary": "결제일이 놓인 이표 구간과 남은 이표 횟수를 한 번에 구한다 (엑셀 COUPPCD·COUPNCD·COUPNUM·COUPDAYBS·COUPDAYS·COUPDAYSNC)",
+        "usage": "fintool coupon [flags]",
+        "flags": []
+      },
+      {
+        "name": "credit",
+        "kind": "calculator",
+        "summary": "Merton 구조모형의 부도확률과 distance to default (자산가치·부채·자산변동성에서 산출)",
+        "usage": "fintool credit [flags]",
+        "flags": []
+      },
+      {
+        "name": "curve",
+        "kind": "calculator",
+        "summary": "수익률곡선 부트스트래핑, 스팟↔포워드 변환, Nelson-Siegel·Svensson 피팅, Z-spread",
+        "usage": "fintool curve [flags]",
+        "flags": []
+      },
+      {
+        "name": "dcf",
+        "kind": "calculator",
+        "summary": "명시적 FCF와 terminal value를 할인해 기업가치·주주가치·주당가치와 민감도를 구한다",
+        "usage": "fintool dcf [flags]",
+        "flags": []
+      },
+      {
+        "name": "decision-tree",
+        "kind": "calculator",
+        "summary": "JSON 의사결정 트리를 rollback해 노드별 EMV, 선택 가지, EVPI를 구한다",
+        "usage": "fintool decision-tree [flags]",
+        "flags": []
+      },
+      {
+        "name": "depreciate",
+        "kind": "calculator",
+        "summary": "감가상각 스케줄 전체를 낸다 (엑셀 SLN·SYD·DB·DDB·VDB·AMORDEGRC·AMORLINC)",
+        "usage": "fintool depreciate [flags]",
+        "flags": []
+      },
+      {
+        "name": "derivative",
+        "kind": "calculator",
+        "summary": "선도·선물·스왑·금리옵션의 가격과 가치, 목표 위험 헤지 계약 수를 계산한다",
+        "usage": "fintool derivative [flags]",
+        "flags": []
+      },
+      {
+        "name": "discount",
+        "kind": "calculator",
+        "summary": "할인채와 단기 국채의 가격·수익률·할인율 (엑셀 DISC·INTRATE·RECEIVED·PRICEDISC·YIELDDISC·TBILLEQ·TBILLPRICE·TBILLYIELD)",
+        "usage": "fintool discount [flags]",
+        "flags": []
+      },
+      {
+        "name": "equity",
+        "kind": "calculator",
+        "summary": "DDM·FCF·배수·잔여이익·사기업·SOTP 주식가치를 계산한다",
+        "usage": "fintool equity --model ddm|fcf|multiples|residual|private|sotp [flags]",
+        "flags": []
+      },
+      {
+        "name": "financial-model",
+        "kind": "calculator",
+        "summary": "strict financial-model/v1·v2·v3 입력을 12~60개월 월별 재무제표로 계산한다",
+        "usage": "fintool financial-model [flags]",
+        "flags": []
+      },
+      {
+        "name": "fsa",
+        "kind": "calculator",
+        "summary": "EPS·재무비율·FCFF/FCFE·현금흐름 연결과 핵심 회계 정규화를 계산한다",
+        "usage": "fintool fsa --solve eps|ratios|cashflow|adjust [flags]",
+        "flags": []
+      },
+      {
+        "name": "fx",
+        "kind": "calculator",
+        "summary": "현물·cross·선도환율, 국제 패리티, bid-offer, 삼각재정, forward MTM과 carry를 계산한다",
+        "usage": "fintool fx [flags]",
+        "flags": []
+      },
+      {
+        "name": "irr",
+        "kind": "calculator",
+        "summary": "순현재가치를 0으로 만드는 내부수익률을 구한다. --dates를 주면 불규칙 날짜 기준이다 (엑셀 IRR·XIRR)",
+        "usage": "fintool irr [flags]",
+        "flags": []
+      },
+      {
+        "name": "montecarlo",
+        "kind": "calculator",
+        "aliases": [
+          "mc"
+        ],
+        "summary": "자산 경로를 시뮬레이션해 만기 잔액 분포와 목표 달성 확률을 계산한다 (GBM/부트스트랩/팻테일/점프/다자산)",
+        "usage": "fintool montecarlo [flags]",
+        "flags": []
+      },
+      {
+        "name": "npv",
+        "kind": "calculator",
+        "summary": "현금흐름의 순현재가치를 구한다. --dates를 주면 불규칙 날짜 기준으로 계산한다 (엑셀 NPV·XNPV)",
+        "usage": "fintool npv [flags]",
+        "flags": []
+      },
+      {
+        "name": "option",
+        "kind": "calculator",
+        "summary": "옵션 가격·그릭스·IV와 만기 payoff·풋-콜 패리티·표준 전략을 계산한다",
+        "usage": "fintool option [flags]",
+        "flags": []
+      },
+      {
+        "name": "perf",
+        "kind": "calculator",
+        "summary": "수익률 시계열의 성과 지표를 한 번에 낸다 (CAGR·Sharpe·Sortino·Calmar·MDD·베타·알파 등)",
+        "usage": "fintool perf [flags]",
+        "flags": []
+      },
+      {
+        "name": "portfolio",
+        "kind": "calculator",
+        "summary": "포트폴리오 최적화·CAPM·Roy safety-first·목표·부채 면역화 지표를 계산한다",
+        "usage": "fintool portfolio [flags]",
+        "flags": []
+      },
+      {
+        "name": "pricing",
+        "kind": "calculator",
+        "summary": "상수 가격탄력성으로 제안 가격의 예상 판매량과 기준 대비 손익·보전 임계값을 계산한다",
+        "usage": "fintool pricing [flags]",
+        "flags": []
+      },
+      {
+        "name": "private-markets",
+        "kind": "calculator",
+        "summary": "사모펀드 성과·waterfall과 비상장 주식·부채·실물자산 가치를 계산한다",
+        "usage": "fintool private-markets --mode fund|vc|growth|buyout|debt|asset [flags]",
+        "flags": []
+      },
+      {
+        "name": "rate-convert",
+        "kind": "calculator",
+        "summary": "이자율 표기를 변환하고 성장률·소요 기간을 구한다 (엑셀 EFFECT·NOMINAL·RRI·PDURATION·FVSCHEDULE)",
+        "usage": "fintool rate-convert [flags]",
+        "flags": []
+      },
+      {
+        "name": "regression",
+        "kind": "calculator",
+        "summary": "CFA Level I·II OLS·ANOVA·예측구간·회귀진단과 이항 로지스틱 회귀를 계산한다",
+        "usage": "fintool regression --model ols|logistic --input \u003cJSON|@file.json\u003e [flags]",
+        "flags": []
+      },
+      {
+        "name": "report",
+        "kind": "calculator",
+        "summary": "fintool JSON 봉투를 고정 부품 HTML로 바인딩한다",
+        "usage": "fintool report [flags]",
+        "flags": []
+      },
+      {
+        "name": "scenario",
+        "kind": "workflow_primitive",
+        "summary": "시나리오 가정의 정합성을 검증하고 실행할 파라미터 조합을 전개한다",
+        "usage": "fintool scenario [flags]",
+        "flags": []
+      },
+      {
+        "name": "stats",
+        "kind": "calculator",
+        "summary": "CFA Level I 기술통계·확률·신뢰구간·가설검정을 명시적 모드로 계산한다",
+        "usage": "fintool stats --mode describe|probability|infer|test [flags]",
+        "flags": []
+      },
+      {
+        "name": "timeseries",
+        "kind": "calculator",
+        "summary": "CFA 시계열 추세·AR(1/2)·계절성·RMSE 비교·ARCH 분산 예측을 계산한다",
+        "usage": "fintool timeseries --mode trend|ar|seasonal|compare|arch (--returns \u003cseries\u003e|--prices \u003cseries\u003e) [flags]",
+        "flags": []
+      },
+      {
+        "name": "trade-cost",
+        "kind": "calculator",
+        "summary": "quoted/effective spread, VWAP 거래비용, implementation shortfall을 계산한다",
+        "usage": "fintool trade-cost [flags]",
+        "flags": []
+      },
+      {
+        "name": "tvm",
+        "kind": "calculator",
+        "summary": "화폐의 시간가치 방정식을 풀어 pv/fv/pmt/nper/rate 중 하나를 구한다 (엑셀 PV·FV·PMT·NPER·RATE)",
+        "usage": "fintool tvm [flags]",
+        "flags": []
+      },
+      {
+        "name": "unit-economics",
+        "kind": "calculator",
+        "summary": "구독형 LTV·LTV/CAC·CAC 회수기간 또는 거래형 공헌이익·손익분기점을 계산한다",
+        "usage": "fintool unit-economics --model subscription|transaction [flags]",
+        "flags": []
+      },
+      {
+        "name": "var",
+        "kind": "calculator",
+        "summary": "수익률 시계열에서 VaR와 CVaR(Expected Shortfall)를 구한다 (historical/parametric/montecarlo)",
+        "usage": "fintool var [flags]",
+        "flags": []
+      },
+      {
+        "name": "vol",
+        "kind": "calculator",
+        "summary": "수익률 시계열의 변동성을 추정한다 (realized·EWMA·GARCH(1,1))",
+        "usage": "fintool vol [flags]",
+        "flags": []
+      },
+      {
+        "name": "wacc",
+        "kind": "calculator",
+        "summary": "CAPM 자기자본비용과 세후 부채비용을 시장가치로 가중해 WACC를 계산한다",
+        "usage": "fintool wacc [flags]",
+        "flags": []
+      },
+      {
+        "name": "workflow",
+        "kind": "orchestrator",
+        "summary": "명시적 타입 참조로 여러 재무 도구와 scenario 케이스를 연결한다",
+        "usage": "fintool workflow",
+        "flags": [],
+        "subcommands": [
+          {
+            "name": "explain",
+            "kind": "orchestrator",
+            "summary": "실행 순서와 typed 참조·집계 연결을 JSON으로 설명한다",
+            "usage": "fintool workflow explain [flags]",
+            "flags": []
+          },
+          {
+            "name": "run",
+            "kind": "orchestrator",
+            "summary": "검증된 워크플로를 실행하고 단계별 원본 봉투와 출처를 보존한다",
+            "usage": "fintool workflow run [flags]",
+            "flags": []
+          },
+          {
+            "name": "validate",
+            "kind": "orchestrator",
+            "summary": "워크플로 구조와 모든 참조·타입 호환성을 실행 전에 검사한다",
+            "usage": "fintool workflow validate [flags]",
+            "flags": []
+          }
+        ]
+      }
+    ]
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{"tool":"montecarlo"}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "tools",
+  "data": {
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "montecarlo",
+        "kind": "calculator",
+        "aliases": [
+          "mc"
+        ],
+        "summary": "자산 경로를 시뮬레이션해 만기 잔액 분포와 목표 달성 확률을 계산한다 (GBM/부트스트랩/팻테일/점프/다자산)",
+        "usage": "fintool montecarlo [flags]",
+        "example": "  # 1억으로 시작해 매년 1200만원씩 30년 적립, 목표 10억\n  fintool montecarlo --initial 100000000 --annual-flow 12000000 --years 30 --target 1000000000\n\n  # 10억에서 매년 4000만원씩 30년 인출할 때의 고갈 확률 (실질 기준)\n  fintool mc --initial 1000000000 --annual-flow -40000000 --years 30 --inflation 0.02\n\n  # 과거 월간 수익률을 재표본해 정규분포 가정 없이 고갈 확률을 구한다\n  fintool mc --model bootstrap --returns @history.csv --steps-per-year 12 \\\n    --initial 1000000000 --annual-flow -40000000 --years 30\n\n  # 수익률 순서 위험까지 보려면 블록 재표본을 쓴다 (블록 24개월)\n  fintool mc --model block-bootstrap --returns @history.csv --steps-per-year 12 --block-size 24 \\\n    --initial 1000000000 --annual-flow -40000000 --years 30\n\n  # 팻테일(자유도 4)과 연 1회 −15% 급락 시나리오\n  fintool mc --model student-t --df 4 --initial 100000000 --years 20\n  fintool mc --model jump --jump-intensity 1 --jump-mean -0.15 --jump-stddev 0.1 --years 20\n\n  # 시리즈A 100억이 5년 뒤 1000억으로 엑싯할 확률. 연 35% 확률로 사업이 끝난다고 본다\n  fintool mc --initial 10000000000 --mean-return 0.5 --volatility 0.7 \\\n    --failure-rate 0.35 --years 5 --target 100000000000\n\n  # 주식 60 / 채권 40, 상관 0.2인 2자산 포트폴리오\n  fintool mc --assets stock,bond --mean-returns 0.08,0.03 --volatilities 0.18,0.06 \\\n    --weights 0.6,0.4 --correlation \"1,0.2;0.2,1\" --initial 100000000 --years 30\n\n  # 시나리오 500개를 한 프로세스에서 실행한다 (같은 난수열로 파라미터 효과만 분리)\n  fintool scenario --spec @scenario.json --mode sample --n 500 | fintool mc --batch -\n\n  # 케이스 파일로 직접 준다. params에 적은 값만 위 플래그를 덮어쓴다\n  fintool mc --initial 100000000 --years 30 --batch @cases.json\n\n  # 타깃데이트펀드: 30년에 걸쳐 주식 90%에서 30%로 낮춘다\n  fintool mc --assets stock,bond --mean-returns 0.08,0.03 --volatilities 0.18,0.06 \\\n    --weights 0.9,0.1 --glide-path \"0:0.9/0.1,29:0.3/0.7\" --initial 100000000 --years 30",
+        "flags": [
+          {
+            "name": "annual-flow",
+            "type": "float64",
+            "default": "0",
+            "description": "연간 순현금흐름. 양수는 적립, 음수는 인출"
+          },
+          {
+            "name": "assets",
+            "type": "string",
+            "default": "",
+            "description": "자산 이름 목록. 쉼표로 구분한다. 생략하면 시계열 이름이나 asset1..N을 쓴다"
+          },
+          {
+            "name": "batch",
+            "type": "string",
+            "default": "",
+            "description": "케이스 목록을 받아 한 프로세스에서 전부 실행한다. @파일.json, -(표준입력), 인라인 JSON. scenario 커맨드의 출력을 그대로 파이프로 넘길 수 있다"
+          },
+          {
+            "name": "block-size",
+            "type": "int",
+            "default": "12",
+            "description": "block-bootstrap이 한 번에 뽑는 연속 관측 수. 1이면 bootstrap과 같다"
+          },
+          {
+            "name": "correlation",
+            "type": "string",
+            "default": "",
+            "description": "자산 간 상관행렬. @파일.json(2차원 배열)이거나 행을 ;로 구분한 \"1,0.3;0.3,1\" 형태. 생략하면 무상관"
+          },
+          {
+            "name": "df",
+            "type": "float64",
+            "default": "5",
+            "description": "student-t의 자유도. 2보다 커야 하고, 작을수록 꼬리가 두껍다"
+          },
+          {
+            "name": "failure-rate",
+            "type": "float64",
+            "default": "0",
+            "description": "폐업·부도처럼 가치가 즉시 0이 되는 사건의 연간 확률(0 이상 1 미만). 0이면 이 층을 끈다. 모든 모델에 적용된다"
+          },
+          {
+            "name": "fill",
+            "type": "string",
+            "default": "none",
+            "description": "결측치 처리 (none|forward|drop). none이면 결측이 있을 때 오류다"
+          },
+          {
+            "name": "flow-growth",
+            "type": "float64",
+            "default": "0",
+            "description": "현금흐름의 연 증가율(소수 표기)"
+          },
+          {
+            "name": "full",
+            "type": "bool",
+            "default": "false",
+            "description": "배치 결과에 연도별 밴드(path)까지 담는다. 케이스가 많으면 출력이 수만 줄이 되므로 기본은 생략한다"
+          },
+          {
+            "name": "glide-path",
+            "type": "string",
+            "default": "",
+            "description": "기간에 따른 배분 변화. \"0:0.9/0.1,30:0.3/0.7\"이거나 @파일.json([{start_year,weights}]). 구간 사이는 선형 보간한다"
+          },
+          {
+            "name": "independent-seeds",
+            "type": "bool",
+            "default": "false",
+            "description": "배치에서 케이스마다 다른 난수를 쓴다. 기본은 모든 케이스가 같은 난수열을 써서(common random numbers) 파라미터 효과와 몬테카를로 노이즈가 섞이지 않게 한다"
+          },
+          {
+            "name": "inflation",
+            "type": "float64",
+            "default": "0",
+            "description": "연 인플레이션. 0이 아니면 결과를 오늘 가치 기준으로 환산한다"
+          },
+          {
+            "name": "initial",
+            "type": "float64",
+            "default": "0",
+            "description": "초기 자산"
+          },
+          {
+            "name": "jump-intensity",
+            "type": "float64",
+            "default": "0",
+            "description": "jump의 연간 기대 점프 횟수 λ. 0이면 gbm과 같다"
+          },
+          {
+            "name": "jump-mean",
+            "type": "float64",
+            "default": "-0.1",
+            "description": "jump의 점프 크기 로그 평균. 급락을 보려면 음수로 준다"
+          },
+          {
+            "name": "jump-stddev",
+            "type": "float64",
+            "default": "0.1",
+            "description": "jump의 점프 크기 로그 표준편차"
+          },
+          {
+            "name": "mean-return",
+            "type": "float64",
+            "default": "0.07",
+            "description": "연 기대수익률(산술, 소수 표기). 단일 자산 파라메트릭 모델에서만 쓴다"
+          },
+          {
+            "name": "mean-returns",
+            "type": "string",
+            "default": "",
+            "description": "자산별 연 기대수익률. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다. 자산 순서와 같아야 한다"
+          },
+          {
+            "name": "model",
+            "type": "string",
+            "default": "gbm",
+            "description": "수익률 생성 모델 (gbm|bootstrap|block-bootstrap|student-t|jump)"
+          },
+          {
+            "name": "periods-per-year",
+            "type": "float64",
+            "default": "steps-per-year와 동일",
+            "description": "시계열의 연간 관측 수. 지정하지 않으면 --steps-per-year를 따른다"
+          },
+          {
+            "name": "prices",
+            "type": "string",
+            "default": "",
+            "description": "가격 시계열. @파일.csv 또는 @파일.json으로 주거나, 시리즈가 하나면 쉼표로 구분해 직접 준다"
+          },
+          {
+            "name": "return-type",
+            "type": "string",
+            "default": "simple",
+            "description": "가격을 수익률로 바꾸는 방식 (simple|log). --prices를 줄 때만 쓴다"
+          },
+          {
+            "name": "returns",
+            "type": "string",
+            "default": "",
+            "description": "수익률 시계열(소수 표기, 0.01 = 1%). @파일.csv 또는 @파일.json으로 주거나, 시리즈가 하나면 쉼표로 구분해 직접 준다"
+          },
+          {
+            "name": "seed",
+            "type": "uint64",
+            "default": "42",
+            "description": "난수 시드. 같은 시드는 같은 결과를 보장한다"
+          },
+          {
+            "name": "steps-per-year",
+            "type": "int",
+            "default": "12",
+            "description": "연간 시뮬레이션 스텝 수. bootstrap 계열은 과거 데이터 주기와 맞춘다"
+          },
+          {
+            "name": "target",
+            "type": "float64",
+            "default": "0",
+            "description": "성공으로 판정할 만기 잔액 기준"
+          },
+          {
+            "name": "trials",
+            "type": "int",
+            "default": "10000",
+            "description": "시뮬레이션 횟수"
+          },
+          {
+            "name": "volatilities",
+            "type": "string",
+            "default": "",
+            "description": "자산별 연 변동성. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다. 자산 순서와 같아야 한다"
+          },
+          {
+            "name": "volatility",
+            "type": "float64",
+            "default": "0.15",
+            "description": "연 변동성(표준편차, 소수 표기). 단일 자산 파라메트릭 모델에서만 쓴다"
+          },
+          {
+            "name": "weights",
+            "type": "string",
+            "default": "",
+            "description": "자산별 목표 배분(합 1). 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다. 자산이 2개 이상이면 반드시 지정한다"
+          },
+          {
+            "name": "years",
+            "type": "int",
+            "default": "30",
+            "description": "시뮬레이션 기간(년)"
+          }
+        ],
+        "workflow": {
+          "batch": true,
+          "inputs": {
+            "annual-flow": {
+              "type": "money",
+              "description": "연간 순현금흐름"
+            },
+            "assets": {
+              "type": "string"
+            },
+            "block-size": {
+              "type": "number"
+            },
+            "correlation": {
+              "type": "string"
+            },
+            "df": {
+              "type": "number"
+            },
+            "failure-rate": {
+              "type": "ratio_decimal",
+              "description": "연간 외생 실패 확률"
+            },
+            "fill": {
+              "type": "string"
+            },
+            "flow-growth": {
+              "type": "annual_rate_decimal",
+              "description": "현금흐름 연 증가율"
+            },
+            "full": {
+              "type": "boolean"
+            },
+            "glide-path": {
+              "type": "string"
+            },
+            "independent-seeds": {
+              "type": "boolean"
+            },
+            "inflation": {
+              "type": "annual_rate_decimal",
+              "description": "연 인플레이션율"
+            },
+            "initial": {
+              "type": "money",
+              "description": "초기 자산"
+            },
+            "jump-intensity": {
+              "type": "number"
+            },
+            "jump-mean": {
+              "type": "number"
+            },
+            "jump-stddev": {
+              "type": "number"
+            },
+            "mean-return": {
+              "type": "annual_rate_decimal",
+              "description": "연 기대수익률"
+            },
+            "mean-returns": {
+              "type": "string"
+            },
+            "model": {
+              "type": "string"
+            },
+            "periods-per-year": {
+              "type": "number"
+            },
+            "prices": {
+              "type": "string"
+            },
+            "return-type": {
+              "type": "string"
+            },
+            "returns": {
+              "type": "string"
+            },
+            "seed": {
+              "type": "number"
+            },
+            "steps-per-year": {
+              "type": "number"
+            },
+            "target": {
+              "type": "money",
+              "description": "성공 판정 만기 잔액"
+            },
+            "trials": {
+              "type": "number"
+            },
+            "volatilities": {
+              "type": "string"
+            },
+            "volatility": {
+              "type": "annual_volatility_decimal",
+              "description": "연율 변동성"
+            },
+            "weights": {
+              "type": "string"
+            },
+            "years": {
+              "type": "number"
+            }
+          },
+          "outputs": {
+            "/data/failure_rate": {
+              "type": "ratio_decimal",
+              "nullable": true
+            },
+            "/data/ruin_rate": {
+              "type": "ratio_decimal"
+            },
+            "/data/success_rate": {
+              "type": "ratio_decimal"
+            },
+            "/data/terminal_balance/mean": {
+              "type": "money"
+            },
+            "/data/terminal_balance/p10": {
+              "type": "money"
+            },
+            "/data/terminal_balance/p5": {
+              "type": "money"
+            },
+            "/data/terminal_balance/p50": {
+              "type": "money"
+            },
+            "/data/terminal_balance/p90": {
+              "type": "money"
+            },
+            "/data/terminal_balance/p95": {
+              "type": "money"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2500000000,"annual-flow":-120000000,"flow-growth":0.025,"mean-return":0.055,"volatility":0.12,"inflation":0.02,"years":30,"trials":20000,"steps-per-year":1,"seed":42}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 2500000000,
+      "years": 30,
+      "steps_per_year": 1,
+      "mean_return": 0.055,
+      "volatility": 0.12,
+      "annual_flow": -120000000,
+      "flow_growth": 0.025,
+      "inflation": 0.02,
+      "target": 0,
+      "trials": 20000,
+      "seed": 42
+    },
+    "real_terms": true,
+    "terminal_balance": {
+      "mean": 1339455491.3515437,
+      "stddev": 2718848003.244759,
+      "min": 0,
+      "max": 51493407739.079185,
+      "p5": 0,
+      "p10": 0,
+      "p25": 0,
+      "p50": 0,
+      "p75": 1604532860.4082675,
+      "p90": 4223929753.2775683,
+      "p95": 6470807808.518952
+    },
+    "success_rate": 0.4689,
+    "ruin_rate": 0.5311,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2500000000,
+        "p50": 2500000000,
+        "p90": 2500000000
+      },
+      {
+        "year": 1,
+        "p10": 2083904709.460045,
+        "p50": 2451015565.5790863,
+        "p90": 2876072842.550224
+      },
+      {
+        "year": 2,
+        "p10": 1899558686.767359,
+        "p50": 2401420846.919051,
+        "p90": 3029376518.820359
+      },
+      {
+        "year": 3,
+        "p10": 1746359334.0476756,
+        "p50": 2354297835.772662,
+        "p90": 3152767968.3127956
+      },
+      {
+        "year": 4,
+        "p10": 1611632669.755061,
+        "p50": 2291706443.953216,
+        "p90": 3252632651.0590954
+      },
+      {
+        "year": 5,
+        "p10": 1487349617.2507832,
+        "p50": 2237622003.625821,
+        "p90": 3326655800.1332817
+      },
+      {
+        "year": 6,
+        "p10": 1360657430.9855635,
+        "p50": 2181902055.2845545,
+        "p90": 3394137330.307403
+      },
+      {
+        "year": 7,
+        "p10": 1251820108.6331766,
+        "p50": 2120303846.8812437,
+        "p90": 3473835999.965834
+      },
+      {
+        "year": 8,
+        "p10": 1128657132.338935,
+        "p50": 2056060232.367265,
+        "p90": 3538614723.2991223
+      },
+      {
+        "year": 9,
+        "p10": 1017718408.4678218,
+        "p50": 1989026567.3715162,
+        "p90": 3600152481.359461
+      },
+      {
+        "year": 10,
+        "p10": 909866519.2662008,
+        "p50": 1917111734.7812428,
+        "p90": 3642295623.167679
+      },
+      {
+        "year": 11,
+        "p10": 790141123.5434393,
+        "p50": 1845335648.994756,
+        "p90": 3697402154.801427
+      },
+      {
+        "year": 12,
+        "p10": 675315767.2900925,
+        "p50": 1772188658.9667335,
+        "p90": 3746613162.1967044
+      },
+      {
+        "year": 13,
+        "p10": 561450528.3804312,
+        "p50": 1695077708.7559328,
+        "p90": 3796946309.3235106
+      },
+      {
+        "year": 14,
+        "p10": 442385559.33604175,
+        "p50": 1619023025.3551607,
+        "p90": 3863993605.5002527
+      },
+      {
+        "year": 15,
+        "p10": 324543289.1083757,
+        "p50": 1524928680.1252651,
+        "p90": 3890555397.776851
+      },
+      {
+        "year": 16,
+        "p10": 204746647.23932302,
+        "p50": 1433902557.238719,
+        "p90": 3917273294.903119
+      },
+      {
+        "year": 17,
+        "p10": 80990534.76744841,
+        "p50": 1348438604.2783463,
+        "p90": 3944068700.058821
+      },
+      {
+        "year": 18,
+        "p10": 0,
+        "p50": 1250178419.4698136,
+        "p90": 3990408563.218484
+      },
+      {
+        "year": 19,
+        "p10": 0,
+        "p50": 1148060727.1638014,
+        "p90": 4018048562.6294074
+      },
+      {
+        "year": 20,
+        "p10": 0,
+        "p50": 1041506989.0987637,
+        "p90": 4038323601.783571
+      },
+      {
+        "year": 21,
+        "p10": 0,
+        "p50": 936165750.4231062,
+        "p90": 4089654203.787737
+      },
+      {
+        "year": 22,
+        "p10": 0,
+        "p50": 834965914.1537173,
+        "p90": 4130441358.82776
+      },
+      {
+        "year": 23,
+        "p10": 0,
+        "p50": 721875824.8731542,
+        "p90": 4129433766.5928187
+      },
+      {
+        "year": 24,
+        "p10": 0,
+        "p50": 607993111.8996785,
+        "p90": 4168193025.9774694
+      },
+      {
+        "year": 25,
+        "p10": 0,
+        "p50": 488304654.5476359,
+        "p90": 4183010466.035716
+      },
+      {
+        "year": 26,
+        "p10": 0,
+        "p50": 369055747.3570292,
+        "p90": 4181826151.936492
+      },
+      {
+        "year": 27,
+        "p10": 0,
+        "p50": 246915887.6509929,
+        "p90": 4240411557.8045964
+      },
+      {
+        "year": 28,
+        "p10": 0,
+        "p50": 119982967.40919149,
+        "p90": 4224523079.5769377
+      },
+      {
+        "year": 29,
+        "p10": 0,
+        "p50": 0,
+        "p90": 4229398450.2957015
+      },
+      {
+        "year": 30,
+        "p10": 0,
+        "p50": 0,
+        "p90": 4223929753.2775683
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 10,
+        "p10": 16,
+        "p50": 23,
+        "p90": 29,
+        "count": 10622
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": 0.02511595970044819,
+          "first_3y": 0.021200283001162834,
+          "first_5y": 0.02130972031475031,
+          "full": 0.02630923497142278
+        },
+        "survived": {
+          "first_1y": 0.09206381585364912,
+          "first_3y": 0.08619942612396272,
+          "first_5y": 0.08323828019553965,
+          "full": 0.06580766989180831
+        }
+      }
+    }
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2500000000,"annual-flow":-120000000,"flow-growth":0.025,"mean-return":0.055,"volatility":0.0001,"inflation":0,"years":2,"trials":200,"steps-per-year":1,"seed":42}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 2500000000,
+      "years": 2,
+      "steps_per_year": 1,
+      "mean_return": 0.055,
+      "volatility": 0.0001,
+      "annual_flow": -120000000,
+      "flow_growth": 0.025,
+      "inflation": 0,
+      "target": 0,
+      "trials": 200,
+      "seed": 42
+    },
+    "real_terms": false,
+    "terminal_balance": {
+      "mean": 2540914544.372995,
+      "stddev": 388252.68568810646,
+      "min": 2539909176.872649,
+      "max": 2541841118.3986697,
+      "p5": 2540304912.5757413,
+      "p10": 2540412640.5009785,
+      "p25": 2540635920.2649035,
+      "p50": 2540938067.5122786,
+      "p75": 2541178424.771907,
+      "p90": 2541431025.6577873,
+      "p95": 2541510342.482257
+    },
+    "success_rate": 1,
+    "ruin_rate": 0,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2500000000,
+        "p50": 2500000000,
+        "p90": 2500000000
+      },
+      {
+        "year": 1,
+        "p10": 2521020105.9860725,
+        "p50": 2521340302.7806854,
+        "p90": 2521707316.471445
+      },
+      {
+        "year": 2,
+        "p10": 2540412640.5009785,
+        "p50": 2540938067.5122786,
+        "p90": 2541431025.6577873
+      }
+    ]
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2380000000,"annual-flow":-123000000,"flow-growth":0.025,"mean-return":0.05354076,"volatility":0.12,"inflation":0.02,"years":29,"trials":20000,"steps-per-year":1,"seed":42}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 2380000000,
+      "years": 29,
+      "steps_per_year": 1,
+      "mean_return": 0.05354076,
+      "volatility": 0.12,
+      "annual_flow": -123000000,
+      "flow_growth": 0.025,
+      "inflation": 0.02,
+      "target": 0,
+      "trials": 20000,
+      "seed": 42
+    },
+    "real_terms": true,
+    "terminal_balance": {
+      "mean": 939915828.3209721,
+      "stddev": 2139234646.7551417,
+      "min": 0,
+      "max": 42400116078.664276,
+      "p5": 0,
+      "p10": 0,
+      "p25": 0,
+      "p50": 0,
+      "p75": 953554745.8649457,
+      "p90": 3096838121.9236894,
+      "p95": 4932543556.557492
+    },
+    "success_rate": 0.39165,
+    "ruin_rate": 0.60835,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2380000000,
+        "p50": 2380000000,
+        "p90": 2380000000
+      },
+      {
+        "year": 1,
+        "p10": 1969355171.9031923,
+        "p50": 2320008629.216215,
+        "p90": 2733350185.119415
+      },
+      {
+        "year": 2,
+        "p10": 1786466374.7116299,
+        "p50": 2259248124.1109776,
+        "p90": 2856885241.1046453
+      },
+      {
+        "year": 3,
+        "p10": 1625558032.3136303,
+        "p50": 2195276202.5429583,
+        "p90": 2944928227.4304585
+      },
+      {
+        "year": 4,
+        "p10": 1484294333.4971163,
+        "p50": 2134124242.9686885,
+        "p90": 3026229654.445234
+      },
+      {
+        "year": 5,
+        "p10": 1361438942.02077,
+        "p50": 2061475078.4228694,
+        "p90": 3091561508.162238
+      },
+      {
+        "year": 6,
+        "p10": 1229729100.9059134,
+        "p50": 1990615057.752284,
+        "p90": 3132947241.077129
+      },
+      {
+        "year": 7,
+        "p10": 1104670686.0398402,
+        "p50": 1929131933.4076028,
+        "p90": 3176798945.5562873
+      },
+      {
+        "year": 8,
+        "p10": 988036144.9724916,
+        "p50": 1842144195.1987383,
+        "p90": 3216409764.1806765
+      },
+      {
+        "year": 9,
+        "p10": 867726189.9816433,
+        "p50": 1767449020.600478,
+        "p90": 3247137563.913992
+      },
+      {
+        "year": 10,
+        "p10": 752785090.1762971,
+        "p50": 1681155137.9346313,
+        "p90": 3274919361.200402
+      },
+      {
+        "year": 11,
+        "p10": 636461223.1741784,
+        "p50": 1604120156.6846323,
+        "p90": 3312907139.87157
+      },
+      {
+        "year": 12,
+        "p10": 517846046.6165658,
+        "p50": 1508356164.5289326,
+        "p90": 3329127985.2499714
+      },
+      {
+        "year": 13,
+        "p10": 398172643.21717495,
+        "p50": 1419418120.531945,
+        "p90": 3334989005.317534
+      },
+      {
+        "year": 14,
+        "p10": 276515238.98221236,
+        "p50": 1322698378.5827732,
+        "p90": 3335758684.3906913
+      },
+      {
+        "year": 15,
+        "p10": 151408012.32065973,
+        "p50": 1223620504.2881236,
+        "p90": 3344019917.066111
+      },
+      {
+        "year": 16,
+        "p10": 22397648.592744935,
+        "p50": 1126807148.4233932,
+        "p90": 3361361316.9994717
+      },
+      {
+        "year": 17,
+        "p10": 0,
+        "p50": 1019796733.9877154,
+        "p90": 3368726809.582992
+      },
+      {
+        "year": 18,
+        "p10": 0,
+        "p50": 922826911.2876707,
+        "p90": 3337518135.756199
+      },
+      {
+        "year": 19,
+        "p10": 0,
+        "p50": 804822681.4677452,
+        "p90": 3326291253.4254518
+      },
+      {
+        "year": 20,
+        "p10": 0,
+        "p50": 693780045.4200094,
+        "p90": 3312369937.812163
+      },
+      {
+        "year": 21,
+        "p10": 0,
+        "p50": 572290684.1653278,
+        "p90": 3298708148.262236
+      },
+      {
+        "year": 22,
+        "p10": 0,
+        "p50": 451969983.26075804,
+        "p90": 3314566827.8036213
+      },
+      {
+        "year": 23,
+        "p10": 0,
+        "p50": 324048018.07955587,
+        "p90": 3287287945.4444637
+      },
+      {
+        "year": 24,
+        "p10": 0,
+        "p50": 195345623.55300862,
+        "p90": 3254991591.775667
+      },
+      {
+        "year": 25,
+        "p10": 0,
+        "p50": 62189073.87252639,
+        "p90": 3238281407.352184
+      },
+      {
+        "year": 26,
+        "p10": 0,
+        "p50": 0,
+        "p90": 3196647625.083083
+      },
+      {
+        "year": 27,
+        "p10": 0,
+        "p50": 0,
+        "p90": 3177751643.4349914
+      },
+      {
+        "year": 28,
+        "p10": 0,
+        "p50": 0,
+        "p90": 3118422536.0142264
+      },
+      {
+        "year": 29,
+        "p10": 0,
+        "p50": 0,
+        "p90": 3096838121.9236894
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 10,
+        "p10": 15,
+        "p50": 21,
+        "p90": 27,
+        "count": 12167
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": 0.024920062003975174,
+          "first_3y": 0.02217081427240593,
+          "first_5y": 0.02325476254017212,
+          "full": 0.027048151447016496
+        },
+        "survived": {
+          "first_1y": 0.09893747310747798,
+          "first_3y": 0.09009321582172485,
+          "first_5y": 0.08764827138199396,
+          "full": 0.0669698966902452
+        }
+      }
+    }
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2500000000,"annual-flow":-120000000,"flow-growth":0.025,"mean-return":0.05354076,"volatility":0.12,"inflation":0.02,"years":30,"trials":20000,"steps-per-year":1,"seed":42}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 2500000000,
+      "years": 30,
+      "steps_per_year": 1,
+      "mean_return": 0.05354076,
+      "volatility": 0.12,
+      "annual_flow": -120000000,
+      "flow_growth": 0.025,
+      "inflation": 0.02,
+      "target": 0,
+      "trials": 20000,
+      "seed": 42
+    },
+    "real_terms": true,
+    "terminal_balance": {
+      "mean": 1199554608.0411787,
+      "stddev": 2488844301.685841,
+      "min": 0,
+      "max": 48268389067.96175,
+      "p5": 0,
+      "p10": 0,
+      "p25": 0,
+      "p50": 0,
+      "p75": 1391760817.3630996,
+      "p90": 3848620853.825822,
+      "p95": 5867221605.139905
+    },
+    "success_rate": 0.44715,
+    "ruin_rate": 0.55285,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2500000000,
+        "p50": 2500000000,
+        "p90": 2500000000
+      },
+      {
+        "year": 1,
+        "p10": 2083439201.0213172,
+        "p50": 2453789450.8678894,
+        "p90": 2883095098.0155215
+      },
+      {
+        "year": 2,
+        "p10": 1894096692.9844942,
+        "p50": 2399561278.359908,
+        "p90": 3026253999.417085
+      },
+      {
+        "year": 3,
+        "p10": 1736311724.0396779,
+        "p50": 2347465119.881918,
+        "p90": 3122548187.096706
+      },
+      {
+        "year": 4,
+        "p10": 1597666502.662141,
+        "p50": 2284443903.47103,
+        "p90": 3221781008.621993
+      },
+      {
+        "year": 5,
+        "p10": 1474374360.827361,
+        "p50": 2222481462.752475,
+        "p90": 3287147144.6344657
+      },
+      {
+        "year": 6,
+        "p10": 1349013353.1212196,
+        "p50": 2157995589.4179873,
+        "p90": 3344985601.0849023
+      },
+      {
+        "year": 7,
+        "p10": 1233520201.85971,
+        "p50": 2094968309.066637,
+        "p90": 3410467561.9804516
+      },
+      {
+        "year": 8,
+        "p10": 1110976803.5241683,
+        "p50": 2031809022.9319882,
+        "p90": 3466830971.4393744
+      },
+      {
+        "year": 9,
+        "p10": 991629884.5575312,
+        "p50": 1954770587.6110446,
+        "p90": 3505751852.0359397
+      },
+      {
+        "year": 10,
+        "p10": 881661229.9112132,
+        "p50": 1888519743.105023,
+        "p90": 3553397081.46833
+      },
+      {
+        "year": 11,
+        "p10": 763710524.8022943,
+        "p50": 1811815839.7925863,
+        "p90": 3605804957.1898456
+      },
+      {
+        "year": 12,
+        "p10": 648040455.5910947,
+        "p50": 1731845435.7817612,
+        "p90": 3650153216.1208954
+      },
+      {
+        "year": 13,
+        "p10": 533576790.9416517,
+        "p50": 1646170391.563023,
+        "p90": 3663635077.9777055
+      },
+      {
+        "year": 14,
+        "p10": 410675730.48493934,
+        "p50": 1554038601.262669,
+        "p90": 3725452100.511214
+      },
+      {
+        "year": 15,
+        "p10": 289844921.3570988,
+        "p50": 1465669129.1422622,
+        "p90": 3728553136.993824
+      },
+      {
+        "year": 16,
+        "p10": 165617882.00171754,
+        "p50": 1374587225.2846198,
+        "p90": 3759940068.34574
+      },
+      {
+        "year": 17,
+        "p10": 39837691.48102025,
+        "p50": 1282383765.9377356,
+        "p90": 3789982604.8911366
+      },
+      {
+        "year": 18,
+        "p10": 0,
+        "p50": 1185373716.592558,
+        "p90": 3771488166.1787705
+      },
+      {
+        "year": 19,
+        "p10": 0,
+        "p50": 1074682235.9280381,
+        "p90": 3820100971.301031
+      },
+      {
+        "year": 20,
+        "p10": 0,
+        "p50": 977356785.5605434,
+        "p90": 3803976952.9511466
+      },
+      {
+        "year": 21,
+        "p10": 0,
+        "p50": 867810120.1514647,
+        "p90": 3825648160.4266667
+      },
+      {
+        "year": 22,
+        "p10": 0,
+        "p50": 753608153.3571987,
+        "p90": 3854565241.392211
+      },
+      {
+        "year": 23,
+        "p10": 0,
+        "p50": 633764881.4730949,
+        "p90": 3839191665.9761667
+      },
+      {
+        "year": 24,
+        "p10": 0,
+        "p50": 516564509.7439821,
+        "p90": 3862000643.686566
+      },
+      {
+        "year": 25,
+        "p10": 0,
+        "p50": 393226216.5092742,
+        "p90": 3869413620.334548
+      },
+      {
+        "year": 26,
+        "p10": 0,
+        "p50": 272387880.72635794,
+        "p90": 3867500553.8539796
+      },
+      {
+        "year": 27,
+        "p10": 0,
+        "p50": 145434037.40820166,
+        "p90": 3906159780.5024896
+      },
+      {
+        "year": 28,
+        "p10": 0,
+        "p50": 15674360.862426199,
+        "p90": 3869878529.1334667
+      },
+      {
+        "year": 29,
+        "p10": 0,
+        "p50": 0,
+        "p90": 3846132678.554187
+      },
+      {
+        "year": 30,
+        "p10": 0,
+        "p50": 0,
+        "p90": 3848620853.825822
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 10,
+        "p10": 16,
+        "p50": 22,
+        "p90": 29,
+        "count": 11057
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": 0.026797944208729232,
+          "first_3y": 0.02105822442333847,
+          "first_5y": 0.021386089604157162,
+          "full": 0.025554797249276062
+        },
+        "survived": {
+          "first_1y": 0.09311178521462789,
+          "first_3y": 0.08537096928049237,
+          "first_5y": 0.0825908104471703,
+          "full": 0.06488011549493783
+        }
+      }
+    }
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2380000000,"annual-flow":-123000000,"flow-growth":0.025,"mean-return":0.05354076,"volatility":0.12,"inflation":0.02,"years":9,"trials":20000,"steps-per-year":1,"seed":42}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 2380000000,
+      "years": 9,
+      "steps_per_year": 1,
+      "mean_return": 0.05354076,
+      "volatility": 0.12,
+      "annual_flow": -123000000,
+      "flow_growth": 0.025,
+      "inflation": 0.02,
+      "target": 0,
+      "trials": 20000,
+      "seed": 42
+    },
+    "real_terms": true,
+    "terminal_balance": {
+      "mean": 1964047268.3951218,
+      "stddev": 1002090904.7995505,
+      "min": 0,
+      "max": 9793062581.295088,
+      "p5": 687546845.3452469,
+      "p10": 876465439.0024511,
+      "p25": 1256962892.4540944,
+      "p50": 1787397302.47465,
+      "p75": 2473897415.562147,
+      "p90": 3264595333.0532007,
+      "p95": 3853268219.584313
+    },
+    "success_rate": 0.9999,
+    "ruin_rate": 0.0001,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2380000000,
+        "p50": 2380000000,
+        "p90": 2380000000
+      },
+      {
+        "year": 1,
+        "p10": 1977125838.1532443,
+        "p50": 2323009473.2892776,
+        "p90": 2729166910.6276975
+      },
+      {
+        "year": 2,
+        "p10": 1786031042.316146,
+        "p50": 2263504238.583864,
+        "p90": 2868080359.3974466
+      },
+      {
+        "year": 3,
+        "p10": 1631755560.1253278,
+        "p50": 2205289474.319742,
+        "p90": 2973499107.507552
+      },
+      {
+        "year": 4,
+        "p10": 1486639842.65805,
+        "p50": 2143657473.0442834,
+        "p90": 3046521763.0435023
+      },
+      {
+        "year": 5,
+        "p10": 1348256378.6674192,
+        "p50": 2076084656.4743524,
+        "p90": 3093744627.524904
+      },
+      {
+        "year": 6,
+        "p10": 1240040050.990355,
+        "p50": 2014870373.5789745,
+        "p90": 3162555565.953258
+      },
+      {
+        "year": 7,
+        "p10": 1105528340.6079626,
+        "p50": 1937982217.2622042,
+        "p90": 3205962626.4775734
+      },
+      {
+        "year": 8,
+        "p10": 996103012.1247878,
+        "p50": 1861279894.3422217,
+        "p90": 3248411931.099519
+      },
+      {
+        "year": 9,
+        "p10": 876465439.0024511,
+        "p50": 1787397302.47465,
+        "p90": 3264595333.0532007
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 9,
+        "p10": 9,
+        "p50": 9,
+        "p90": 9,
+        "count": 2
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": -0.23366685485260785,
+          "first_3y": -0.25324579238795186,
+          "first_5y": -0.1414174424978285,
+          "full": -0.09811601730074337
+        },
+        "survived": {
+          "first_1y": 0.0553906260069549,
+          "first_3y": 0.050640531596642537,
+          "first_5y": 0.049332884593315716,
+          "full": 0.04865568455881383
+        }
+      }
+    },
+    "warnings": [
+      "고갈 경로가 2개뿐이라(30개 미만) failure_analysis.return_comparison의 평균이 불안정합니다. trials를 늘려 보세요"
+    ]
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2380000000,"annual-flow":-123000000,"flow-growth":0.025,"mean-return":0.05354076,"volatility":0.12,"inflation":0.02,"years":14,"trials":20000,"steps-per-year":1,"seed":42}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 2380000000,
+      "years": 14,
+      "steps_per_year": 1,
+      "mean_return": 0.05354076,
+      "volatility": 0.12,
+      "annual_flow": -123000000,
+      "flow_growth": 0.025,
+      "inflation": 0.02,
+      "target": 0,
+      "trials": 20000,
+      "seed": 42
+    },
+    "real_terms": true,
+    "terminal_balance": {
+      "mean": 1645840829.4260828,
+      "stddev": 1330957212.6861558,
+      "min": 0,
+      "max": 14569415090.939583,
+      "p5": 72816552.48636684,
+      "p10": 273106816.8479035,
+      "p25": 707250995.785615,
+      "p50": 1349300209.4839785,
+      "p75": 2249011129.0398064,
+      "p90": 3340674976.887526,
+      "p95": 4197899117.001471
+    },
+    "success_rate": 0.96295,
+    "ruin_rate": 0.03705,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2380000000,
+        "p50": 2380000000,
+        "p90": 2380000000
+      },
+      {
+        "year": 1,
+        "p10": 1978024413.1569073,
+        "p50": 2322193345.018304,
+        "p90": 2733378865.2868166
+      },
+      {
+        "year": 2,
+        "p10": 1790880147.7619376,
+        "p50": 2268480875.6461573,
+        "p90": 2864473449.3616605
+      },
+      {
+        "year": 3,
+        "p10": 1636977117.881909,
+        "p50": 2206159487.9699726,
+        "p90": 2966195713.186006
+      },
+      {
+        "year": 4,
+        "p10": 1490817805.0737007,
+        "p50": 2140000378.3393726,
+        "p90": 3045160022.8955984
+      },
+      {
+        "year": 5,
+        "p10": 1357295803.8261766,
+        "p50": 2071679079.9954243,
+        "p90": 3086062743.0310016
+      },
+      {
+        "year": 6,
+        "p10": 1236353045.4358516,
+        "p50": 2008673094.1858587,
+        "p90": 3153287068.33579
+      },
+      {
+        "year": 7,
+        "p10": 1113355718.4698796,
+        "p50": 1938847444.2629464,
+        "p90": 3192296349.43283
+      },
+      {
+        "year": 8,
+        "p10": 991338086.524234,
+        "p50": 1861477955.2573345,
+        "p90": 3257396888.652838
+      },
+      {
+        "year": 9,
+        "p10": 877151701.4820573,
+        "p50": 1790797017.3963494,
+        "p90": 3278412070.540653
+      },
+      {
+        "year": 10,
+        "p10": 756624762.204401,
+        "p50": 1701128348.3128676,
+        "p90": 3306242455.132113
+      },
+      {
+        "year": 11,
+        "p10": 631199827.9058458,
+        "p50": 1624081109.322716,
+        "p90": 3328112988.9767165
+      },
+      {
+        "year": 12,
+        "p10": 515010983.47783476,
+        "p50": 1532931391.5453868,
+        "p90": 3346226110.565026
+      },
+      {
+        "year": 13,
+        "p10": 398789154.2834662,
+        "p50": 1439652425.2813897,
+        "p90": 3351128617.2496996
+      },
+      {
+        "year": 14,
+        "p10": 273106816.8479035,
+        "p50": 1349300209.4839785,
+        "p90": 3340674976.887526
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 9,
+        "p10": 12,
+        "p50": 13,
+        "p90": 14,
+        "count": 741
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": -0.05981395380425743,
+          "first_3y": -0.05541784006100272,
+          "first_5y": -0.05157470943548765,
+          "full": -0.020637813927146965
+        },
+        "survived": {
+          "first_1y": 0.059619784309884453,
+          "first_3y": 0.054710026451187034,
+          "first_5y": 0.05282694247764358,
+          "full": 0.0506184405288989
+        }
+      }
+    }
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2380000000,"annual-flow":-123000000,"flow-growth":0.025,"mean-return":0.05354076,"volatility":0.12,"inflation":0.02,"years":19,"trials":20000,"steps-per-year":1,"seed":42}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 2380000000,
+      "years": 19,
+      "steps_per_year": 1,
+      "mean_return": 0.05354076,
+      "volatility": 0.12,
+      "annual_flow": -123000000,
+      "flow_growth": 0.025,
+      "inflation": 0.02,
+      "target": 0,
+      "trials": 20000,
+      "seed": 42
+    },
+    "real_terms": true,
+    "terminal_balance": {
+      "mean": 1328310322.1399724,
+      "stddev": 1623572477.6438441,
+      "min": 0,
+      "max": 18656215615.73435,
+      "p5": 0,
+      "p10": 0,
+      "p25": 91436127.98577058,
+      "p50": 813354161.1071649,
+      "p75": 1923321752.6105976,
+      "p90": 3386458445.584641,
+      "p95": 4478612267.993049
+    },
+    "success_rate": 0.7805,
+    "ruin_rate": 0.2195,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2380000000,
+        "p50": 2380000000,
+        "p90": 2380000000
+      },
+      {
+        "year": 1,
+        "p10": 1975244730.6318898,
+        "p50": 2323864748.615249,
+        "p90": 2728960786.9326444
+      },
+      {
+        "year": 2,
+        "p10": 1783404714.8156989,
+        "p50": 2263025119.7394266,
+        "p90": 2862871986.7556663
+      },
+      {
+        "year": 3,
+        "p10": 1629428909.106264,
+        "p50": 2201788554.641429,
+        "p90": 2958200554.2719097
+      },
+      {
+        "year": 4,
+        "p10": 1491130803.9347486,
+        "p50": 2138154047.5440512,
+        "p90": 3037696282.8494043
+      },
+      {
+        "year": 5,
+        "p10": 1354988251.5237513,
+        "p50": 2071394247.1944318,
+        "p90": 3111841517.573042
+      },
+      {
+        "year": 6,
+        "p10": 1226963396.3083105,
+        "p50": 1998604290.037118,
+        "p90": 3171211112.904695
+      },
+      {
+        "year": 7,
+        "p10": 1110142611.9320948,
+        "p50": 1927615300.3596935,
+        "p90": 3201383567.436309
+      },
+      {
+        "year": 8,
+        "p10": 987085400.1593752,
+        "p50": 1849732803.8436508,
+        "p90": 3247679194.0867352
+      },
+      {
+        "year": 9,
+        "p10": 871633403.2077104,
+        "p50": 1775434144.5012321,
+        "p90": 3269425606.7380424
+      },
+      {
+        "year": 10,
+        "p10": 752002930.4483048,
+        "p50": 1688848792.382699,
+        "p90": 3308488689.495064
+      },
+      {
+        "year": 11,
+        "p10": 632474334.9319714,
+        "p50": 1607210873.6005423,
+        "p90": 3331389241.272936
+      },
+      {
+        "year": 12,
+        "p10": 508514454.83061343,
+        "p50": 1515979840.3873367,
+        "p90": 3351192953.4727993
+      },
+      {
+        "year": 13,
+        "p10": 390153075.3274088,
+        "p50": 1432869968.7759652,
+        "p90": 3374681975.110322
+      },
+      {
+        "year": 14,
+        "p10": 270343438.0820509,
+        "p50": 1337662069.2112417,
+        "p90": 3399015590.993595
+      },
+      {
+        "year": 15,
+        "p10": 145332248.69119772,
+        "p50": 1241160424.5380652,
+        "p90": 3396693147.1826224
+      },
+      {
+        "year": 16,
+        "p10": 17501722.326024875,
+        "p50": 1144556981.805253,
+        "p90": 3407300424.03535
+      },
+      {
+        "year": 17,
+        "p10": 0,
+        "p50": 1039595628.87709,
+        "p90": 3410246927.2261906
+      },
+      {
+        "year": 18,
+        "p10": 0,
+        "p50": 927594872.7855896,
+        "p90": 3388676280.1721535
+      },
+      {
+        "year": 19,
+        "p10": 0,
+        "p50": 813354161.1071649,
+        "p90": 3386458445.584641
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 9,
+        "p10": 14,
+        "p50": 17,
+        "p90": 19,
+        "count": 4390
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": -0.00827427029246388,
+          "first_3y": -0.01106970486973699,
+          "first_5y": -0.009288731441897069,
+          "full": 0.007175421468238071
+        },
+        "survived": {
+          "first_1y": 0.0731513126076353,
+          "first_3y": 0.0670415294311874,
+          "first_5y": 0.06530728769962071,
+          "full": 0.0574145710962057
+        }
+      }
+    }
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2380000000,"annual-flow":-123000000,"flow-growth":0.025,"mean-return":0.05354076,"volatility":0.12,"inflation":0.02,"years":24,"trials":20000,"steps-per-year":1,"seed":42}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 2380000000,
+      "years": 24,
+      "steps_per_year": 1,
+      "mean_return": 0.05354076,
+      "volatility": 0.12,
+      "annual_flow": -123000000,
+      "flow_growth": 0.025,
+      "inflation": 0.02,
+      "target": 0,
+      "trials": 20000,
+      "seed": 42
+    },
+    "real_terms": true,
+    "terminal_balance": {
+      "mean": 1080203707.8625422,
+      "stddev": 1837808670.847752,
+      "min": 0,
+      "max": 22459076073.58699,
+      "p5": 0,
+      "p10": 0,
+      "p25": 0,
+      "p50": 208656633.47181928,
+      "p75": 1486596829.0789914,
+      "p90": 3277606972.5056233,
+      "p95": 4657780961.141458
+    },
+    "success_rate": 0.56035,
+    "ruin_rate": 0.43965,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2380000000,
+        "p50": 2380000000,
+        "p90": 2380000000
+      },
+      {
+        "year": 1,
+        "p10": 1978965122.1281655,
+        "p50": 2324346312.670145,
+        "p90": 2735300312.654051
+      },
+      {
+        "year": 2,
+        "p10": 1786936522.9851398,
+        "p50": 2266016012.951108,
+        "p90": 2861516711.9384813
+      },
+      {
+        "year": 3,
+        "p10": 1629772920.671483,
+        "p50": 2210784066.5758452,
+        "p90": 2945733112.2357445
+      },
+      {
+        "year": 4,
+        "p10": 1493806886.771932,
+        "p50": 2137262179.0741358,
+        "p90": 3030361833.633952
+      },
+      {
+        "year": 5,
+        "p10": 1359521951.997327,
+        "p50": 2069191590.066266,
+        "p90": 3096737325.7759824
+      },
+      {
+        "year": 6,
+        "p10": 1241417535.9752336,
+        "p50": 1997936583.7473078,
+        "p90": 3141286565.6892624
+      },
+      {
+        "year": 7,
+        "p10": 1111063806.6535537,
+        "p50": 1925674808.1448994,
+        "p90": 3184767578.8062196
+      },
+      {
+        "year": 8,
+        "p10": 992099297.4421102,
+        "p50": 1850223420.0816522,
+        "p90": 3211330890.153594
+      },
+      {
+        "year": 9,
+        "p10": 871664759.1924188,
+        "p50": 1767257929.6587954,
+        "p90": 3264734552.165158
+      },
+      {
+        "year": 10,
+        "p10": 758565162.7177122,
+        "p50": 1695050233.7723675,
+        "p90": 3261597272.040632
+      },
+      {
+        "year": 11,
+        "p10": 639949655.2578932,
+        "p50": 1608253056.1646981,
+        "p90": 3283001116.9348297
+      },
+      {
+        "year": 12,
+        "p10": 517557700.5865555,
+        "p50": 1525531219.038076,
+        "p90": 3302506300.2111135
+      },
+      {
+        "year": 13,
+        "p10": 397118838.62693775,
+        "p50": 1430215631.4242623,
+        "p90": 3325081091.69373
+      },
+      {
+        "year": 14,
+        "p10": 274524111.50350887,
+        "p50": 1338394001.9644246,
+        "p90": 3330783226.79279
+      },
+      {
+        "year": 15,
+        "p10": 153632479.4520261,
+        "p50": 1247678692.7345529,
+        "p90": 3327385928.172863
+      },
+      {
+        "year": 16,
+        "p10": 26370153.831122905,
+        "p50": 1143298736.1007757,
+        "p90": 3320201261.0272484
+      },
+      {
+        "year": 17,
+        "p10": 0,
+        "p50": 1036106769.352287,
+        "p90": 3318348009.1003346
+      },
+      {
+        "year": 18,
+        "p10": 0,
+        "p50": 925983521.818149,
+        "p90": 3329200699.414915
+      },
+      {
+        "year": 19,
+        "p10": 0,
+        "p50": 819793027.6314144,
+        "p90": 3330944088.2117567
+      },
+      {
+        "year": 20,
+        "p10": 0,
+        "p50": 700509918.8103261,
+        "p90": 3316261858.7147183
+      },
+      {
+        "year": 21,
+        "p10": 0,
+        "p50": 579024262.3274885,
+        "p90": 3282380039.068549
+      },
+      {
+        "year": 22,
+        "p10": 0,
+        "p50": 462237422.069624,
+        "p90": 3260037492.8025336
+      },
+      {
+        "year": 23,
+        "p10": 0,
+        "p50": 334243734.11094856,
+        "p90": 3251540573.2375097
+      },
+      {
+        "year": 24,
+        "p10": 0,
+        "p50": 208656633.47181928,
+        "p90": 3277606972.5056233
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 9,
+        "p10": 15,
+        "p50": 20,
+        "p90": 23,
+        "count": 8793
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": 0.014498959183883706,
+          "first_3y": 0.011424695881661558,
+          "first_5y": 0.012380233463262207,
+          "full": 0.020431599878135732
+        },
+        "survived": {
+          "first_1y": 0.0885212984133833,
+          "first_3y": 0.08077800045343643,
+          "first_5y": 0.07770460375803658,
+          "full": 0.06321619547945503
+        }
+      }
+    }
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2380000000,"annual-flow":-123529412,"flow-growth":0.004902,"mean-return":0.0337382,"volatility":0.12,"inflation":0,"years":29,"trials":20000,"steps-per-year":1,"seed":42}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 2380000000,
+      "years": 29,
+      "steps_per_year": 1,
+      "mean_return": 0.0337382,
+      "volatility": 0.12,
+      "annual_flow": -123529412,
+      "flow_growth": 0.004902,
+      "inflation": 0,
+      "target": 0,
+      "trials": 20000,
+      "seed": 42
+    },
+    "real_terms": false,
+    "terminal_balance": {
+      "mean": 863054524.7869146,
+      "stddev": 2050363410.6589875,
+      "min": 0,
+      "max": 41519331722.29551,
+      "p5": 0,
+      "p10": 0,
+      "p25": 0,
+      "p50": 0,
+      "p75": 776100839.100259,
+      "p90": 2902027058.653512,
+      "p95": 4614144202.334486
+    },
+    "success_rate": 0.3677,
+    "ruin_rate": 0.6323,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2380000000,
+        "p50": 2380000000,
+        "p90": 2380000000
+      },
+      {
+        "year": 1,
+        "p10": 1971594378.305197,
+        "p50": 2318650943.0729194,
+        "p90": 2730527860.671253
+      },
+      {
+        "year": 2,
+        "p10": 1778436173.4763026,
+        "p50": 2257933033.349058,
+        "p90": 2854654211.513487
+      },
+      {
+        "year": 3,
+        "p10": 1618587914.083173,
+        "p50": 2189716451.248477,
+        "p90": 2948515754.2139325
+      },
+      {
+        "year": 4,
+        "p10": 1482284162.6654341,
+        "p50": 2115563766.0630934,
+        "p90": 3017510671.5482035
+      },
+      {
+        "year": 5,
+        "p10": 1344185211.565751,
+        "p50": 2049162738.3122392,
+        "p90": 3063242193.6795564
+      },
+      {
+        "year": 6,
+        "p10": 1219083284.1476946,
+        "p50": 1971905840.0341644,
+        "p90": 3112573118.014944
+      },
+      {
+        "year": 7,
+        "p10": 1093671237.363197,
+        "p50": 1902820293.571354,
+        "p90": 3146858885.5122705
+      },
+      {
+        "year": 8,
+        "p10": 978767133.2555226,
+        "p50": 1818978351.987877,
+        "p90": 3197202136.830334
+      },
+      {
+        "year": 9,
+        "p10": 851838523.3832685,
+        "p50": 1742373542.0501418,
+        "p90": 3205989304.8185673
+      },
+      {
+        "year": 10,
+        "p10": 734866988.8960394,
+        "p50": 1655192668.4973211,
+        "p90": 3230587787.910261
+      },
+      {
+        "year": 11,
+        "p10": 617104158.0443077,
+        "p50": 1570788047.3439183,
+        "p90": 3253610662.5219083
+      },
+      {
+        "year": 12,
+        "p10": 487629112.38846576,
+        "p50": 1478985672.4114866,
+        "p90": 3259056420.2049513
+      },
+      {
+        "year": 13,
+        "p10": 364936798.30514216,
+        "p50": 1384772354.6502168,
+        "p90": 3290601281.8657284
+      },
+      {
+        "year": 14,
+        "p10": 236560946.15962863,
+        "p50": 1285676973.7841208,
+        "p90": 3285938349.1587076
+      },
+      {
+        "year": 15,
+        "p10": 109732595.36267938,
+        "p50": 1184969734.7464342,
+        "p90": 3262939943.442754
+      },
+      {
+        "year": 16,
+        "p10": 0,
+        "p50": 1080301497.8738174,
+        "p90": 3251359451.3697124
+      },
+      {
+        "year": 17,
+        "p10": 0,
+        "p50": 971112555.5325198,
+        "p90": 3233245925.669207
+      },
+      {
+        "year": 18,
+        "p10": 0,
+        "p50": 860454204.0178947,
+        "p90": 3230201305.5010786
+      },
+      {
+        "year": 19,
+        "p10": 0,
+        "p50": 740021602.4641242,
+        "p90": 3234751134.0375333
+      },
+      {
+        "year": 20,
+        "p10": 0,
+        "p50": 624736518.4229876,
+        "p90": 3220616201.9121003
+      },
+      {
+        "year": 21,
+        "p10": 0,
+        "p50": 504872225.9171162,
+        "p90": 3195154743.426931
+      },
+      {
+        "year": 22,
+        "p10": 0,
+        "p50": 380465010.18026537,
+        "p90": 3183338072.1498504
+      },
+      {
+        "year": 23,
+        "p10": 0,
+        "p50": 250354073.05518523,
+        "p90": 3157738921.873333
+      },
+      {
+        "year": 24,
+        "p10": 0,
+        "p50": 119574249.36109811,
+        "p90": 3120196089.1947145
+      },
+      {
+        "year": 25,
+        "p10": 0,
+        "p50": 0,
+        "p90": 3089403220.753069
+      },
+      {
+        "year": 26,
+        "p10": 0,
+        "p50": 0,
+        "p90": 3041509346.287601
+      },
+      {
+        "year": 27,
+        "p10": 0,
+        "p50": 0,
+        "p90": 2989513178.8303785
+      },
+      {
+        "year": 28,
+        "p10": 0,
+        "p50": 0,
+        "p90": 2914569288.279182
+      },
+      {
+        "year": 29,
+        "p10": 0,
+        "p50": 0,
+        "p90": 2902027058.653512
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 9,
+        "p10": 15,
+        "p50": 21,
+        "p90": 27,
+        "count": 12646
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": 0.008760509995633785,
+          "first_3y": 0.004672617286845818,
+          "first_5y": 0.005163653979022639,
+          "full": 0.007586043877934924
+        },
+        "survived": {
+          "first_1y": 0.07738673875071089,
+          "first_3y": 0.07075941944480589,
+          "first_5y": 0.06759569152531443,
+          "full": 0.046901607466215675
+        }
+      }
+    }
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2380000000,"annual-flow":-120588235,"flow-growth":0.004902,"mean-return":0.0337382,"volatility":0.12,"inflation":0,"years":29,"trials":20000,"steps-per-year":1,"seed":42}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 2380000000,
+      "years": 29,
+      "steps_per_year": 1,
+      "mean_return": 0.0337382,
+      "volatility": 0.12,
+      "annual_flow": -120588235,
+      "flow_growth": 0.004902,
+      "inflation": 0,
+      "target": 0,
+      "trials": 20000,
+      "seed": 42
+    },
+    "real_terms": false,
+    "terminal_balance": {
+      "mean": 939918760.7262893,
+      "stddev": 2139239821.842198,
+      "min": 0,
+      "max": 42400208394.16989,
+      "p5": 0,
+      "p10": 0,
+      "p25": 0,
+      "p50": 0,
+      "p75": 953558455.4307432,
+      "p90": 3096847214.212751,
+      "p95": 4932556157.170317
+    },
+    "success_rate": 0.39165,
+    "ruin_rate": 0.60835,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2380000000,
+        "p50": 2380000000,
+        "p90": 2380000000
+      },
+      {
+        "year": 1,
+        "p10": 1969355312.842522,
+        "p50": 2320008793.753184,
+        "p90": 2733350377.4726915
+      },
+      {
+        "year": 2,
+        "p10": 1786466635.9544199,
+        "p50": 2259248449.3628454,
+        "p90": 2856885646.6851673
+      },
+      {
+        "year": 3,
+        "p10": 1625558392.5255468,
+        "p50": 2195276681.5999355,
+        "p90": 2944928859.83419
+      },
+      {
+        "year": 4,
+        "p10": 1484294782.365532,
+        "p50": 2134124872.3020592,
+        "p90": 3026230530.57255
+      },
+      {
+        "year": 5,
+        "p10": 1361439478.5369298,
+        "p50": 2061475851.0449004,
+        "p90": 3091562640.460742
+      },
+      {
+        "year": 6,
+        "p10": 1229729698.980359,
+        "p50": 1990615962.7939816,
+        "p90": 3132948617.872842
+      },
+      {
+        "year": 7,
+        "p10": 1104671329.020523,
+        "p50": 1929132989.9910257,
+        "p90": 3176800596.654546
+      },
+      {
+        "year": 8,
+        "p10": 988036868.0924819,
+        "p50": 1842145382.0308769,
+        "p90": 3216411727.8513527
+      },
+      {
+        "year": 9,
+        "p10": 867726919.3468286,
+        "p50": 1767450350.0052564,
+        "p90": 3247139777.3248014
+      },
+      {
+        "year": 10,
+        "p10": 752785801.592122,
+        "p50": 1681156524.7576034,
+        "p90": 3274921888.389761
+      },
+      {
+        "year": 11,
+        "p10": 636461994.4389784,
+        "p50": 1604121728.2207284,
+        "p90": 3312909924.764114
+      },
+      {
+        "year": 12,
+        "p10": 517846771.3954626,
+        "p50": 1508357763.1942866,
+        "p90": 3329131106.6079917
+      },
+      {
+        "year": 13,
+        "p10": 398173337.9737913,
+        "p50": 1419419795.8440762,
+        "p90": 3334992505.010686
+      },
+      {
+        "year": 14,
+        "p10": 276515969.99793017,
+        "p50": 1322700173.1551988,
+        "p90": 3335762368.5665073
+      },
+      {
+        "year": 15,
+        "p10": 151408815.21471456,
+        "p50": 1223622420.7099228,
+        "p90": 3344023816.2140517
+      },
+      {
+        "year": 16,
+        "p10": 22398300.280193944,
+        "p50": 1126809168.2653687,
+        "p90": 3361365730.5359225
+      },
+      {
+        "year": 17,
+        "p10": 0,
+        "p50": 1019798737.1022968,
+        "p90": 3368731558.3383465
+      },
+      {
+        "year": 18,
+        "p10": 0,
+        "p50": 922828797.0310416,
+        "p90": 3337523395.607697
+      },
+      {
+        "year": 19,
+        "p10": 0,
+        "p50": 804824708.4550421,
+        "p90": 3326296895.39524
+      },
+      {
+        "year": 20,
+        "p10": 0,
+        "p50": 693781945.3264034,
+        "p90": 3312375427.442307
+      },
+      {
+        "year": 21,
+        "p10": 0,
+        "p50": 572292383.947689,
+        "p90": 3298713913.1911435
+      },
+      {
+        "year": 22,
+        "p10": 0,
+        "p50": 451971911.434564,
+        "p90": 3314573088.7528048
+      },
+      {
+        "year": 23,
+        "p10": 0,
+        "p50": 324049789.1346282,
+        "p90": 3287295117.465354
+      },
+      {
+        "year": 24,
+        "p10": 0,
+        "p50": 195347609.69113374,
+        "p90": 3254998723.177748
+      },
+      {
+        "year": 25,
+        "p10": 0,
+        "p50": 62190828.320583016,
+        "p90": 3238288547.9780188
+      },
+      {
+        "year": 26,
+        "p10": 0,
+        "p50": 0,
+        "p90": 3196655373.9885006
+      },
+      {
+        "year": 27,
+        "p10": 0,
+        "p50": 0,
+        "p90": 3177760624.7959557
+      },
+      {
+        "year": 28,
+        "p10": 0,
+        "p50": 0,
+        "p90": 3118431090.6278524
+      },
+      {
+        "year": 29,
+        "p10": 0,
+        "p50": 0,
+        "p90": 3096847214.212751
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 10,
+        "p10": 15,
+        "p50": 21,
+        "p90": 27,
+        "count": 12167
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": 0.004823657820766812,
+          "first_3y": 0.0021283167260776168,
+          "first_5y": 0.003191011177755749,
+          "full": 0.00691002016023099
+        },
+        "survived": {
+          "first_1y": 0.07738975202134624,
+          "first_3y": 0.06871891096160447,
+          "first_5y": 0.06632190644761773,
+          "full": 0.0460489887188679
+        }
+      }
+    }
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":1361439479,"annual-flow":-123572700,"flow-growth":0.004902,"mean-return":0.0337382,"volatility":0.12,"inflation":0,"years":24,"trials":20000,"steps-per-year":1,"seed":7}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 1361439479,
+      "years": 24,
+      "steps_per_year": 1,
+      "mean_return": 0.0337382,
+      "volatility": 0.12,
+      "annual_flow": -123572700,
+      "flow_growth": 0.004902,
+      "inflation": 0,
+      "target": 0,
+      "trials": 20000,
+      "seed": 7
+    },
+    "real_terms": false,
+    "terminal_balance": {
+      "mean": 43094305.25298136,
+      "stddev": 310919618.2566434,
+      "min": 0,
+      "max": 9398110824.01304,
+      "p5": 0,
+      "p10": 0,
+      "p25": 0,
+      "p50": 0,
+      "p75": 0,
+      "p90": 0,
+      "p95": 0
+    },
+    "success_rate": 0.0462,
+    "ruin_rate": 0.9538,
+    "path": [
+      {
+        "year": 0,
+        "p10": 1361439479,
+        "p50": 1361439479,
+        "p90": 1361439479
+      },
+      {
+        "year": 1,
+        "p10": 1076339501.6986656,
+        "p50": 1272779031.9546173,
+        "p90": 1506474836.541225
+      },
+      {
+        "year": 2,
+        "p10": 916836572.0489734,
+        "p50": 1182671202.0785437,
+        "p90": 1519299971.4103298
+      },
+      {
+        "year": 3,
+        "p10": 776968071.4264706,
+        "p50": 1087937757.1690426,
+        "p90": 1511442796.827951
+      },
+      {
+        "year": 4,
+        "p10": 648911228.7457931,
+        "p50": 992697344.6342958,
+        "p90": 1474057936.198251
+      },
+      {
+        "year": 5,
+        "p10": 522307006.8251011,
+        "p50": 889698588.0501528,
+        "p90": 1428216394.8486443
+      },
+      {
+        "year": 6,
+        "p10": 395413962.2099195,
+        "p50": 786997574.875998,
+        "p90": 1372910555.6212015
+      },
+      {
+        "year": 7,
+        "p10": 273657208.2723519,
+        "p50": 678964765.9608197,
+        "p90": 1321696742.3098087
+      },
+      {
+        "year": 8,
+        "p10": 150418044.95109487,
+        "p50": 567046714.2231637,
+        "p90": 1249828628.9259763
+      },
+      {
+        "year": 9,
+        "p10": 24486139.50876976,
+        "p50": 451010225.1444438,
+        "p90": 1175398911.9449327
+      },
+      {
+        "year": 10,
+        "p10": 0,
+        "p50": 332661789.6597438,
+        "p90": 1093459959.348655
+      },
+      {
+        "year": 11,
+        "p10": 0,
+        "p50": 210879911.3080627,
+        "p90": 1008256037.8911539
+      },
+      {
+        "year": 12,
+        "p10": 0,
+        "p50": 85139477.65700562,
+        "p90": 907929370.170767
+      },
+      {
+        "year": 13,
+        "p10": 0,
+        "p50": 0,
+        "p90": 811889165.9519262
+      },
+      {
+        "year": 14,
+        "p10": 0,
+        "p50": 0,
+        "p90": 712598990.3779081
+      },
+      {
+        "year": 15,
+        "p10": 0,
+        "p50": 0,
+        "p90": 591184635.9276661
+      },
+      {
+        "year": 16,
+        "p10": 0,
+        "p50": 0,
+        "p90": 484594605.04915434
+      },
+      {
+        "year": 17,
+        "p10": 0,
+        "p50": 0,
+        "p90": 360299593.72939336
+      },
+      {
+        "year": 18,
+        "p10": 0,
+        "p50": 0,
+        "p90": 237967278.27979043
+      },
+      {
+        "year": 19,
+        "p10": 0,
+        "p50": 0,
+        "p90": 110803154.7858812
+      },
+      {
+        "year": 20,
+        "p10": 0,
+        "p50": 0,
+        "p90": 0
+      },
+      {
+        "year": 21,
+        "p10": 0,
+        "p50": 0,
+        "p90": 0
+      },
+      {
+        "year": 22,
+        "p10": 0,
+        "p50": 0,
+        "p90": 0
+      },
+      {
+        "year": 23,
+        "p10": 0,
+        "p50": 0,
+        "p90": 0
+      },
+      {
+        "year": 24,
+        "p10": 0,
+        "p50": 0,
+        "p90": 0
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 6,
+        "p10": 10,
+        "p50": 13,
+        "p90": 19,
+        "count": 19076
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": 0.028182309916297527,
+          "first_3y": 0.02466327104721521,
+          "first_5y": 0.023883350062980684,
+          "full": 0.01722830421234171
+        },
+        "survived": {
+          "first_1y": 0.14553415406691458,
+          "first_3y": 0.13213438788545723,
+          "first_5y": 0.12123288501572696,
+          "full": 0.07132409443975334
+        }
+      }
+    }
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2061475851,"annual-flow":-123572700,"flow-growth":0.004902,"mean-return":0.0337382,"volatility":0.12,"inflation":0,"years":24,"trials":20000,"steps-per-year":1,"seed":7}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 2061475851,
+      "years": 24,
+      "steps_per_year": 1,
+      "mean_return": 0.0337382,
+      "volatility": 0.12,
+      "annual_flow": -123572700,
+      "flow_growth": 0.004902,
+      "inflation": 0,
+      "target": 0,
+      "trials": 20000,
+      "seed": 7
+    },
+    "real_terms": false,
+    "terminal_balance": {
+      "mean": 553400407.6201632,
+      "stddev": 1294558138.438621,
+      "min": 0,
+      "max": 21658908686.786686,
+      "p5": 0,
+      "p10": 0,
+      "p25": 0,
+      "p50": 0,
+      "p75": 499106528.1093482,
+      "p90": 1867734069.672719,
+      "p95": 3077291450.8439617
+    },
+    "success_rate": 0.35855,
+    "ruin_rate": 0.64145,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2061475851,
+        "p50": 2061475851,
+        "p90": 2061475851
+      },
+      {
+        "year": 1,
+        "p10": 1693392633.488119,
+        "p50": 1992794539.9661252,
+        "p90": 2339819771.6731625
+      },
+      {
+        "year": 2,
+        "p10": 1504445488.715356,
+        "p50": 1916051779.2913804,
+        "p90": 2428914225.099347
+      },
+      {
+        "year": 3,
+        "p10": 1352748643.1622028,
+        "p50": 1845102999.2303238,
+        "p90": 2499243886.5084114
+      },
+      {
+        "year": 4,
+        "p10": 1214195991.8094137,
+        "p50": 1767269990.527372,
+        "p90": 2527600608.069582
+      },
+      {
+        "year": 5,
+        "p10": 1083844170.0733747,
+        "p50": 1692095393.0817375,
+        "p90": 2553906728.5623984
+      },
+      {
+        "year": 6,
+        "p10": 958164280.558148,
+        "p50": 1609780287.5978928,
+        "p90": 2565638490.4193063
+      },
+      {
+        "year": 7,
+        "p10": 832366272.1132616,
+        "p50": 1524650140.3941402,
+        "p90": 2574238275.0896034
+      },
+      {
+        "year": 8,
+        "p10": 709077797.6490304,
+        "p50": 1435690281.7499034,
+        "p90": 2573745566.4217587
+      },
+      {
+        "year": 9,
+        "p10": 586933708.1075081,
+        "p50": 1339765699.5708077,
+        "p90": 2596474417.9410267
+      },
+      {
+        "year": 10,
+        "p10": 470910432.54491746,
+        "p50": 1248525341.0078974,
+        "p90": 2567604876.673745
+      },
+      {
+        "year": 11,
+        "p10": 349420194.9712751,
+        "p50": 1145164471.5040555,
+        "p90": 2566166433.1257486
+      },
+      {
+        "year": 12,
+        "p10": 227325774.45775196,
+        "p50": 1039182573.0490944,
+        "p90": 2537293334.8518314
+      },
+      {
+        "year": 13,
+        "p10": 98474936.4877095,
+        "p50": 935870820.7526771,
+        "p90": 2501548047.2231946
+      },
+      {
+        "year": 14,
+        "p10": 0,
+        "p50": 829729308.9156842,
+        "p90": 2465276104.6057
+      },
+      {
+        "year": 15,
+        "p10": 0,
+        "p50": 710442242.6676006,
+        "p90": 2415619183.6287217
+      },
+      {
+        "year": 16,
+        "p10": 0,
+        "p50": 593195756.9227383,
+        "p90": 2381096038.744635
+      },
+      {
+        "year": 17,
+        "p10": 0,
+        "p50": 473190688.00007105,
+        "p90": 2364521056.4060373
+      },
+      {
+        "year": 18,
+        "p10": 0,
+        "p50": 349060013.6028723,
+        "p90": 2290977710.1812506
+      },
+      {
+        "year": 19,
+        "p10": 0,
+        "p50": 217910779.38775802,
+        "p90": 2226239281.206514
+      },
+      {
+        "year": 20,
+        "p10": 0,
+        "p50": 87395026.1272796,
+        "p90": 2174606074.058896
+      },
+      {
+        "year": 21,
+        "p10": 0,
+        "p50": 0,
+        "p90": 2123432364.1385171
+      },
+      {
+        "year": 22,
+        "p10": 0,
+        "p50": 0,
+        "p90": 2031210539.333448
+      },
+      {
+        "year": 23,
+        "p10": 0,
+        "p50": 0,
+        "p90": 1938788679.0029728
+      },
+      {
+        "year": 24,
+        "p10": 0,
+        "p50": 0,
+        "p90": 1867734069.672719
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 8,
+        "p10": 13,
+        "p50": 18,
+        "p90": 23,
+        "count": 12829
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": 0.006824771689456652,
+          "first_3y": 0.0028697292599119037,
+          "first_5y": 0.004538752966479538,
+          "full": 0.007361199248074908
+        },
+        "survived": {
+          "first_1y": 0.08220766845438628,
+          "first_3y": 0.07517883837828208,
+          "first_5y": 0.07096602587796377,
+          "full": 0.049318115064427556
+        }
+      }
+    }
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":3091562640,"annual-flow":-123572700,"flow-growth":0.004902,"mean-return":0.0337382,"volatility":0.12,"inflation":0,"years":24,"trials":20000,"steps-per-year":1,"seed":7}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 3091562640,
+      "years": 24,
+      "steps_per_year": 1,
+      "mean_return": 0.0337382,
+      "volatility": 0.12,
+      "annual_flow": -123572700,
+      "flow_growth": 0.004902,
+      "inflation": 0,
+      "target": 0,
+      "trials": 20000,
+      "seed": 7
+    },
+    "real_terms": false,
+    "terminal_balance": {
+      "mean": 2357351603.9817715,
+      "stddev": 2990456382.9278846,
+      "min": 0,
+      "max": 38098826121.96027,
+      "p5": 0,
+      "p10": 0,
+      "p25": 237395537.23040792,
+      "p50": 1432624497.054664,
+      "p75": 3303372440.658053,
+      "p90": 5906107754.896693,
+      "p95": 8044667009.248814
+    },
+    "success_rate": 0.80385,
+    "ruin_rate": 0.19615,
+    "path": [
+      {
+        "year": 0,
+        "p10": 3091562640,
+        "p50": 3091562640,
+        "p90": 3091562640
+      },
+      {
+        "year": 1,
+        "p10": 2597487659.431273,
+        "p50": 3050049636.1066017,
+        "p90": 3572887003.1894455
+      },
+      {
+        "year": 2,
+        "p10": 2380783537.435839,
+        "p50": 3011559228.3131742,
+        "p90": 3789925946.557571
+      },
+      {
+        "year": 3,
+        "p10": 2210432343.533489,
+        "p50": 2968837369.276933,
+        "p90": 3940995055.941723
+      },
+      {
+        "year": 4,
+        "p10": 2063564457.2049892,
+        "p50": 2926344965.432972,
+        "p90": 4082786500.91455
+      },
+      {
+        "year": 5,
+        "p10": 1926190070.3444955,
+        "p50": 2880160994.9940796,
+        "p90": 4221146997.5188
+      },
+      {
+        "year": 6,
+        "p10": 1795868702.185419,
+        "p50": 2827200241.2470627,
+        "p90": 4354195104.438152
+      },
+      {
+        "year": 7,
+        "p10": 1672168901.2114353,
+        "p50": 2764603602.9110394,
+        "p90": 4456399233.9792
+      },
+      {
+        "year": 8,
+        "p10": 1540222103.607406,
+        "p50": 2711450222.8713636,
+        "p90": 4561093829.739622
+      },
+      {
+        "year": 9,
+        "p10": 1431440024.679449,
+        "p50": 2649065013.521167,
+        "p90": 4661165081.926259
+      },
+      {
+        "year": 10,
+        "p10": 1304799684.9554281,
+        "p50": 2591074394.8704805,
+        "p90": 4758494968.019944
+      },
+      {
+        "year": 11,
+        "p10": 1186163216.8630912,
+        "p50": 2524528221.0165777,
+        "p90": 4872040137.712933
+      },
+      {
+        "year": 12,
+        "p10": 1071188619.4187142,
+        "p50": 2465282929.1723046,
+        "p90": 4951247446.283881
+      },
+      {
+        "year": 13,
+        "p10": 963755508.768649,
+        "p50": 2393536587.0052905,
+        "p90": 5029883458.924167
+      },
+      {
+        "year": 14,
+        "p10": 844915329.3531674,
+        "p50": 2326166080.885784,
+        "p90": 5106599730.360973
+      },
+      {
+        "year": 15,
+        "p10": 715557934.2229443,
+        "p50": 2246471011.6584053,
+        "p90": 5209331187.411717
+      },
+      {
+        "year": 16,
+        "p10": 591537626.7404153,
+        "p50": 2169184279.2052298,
+        "p90": 5294415249.716257
+      },
+      {
+        "year": 17,
+        "p10": 466238956.7627271,
+        "p50": 2090629249.4082668,
+        "p90": 5411194428.2092285
+      },
+      {
+        "year": 18,
+        "p10": 343150649.8356959,
+        "p50": 2008803014.5732515,
+        "p90": 5480984460.867758
+      },
+      {
+        "year": 19,
+        "p10": 219730337.64633667,
+        "p50": 1919810442.4055495,
+        "p90": 5529522732.916593
+      },
+      {
+        "year": 20,
+        "p10": 87401232.02880257,
+        "p50": 1827213391.9968832,
+        "p90": 5631777486.679209
+      },
+      {
+        "year": 21,
+        "p10": 0,
+        "p50": 1722710350.8879304,
+        "p90": 5709299098.059005
+      },
+      {
+        "year": 22,
+        "p10": 0,
+        "p50": 1628673602.751905,
+        "p90": 5779196444.648878
+      },
+      {
+        "year": 23,
+        "p10": 0,
+        "p50": 1522034285.040205,
+        "p90": 5823826834.390783
+      },
+      {
+        "year": 24,
+        "p10": 0,
+        "p50": 1432624497.054664,
+        "p90": 5906107754.896693
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 11,
+        "p10": 17,
+        "p50": 21,
+        "p90": 24,
+        "count": 3923
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": -0.024636362070286726,
+          "first_3y": -0.027096408393137084,
+          "first_5y": -0.02557824091414417,
+          "full": -0.009696419689916514
+        },
+        "survived": {
+          "first_1y": 0.04797903719533994,
+          "first_3y": 0.043253748605364864,
+          "first_5y": 0.042058077589314694,
+          "full": 0.034592724911431706
+        }
+      }
+    }
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2380000000,"annual-flow":-123000000,"flow-growth":0.025,"mean-return":0.05354076,"volatility":0.12,"inflation":0.02,"years":29,"trials":20000,"steps-per-year":1,"seed":42,"model":"student-t","df":4}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "student-t",
+      "initial": 2380000000,
+      "years": 29,
+      "steps_per_year": 1,
+      "mean_return": 0.05354076,
+      "volatility": 0.12,
+      "annual_flow": -123000000,
+      "flow_growth": 0.025,
+      "inflation": 0.02,
+      "target": 0,
+      "trials": 20000,
+      "seed": 42,
+      "degrees_of_freedom": 4
+    },
+    "real_terms": true,
+    "terminal_balance": {
+      "mean": 911971846.5848098,
+      "stddev": 2581232205.886006,
+      "min": 0,
+      "max": 107862107982.39934,
+      "p5": 0,
+      "p10": 0,
+      "p25": 0,
+      "p50": 0,
+      "p75": 860764337.6321127,
+      "p90": 2816710935.0203037,
+      "p95": 4563893261.980413
+    },
+    "success_rate": 0.39,
+    "ruin_rate": 0.61,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2380000000,
+        "p50": 2380000000,
+        "p90": 2380000000
+      },
+      {
+        "year": 1,
+        "p10": 2022564724.1923437,
+        "p50": 2321418325.174712,
+        "p90": 2664023844.1876664
+      },
+      {
+        "year": 2,
+        "p10": 1834969051.086097,
+        "p50": 2258154129.7857904,
+        "p90": 2790679478.25102
+      },
+      {
+        "year": 3,
+        "p10": 1676285851.2449725,
+        "p50": 2194014522.2725754,
+        "p90": 2870544073.343534
+      },
+      {
+        "year": 4,
+        "p10": 1533619298.4973435,
+        "p50": 2130939224.3282697,
+        "p90": 2959629123.8653507
+      },
+      {
+        "year": 5,
+        "p10": 1406287601.0872042,
+        "p50": 2070386275.0823727,
+        "p90": 3016535575.6414723
+      },
+      {
+        "year": 6,
+        "p10": 1273654522.7059016,
+        "p50": 1996982596.309143,
+        "p90": 3068818790.3677306
+      },
+      {
+        "year": 7,
+        "p10": 1153789867.1083708,
+        "p50": 1921876816.9745798,
+        "p90": 3095089970.946414
+      },
+      {
+        "year": 8,
+        "p10": 1032436303.5323323,
+        "p50": 1850886457.3822083,
+        "p90": 3117347633.50583
+      },
+      {
+        "year": 9,
+        "p10": 914724366.1684145,
+        "p50": 1772314720.447689,
+        "p90": 3160732524.0910325
+      },
+      {
+        "year": 10,
+        "p10": 794630685.9369365,
+        "p50": 1694003808.8710608,
+        "p90": 3178633726.114056
+      },
+      {
+        "year": 11,
+        "p10": 678247886.1641232,
+        "p50": 1609985433.4161787,
+        "p90": 3191316522.14305
+      },
+      {
+        "year": 12,
+        "p10": 564891750.6401308,
+        "p50": 1514349175.1599953,
+        "p90": 3178815327.496017
+      },
+      {
+        "year": 13,
+        "p10": 440277754.46836174,
+        "p50": 1427726075.230546,
+        "p90": 3182845314.09226
+      },
+      {
+        "year": 14,
+        "p10": 314803281.91980255,
+        "p50": 1334435029.5177393,
+        "p90": 3186972611.1000924
+      },
+      {
+        "year": 15,
+        "p10": 189635303.77661726,
+        "p50": 1237619812.4586935,
+        "p90": 3212493742.3070736
+      },
+      {
+        "year": 16,
+        "p10": 63403550.08162438,
+        "p50": 1142251109.6265762,
+        "p90": 3195566518.4461064
+      },
+      {
+        "year": 17,
+        "p10": 0,
+        "p50": 1036914589.3043249,
+        "p90": 3200457421.82784
+      },
+      {
+        "year": 18,
+        "p10": 0,
+        "p50": 926159321.6054405,
+        "p90": 3196577319.897444
+      },
+      {
+        "year": 19,
+        "p10": 0,
+        "p50": 818163627.906887,
+        "p90": 3163606609.4840007
+      },
+      {
+        "year": 20,
+        "p10": 0,
+        "p50": 702675126.6056224,
+        "p90": 3129730487.4043202
+      },
+      {
+        "year": 21,
+        "p10": 0,
+        "p50": 585299726.624327,
+        "p90": 3129396861.774609
+      },
+      {
+        "year": 22,
+        "p10": 0,
+        "p50": 469207367.33897305,
+        "p90": 3090436396.856006
+      },
+      {
+        "year": 23,
+        "p10": 0,
+        "p50": 344147060.68923426,
+        "p90": 3074936073.3469176
+      },
+      {
+        "year": 24,
+        "p10": 0,
+        "p50": 212935664.37560436,
+        "p90": 3045339933.215045
+      },
+      {
+        "year": 25,
+        "p10": 0,
+        "p50": 81953331.05319902,
+        "p90": 2994443661.6292205
+      },
+      {
+        "year": 26,
+        "p10": 0,
+        "p50": 0,
+        "p90": 2937058448.3280845
+      },
+      {
+        "year": 27,
+        "p10": 0,
+        "p50": 0,
+        "p90": 2899058178.013294
+      },
+      {
+        "year": 28,
+        "p10": 0,
+        "p50": 0,
+        "p90": 2861970939.552668
+      },
+      {
+        "year": 29,
+        "p10": 0,
+        "p50": 0,
+        "p90": 2816710935.0203037
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 5,
+        "p10": 16,
+        "p50": 22,
+        "p90": 28,
+        "count": 12200
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": 0.027915825137653106,
+          "first_3y": 0.024890339237469503,
+          "first_5y": 0.02533366381766553,
+          "full": 0.0274331364850518
+        },
+        "survived": {
+          "first_1y": 0.09549889863337717,
+          "first_3y": 0.08747340363072022,
+          "first_5y": 0.08567617880522302,
+          "full": 0.0666148474154773
+        }
+      }
+    }
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2410000000,"annual-flow":-92250000,"flow-growth":0.025,"mean-return":0.05354076,"volatility":0.12,"inflation":0.02,"years":29,"trials":20000,"steps-per-year":1,"seed":42}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 2410000000,
+      "years": 29,
+      "steps_per_year": 1,
+      "mean_return": 0.05354076,
+      "volatility": 0.12,
+      "annual_flow": -92250000,
+      "flow_growth": 0.025,
+      "inflation": 0.02,
+      "target": 0,
+      "trials": 20000,
+      "seed": 42
+    },
+    "real_terms": true,
+    "terminal_balance": {
+      "mean": 1968728342.7441266,
+      "stddev": 2891628161.979848,
+      "min": 0,
+      "max": 37430172851.708496,
+      "p5": 0,
+      "p10": 0,
+      "p25": 0,
+      "p50": 932114851.4459276,
+      "p75": 2705076272.7780094,
+      "p90": 5334985898.886474,
+      "p95": 7460890255.078996
+    },
+    "success_rate": 0.71365,
+    "ruin_rate": 0.28635,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2410000000,
+        "p50": 2410000000,
+        "p90": 2410000000
+      },
+      {
+        "year": 1,
+        "p10": 2024880141.746586,
+        "p50": 2385096112.706484,
+        "p90": 2792851710.660136
+      },
+      {
+        "year": 2,
+        "p10": 1869237644.1405854,
+        "p50": 2359368511.735199,
+        "p90": 2968436675.6233664
+      },
+      {
+        "year": 3,
+        "p10": 1743855199.7798305,
+        "p50": 2327101453.6067615,
+        "p90": 3089364729.586697
+      },
+      {
+        "year": 4,
+        "p10": 1635248359.005588,
+        "p50": 2295319443.515588,
+        "p90": 3223832015.829263
+      },
+      {
+        "year": 5,
+        "p10": 1523852619.2825654,
+        "p50": 2261066764.765292,
+        "p90": 3329888287.985664
+      },
+      {
+        "year": 6,
+        "p10": 1424446193.094704,
+        "p50": 2227503527.568511,
+        "p90": 3425918822.4541364
+      },
+      {
+        "year": 7,
+        "p10": 1332872237.7231271,
+        "p50": 2194975200.730816,
+        "p90": 3513997783.2338243
+      },
+      {
+        "year": 8,
+        "p10": 1236152280.8467827,
+        "p50": 2161717161.578514,
+        "p90": 3621307033.604891
+      },
+      {
+        "year": 9,
+        "p10": 1146871064.8799899,
+        "p50": 2126635687.486363,
+        "p90": 3701790728.823147
+      },
+      {
+        "year": 10,
+        "p10": 1061053012.3920984,
+        "p50": 2083150079.9212027,
+        "p90": 3787076290.583048
+      },
+      {
+        "year": 11,
+        "p10": 976603920.8044089,
+        "p50": 2039635893.411035,
+        "p90": 3881031418.6495275
+      },
+      {
+        "year": 12,
+        "p10": 888172548.8723528,
+        "p50": 1997292013.830516,
+        "p90": 3971746742.046797
+      },
+      {
+        "year": 13,
+        "p10": 806172487.7335272,
+        "p50": 1951999037.428337,
+        "p90": 4041541434.7728534
+      },
+      {
+        "year": 14,
+        "p10": 718251666.1828359,
+        "p50": 1910347325.4845982,
+        "p90": 4119464569.5481415
+      },
+      {
+        "year": 15,
+        "p10": 628340811.6735392,
+        "p50": 1860489322.0521348,
+        "p90": 4194036806.3799305
+      },
+      {
+        "year": 16,
+        "p10": 538181279.9369872,
+        "p50": 1809215004.1415625,
+        "p90": 4251110805.110169
+      },
+      {
+        "year": 17,
+        "p10": 450720302.4107399,
+        "p50": 1758894804.1969483,
+        "p90": 4330620660.021999
+      },
+      {
+        "year": 18,
+        "p10": 356526635.7296926,
+        "p50": 1704829956.542315,
+        "p90": 4431603778.73587
+      },
+      {
+        "year": 19,
+        "p10": 263538331.6871748,
+        "p50": 1643212004.765264,
+        "p90": 4520312719.915653
+      },
+      {
+        "year": 20,
+        "p10": 170774906.0273296,
+        "p50": 1585470798.8082545,
+        "p90": 4599826334.369867
+      },
+      {
+        "year": 21,
+        "p10": 73572692.84651543,
+        "p50": 1524459750.611496,
+        "p90": 4642373119.881059
+      },
+      {
+        "year": 22,
+        "p10": 0,
+        "p50": 1450439462.9578426,
+        "p90": 4725446060.794528
+      },
+      {
+        "year": 23,
+        "p10": 0,
+        "p50": 1378002130.6653244,
+        "p90": 4825333272.142207
+      },
+      {
+        "year": 24,
+        "p10": 0,
+        "p50": 1315755255.5784702,
+        "p90": 4928273181.975235
+      },
+      {
+        "year": 25,
+        "p10": 0,
+        "p50": 1245626464.430142,
+        "p90": 4978618011.306139
+      },
+      {
+        "year": 26,
+        "p10": 0,
+        "p50": 1171574238.0559,
+        "p90": 5060382040.991063
+      },
+      {
+        "year": 27,
+        "p10": 0,
+        "p50": 1093849266.3529396,
+        "p90": 5189159951.888733
+      },
+      {
+        "year": 28,
+        "p10": 0,
+        "p50": 1013787769.9637351,
+        "p90": 5223361388.783096
+      },
+      {
+        "year": 29,
+        "p10": 0,
+        "p50": 932114851.4459276,
+        "p90": 5334985898.886474
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 11,
+        "p10": 18,
+        "p50": 24,
+        "p90": 28,
+        "count": 5727
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": 0.005252158982130901,
+          "first_3y": 0.002608674010874287,
+          "first_5y": 0.0037807161657252924,
+          "full": 0.01636991640036061
+        },
+        "survived": {
+          "first_1y": 0.07392373357193416,
+          "first_3y": 0.06824449375861036,
+          "first_5y": 0.06682521841458015,
+          "full": 0.05709993652735607
+        }
+      }
+    }
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2425000000,"annual-flow":-76875000,"flow-growth":0.025,"mean-return":0.05354076,"volatility":0.12,"inflation":0.02,"years":29,"trials":20000,"steps-per-year":1,"seed":42}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 2425000000,
+      "years": 29,
+      "steps_per_year": 1,
+      "mean_return": 0.05354076,
+      "volatility": 0.12,
+      "annual_flow": -76875000,
+      "flow_growth": 0.025,
+      "inflation": 0.02,
+      "target": 0,
+      "trials": 20000,
+      "seed": 42
+    },
+    "real_terms": true,
+    "terminal_balance": {
+      "mean": 2671667498.057487,
+      "stddev": 3292313351.2112646,
+      "min": 0,
+      "max": 39912177659.78118,
+      "p5": 0,
+      "p10": 0,
+      "p25": 478301842.86590487,
+      "p50": 1664174336.5735102,
+      "p75": 3638389263.4867353,
+      "p90": 6558672754.154769,
+      "p95": 8929500300.609026
+    },
+    "success_rate": 0.8564,
+    "ruin_rate": 0.1436,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2425000000,
+        "p50": 2425000000,
+        "p90": 2425000000
+      },
+      {
+        "year": 1,
+        "p10": 2065288257.874085,
+        "p50": 2414520820.4576426,
+        "p90": 2831523914.9383674
+      },
+      {
+        "year": 2,
+        "p10": 1910910111.6665018,
+        "p50": 2402337955.4940176,
+        "p90": 3021035489.528219
+      },
+      {
+        "year": 3,
+        "p10": 1805316467.450131,
+        "p50": 2393821583.242541,
+        "p90": 3181718481.84954
+      },
+      {
+        "year": 4,
+        "p10": 1702179192.9173813,
+        "p50": 2379386818.3507442,
+        "p90": 3317970431.885307
+      },
+      {
+        "year": 5,
+        "p10": 1608498046.1353068,
+        "p50": 2363357407.305254,
+        "p90": 3452254520.277665
+      },
+      {
+        "year": 6,
+        "p10": 1529092118.0000505,
+        "p50": 2342561753.762505,
+        "p90": 3571322642.943824
+      },
+      {
+        "year": 7,
+        "p10": 1454875607.8531554,
+        "p50": 2339595337.641776,
+        "p90": 3693096451.6439037
+      },
+      {
+        "year": 8,
+        "p10": 1371640596.4715157,
+        "p50": 2315521882.3707056,
+        "p90": 3824524955.2322984
+      },
+      {
+        "year": 9,
+        "p10": 1292742071.0489726,
+        "p50": 2299189790.8338475,
+        "p90": 3933297016.1611614
+      },
+      {
+        "year": 10,
+        "p10": 1224115041.564542,
+        "p50": 2277448335.958782,
+        "p90": 4033300934.233759
+      },
+      {
+        "year": 11,
+        "p10": 1149825889.3211298,
+        "p50": 2264628402.1244235,
+        "p90": 4172601972.5570693
+      },
+      {
+        "year": 12,
+        "p10": 1085286197.8502026,
+        "p50": 2242264328.4705205,
+        "p90": 4256983878.7569222
+      },
+      {
+        "year": 13,
+        "p10": 1018331675.68833,
+        "p50": 2217673977.91114,
+        "p90": 4374002473.672525
+      },
+      {
+        "year": 14,
+        "p10": 945312931.3993018,
+        "p50": 2196298950.1504574,
+        "p90": 4505042814.065346
+      },
+      {
+        "year": 15,
+        "p10": 872867629.1834259,
+        "p50": 2170620746.4130116,
+        "p90": 4617753070.963622
+      },
+      {
+        "year": 16,
+        "p10": 801120428.8262818,
+        "p50": 2154257818.5666027,
+        "p90": 4758161800.524256
+      },
+      {
+        "year": 17,
+        "p10": 728539696.8383217,
+        "p50": 2124406192.6834588,
+        "p90": 4877597887.531045
+      },
+      {
+        "year": 18,
+        "p10": 660733463.2514527,
+        "p50": 2095854635.9491816,
+        "p90": 5017626002.781053
+      },
+      {
+        "year": 19,
+        "p10": 590253515.408095,
+        "p50": 2069967286.3629894,
+        "p90": 5106801587.264411
+      },
+      {
+        "year": 20,
+        "p10": 511052120.42136216,
+        "p50": 2033800115.9053988,
+        "p90": 5268352797.564162
+      },
+      {
+        "year": 21,
+        "p10": 435962629.79799217,
+        "p50": 1998636467.5686946,
+        "p90": 5446169076.001877
+      },
+      {
+        "year": 22,
+        "p10": 366468771.9899154,
+        "p50": 1959258380.7252507,
+        "p90": 5559764029.374022
+      },
+      {
+        "year": 23,
+        "p10": 292113160.1961328,
+        "p50": 1924788806.1778808,
+        "p90": 5724865773.510017
+      },
+      {
+        "year": 24,
+        "p10": 211366639.53719863,
+        "p50": 1888022746.0924563,
+        "p90": 5846258590.880659
+      },
+      {
+        "year": 25,
+        "p10": 130418742.81127879,
+        "p50": 1848474367.2011955,
+        "p90": 5992163976.883443
+      },
+      {
+        "year": 26,
+        "p10": 46854339.19888496,
+        "p50": 1812520377.7486162,
+        "p90": 6125476253.879453
+      },
+      {
+        "year": 27,
+        "p10": 0,
+        "p50": 1759524167.5688515,
+        "p90": 6255493828.759726
+      },
+      {
+        "year": 28,
+        "p10": 0,
+        "p50": 1714555752.0022068,
+        "p90": 6390212092.916738
+      },
+      {
+        "year": 29,
+        "p10": 0,
+        "p50": 1664174336.5735102,
+        "p90": 6558672754.154769
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 12,
+        "p10": 20,
+        "p50": 25,
+        "p90": 29,
+        "count": 2872
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": -0.005418131195313942,
+          "first_3y": -0.007959765258223379,
+          "first_5y": -0.007345917506654756,
+          "full": 0.00913464365706453
+        },
+        "survived": {
+          "first_1y": 0.06590617229646033,
+          "first_3y": 0.06020510370064909,
+          "first_5y": 0.05827866992693602,
+          "full": 0.05294539621428393
+        }
+      }
+    }
+  }
+}
+
+
+[assistant]
+## 전제
+
+| 항목 | 값 |
+|---|---|
+| 초기자산 | 25억 (매년 **초** 인출 → t=0에 1.2억 차감, 23.8억부터 운용) |
+| 인출 | 1.2억, 연 2.5% 증액, 30회 |
+| 수익률 | 산술 기대 5.5%, 변동성 12%, GBM 로그정규 |
+| 물가 | 연 2% 확정, 모든 결과는 **오늘 가치(실질)** |
+| 시뮬레이션 | 20,000 경로, 연 1스텝, seed 42 |
+
+실질 기준으로 보면 **초기 인출률 4.8%, 인출액 실질 +0.49%/yr 증가, 기대 실질수익률 3.43%** 입니다. 인출이 기대수익을 구조적으로 초과하는 설계라 결과가 나쁠 수밖에 없습니다.
+
+---
+
+## 1. 고갈 확률 — 60.8%
+
+| 지표 | 값 |
+|---|---|
+| **고갈 확률 (30년)** | **60.8%** (12,167 / 20,000) |
+| 생존 확률 | 39.2% |
+| 30년 후 실질 잔액 p50 | **0원** |
+| p75 / p90 / p95 | 9.5억 / 31.0억 / 49.3억 |
+| 평균 | 9.4억 (평균은 상위 꼬리가 끌어올린 값, 대표성 없음) |
+
+중앙값 경로조차 25년차에 6.2억까지 줄고 26년차에 0이 됩니다. p10 경로는 17년차에 이미 소진됩니다.
+
+참고로 **인출을 기말로 가정하면 55.3%** 로 5.5%p 낮아집니다. "매년 초 인출"이라는 조건 하나가 고갈확률 5%p 이상을 좌우합니다.
+
+## 2. 고갈 시점 분포
+
+누적 고갈 확률 (각 시계 별도 시뮬레이션):
+
+| 경과 | 10년 | 15년 | 20년 | 25년 | 30년 |
+|---|---|---|---|---|---|
+| 누적 고갈률 | 0.0% | 3.7% | 22.0% | 44.0% | 60.8% |
+| 구간 신규 | – | 3.7%p | 18.3%p | 22.0%p | 16.8%p |
+
+고갈된 경로만 놓고 본 시점 분포 — **최단 11년차, p10 16년차, 중앙값 22년차, p90 28년차**.
+
+위험은 20~25년차에 가장 집중됩니다. 10년 안에 망하는 경로는 사실상 없지만, 그때는 이미 결과가 결정되어 있습니다. 아래가 그 이야기입니다.
+
+## 3. 수익률 순서 위험 — 초기 5년이 전부
+
+고갈 경로 vs 생존 경로의 연환산 수익률 (실질 기준):
+
+| 구간 | 고갈 경로 | 생존 경로 | 격차 |
+|---|---|---|---|
+| 초기 1년 | +0.48% | +7.74% | 7.3%p |
+| 초기 3년 | +0.21% | +6.87% | 6.7%p |
+| **초기 5년** | **+0.32%** | **+6.63%** | **6.3%p** |
+| 6~29년 (역산) | +0.77% | +4.19% | 3.4%p |
+| 전체 29년 | +0.69% | +4.60% | 3.9%p |
+
+핵심은 **초기 5년 격차(6.3%p)가 이후 24년 격차(3.4%p)의 약 1.9배**라는 점입니다. 더 결정적인 건 각 그룹 내부의 시간 패턴입니다.
+
+- 고갈 경로는 초기 5년(+0.32%)이 이후 24년(+0.77%)보다 **더 나빴습니다** — 손실이 앞쪽에 몰렸습니다.
+- 생존 경로는 초기 5년(+6.63%)이 이후 24년(+4.19%)보다 **더 좋았습니다** — 이익이 앞쪽에 몰렸습니다.
+
+같은 30년 평균 수익률이라도 순서가 반대면 결과가 갈린다는 뜻입니다.
+
+**조건부 검증** — GBM은 수익률이 독립이라 5년차 잔액이 충분통계량입니다. 5년차 잔액별로 이후 24년을 다시 20,000회 돌린 결과:
+
+| 5년차 실질 잔액 | 초기 5년 실질수익률(등가) | 이후 24년 고갈확률 |
+|---|---|---|
+| 13.6억 (하위 10%) | 약 **−4.2%/yr** | **95.4%** |
+| 20.6억 (중앙) | 약 +2.6%/yr | 64.1% |
+| 30.9억 (상위 10%) | 약 +10.0%/yr | 19.6% |
+
+초기 5년 성적만으로 최종 운명이 19.6%~95.4%로 갈립니다. 뒤에서 아무리 잘해도 앞에서 자산을 깎아먹으면 회복 불가능한데, 인출이 계속 원금을 갉아 복리 기반 자체가 사라지기 때문입니다. (등가 수익률은 결정론적 인출 점화식에서 제가 역산한 근사치입니다.)
+
+## 4. 민감도
+
+| 시나리오 | 30년 고갈확률 | 비고 |
+|---|---|---|
+| 기준안 (1.2억, 4.8%) | 60.8% | 최단 고갈 11년차 |
+| 팻테일 student-t(df=4) | 61.0% | **최단 고갈 6년차** — 수준은 같고 조기 파국 위험이 커짐 |
+| 인출 9,000만 (3.6%) | 28.6% | 중앙 고갈시점 25년차 |
+| 인출 7,500만 (3.0%) | 14.4% | 30년 후 실질 잔액 p50 16.6억 |
+
+## 유의사항
+
+- 세금·수수료·연금소득 등 유입은 반영하지 않았습니다. 국민연금 등 고정 유입이 있으면 실질 인출액이 줄어 결과가 크게 개선됩니다.
+- 툴이 `mean-return`을 로그 드리프트로 처리하므로 산술 기대수익률이 정확히 5.5%가 되도록 ln(1.055)=0.053541을 입력했습니다. 0.055를 그대로 넣으면 실효 산술수익률이 5.65%가 되어 고갈확률이 약 2%p 낮게 나옵니다.
+- GBM은 자기상관·평균회귀·변동성 군집을 반영하지 않습니다. 실제 시장의 평균회귀가 있다면 고갈확률은 다소 낮아지고, 변동성 군집이 있다면 초기 5년 위험은 더 커집니다.
+
+[result] duration_ms=324633 turns=19 cost_usd=1.7485134999999998 input_tokens=952579 output_tokens=21100

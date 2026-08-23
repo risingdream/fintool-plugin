@@ -1,0 +1,895 @@
+# prompt
+5개 섹터 주식 포트폴리오의 2개 분기 성과다. Brinson-Fachler로 분기별 배분효과·선택효과·상호작용을 구하고, Carino 로그 연결로 두 분기를 합쳐 누적 초과수익을 분해해줘.
+
+2026Q1 (섹터 / 포트폴리오 비중 / 벤치마크 비중 / 포트폴리오 수익률 / 벤치마크 수익률)
+IT 32% / 25% / 8.1% / 6.4%
+금융 18% / 22% / 2.1% / 3.5%
+헬스케어 14% / 18% / -2.4% / -1.1%
+경기소비재 21% / 20% / 4.3% / 3.8%
+산업재 15% / 15% / 1.2% / 1.9%
+
+2026Q2
+IT 35% / 26% / -3.2% / -2.1%
+금융 16% / 22% / 4.8% / 4.1%
+헬스케어 15% / 18% / 3.3% / 2.7%
+경기소비재 20% / 19% / 1.5% / 2.2%
+산업재 14% / 15% / 2.6% / 1.8%
+
+# run: plugin ON (fintool@fintool-plugin 0.5.4) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-sonnet-5 · 2026-08-23
+
+[assistant]
+fintool에 Brinson-Fachler 성과귀속 계산 기능이 있는지 카탈로그를 먼저 확인하겠습니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "tools",
+  "data": {
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "amort",
+        "kind": "calculator",
+        "summary": "상환 스케줄 전체와 구간 누적을 한 번에 낸다 (엑셀 IPMT·PPMT·CUMIPMT·CUMPRINC·ISPMT)",
+        "usage": "fintool amort [flags]",
+        "flags": []
+      },
+      {
+        "name": "attribution",
+        "kind": "calculator",
+        "summary": "Brinson active return과 수정듀레이션 기반 고정수익 성과 귀속을 계산한다",
+        "usage": "fintool attribution --model brinson|fixed-income --input \u003cJSON|@file.json\u003e [flags]",
+        "flags": []
+      },
+      {
+        "name": "bond",
+        "kind": "calculator",
+        "summary": "채권 가격·수익률·스프레드·듀레이션·convexity·경과이자",
+        "usage": "fintool bond [flags]",
+        "flags": []
+      },
+      {
+        "name": "business-plan",
+        "kind": "calculator",
+        "aliases": [
+          "bp"
+        ],
+        "summary": "사업계획 가정을 연 단위 손익·운전자본·현금흐름으로 전개하고 자금소요와 흑자전환 시점을 낸다",
+        "usage": "fintool business-plan [flags]",
+        "flags": []
+      },
+      {
+        "name": "cap-table-simulate",
+        "kind": "calculator",
+        "summary": "full cap table·SAFE·전환증권·옵션풀 전환 시나리오를 결정론적으로 계산한다",
+        "usage": "fintool cap-table-simulate [flags]",
+        "flags": []
+      },
+      {
+        "name": "capital-budget",
+        "kind": "calculator",
+        "summary": "복수 투자안의 NPV·IRR·MIRR·회수기간·PI·EAA를 계산하고 지표별 순위를 비교한다",
+        "usage": "fintool capital-budget [flags]",
+        "flags": []
+      },
+      {
+        "name": "convertible",
+        "kind": "calculator",
+        "summary": "전환사채(CB)를 Tsiveriotis-Fernandes 이항 트리로 평가한다 (신용스프레드·콜·풋 반영)",
+        "usage": "fintool convertible [flags]",
+        "flags": []
+      },
+      {
+        "name": "coupon",
+        "kind": "calculator",
+        "summary": "결제일이 놓인 이표 구간과 남은 이표 횟수를 한 번에 구한다 (엑셀 COUPPCD·COUPNCD·COUPNUM·COUPDAYBS·COUPDAYS·COUPDAYSNC)",
+        "usage": "fintool coupon [flags]",
+        "flags": []
+      },
+      {
+        "name": "credit",
+        "kind": "calculator",
+        "summary": "Merton 구조모형의 부도확률과 distance to default (자산가치·부채·자산변동성에서 산출)",
+        "usage": "fintool credit [flags]",
+        "flags": []
+      },
+      {
+        "name": "curve",
+        "kind": "calculator",
+        "summary": "수익률곡선 부트스트래핑, 스팟↔포워드 변환, Nelson-Siegel·Svensson 피팅, Z-spread",
+        "usage": "fintool curve [flags]",
+        "flags": []
+      },
+      {
+        "name": "dcf",
+        "kind": "calculator",
+        "summary": "명시적 FCF와 terminal value를 할인해 기업가치·주주가치·주당가치와 민감도를 구한다",
+        "usage": "fintool dcf [flags]",
+        "flags": []
+      },
+      {
+        "name": "decision-tree",
+        "kind": "calculator",
+        "summary": "JSON 의사결정 트리를 rollback해 노드별 EMV, 선택 가지, EVPI를 구한다",
+        "usage": "fintool decision-tree [flags]",
+        "flags": []
+      },
+      {
+        "name": "depreciate",
+        "kind": "calculator",
+        "summary": "감가상각 스케줄 전체를 낸다 (엑셀 SLN·SYD·DB·DDB·VDB·AMORDEGRC·AMORLINC)",
+        "usage": "fintool depreciate [flags]",
+        "flags": []
+      },
+      {
+        "name": "derivative",
+        "kind": "calculator",
+        "summary": "선도·선물·스왑·금리옵션의 가격과 가치, 목표 위험 헤지 계약 수를 계산한다",
+        "usage": "fintool derivative [flags]",
+        "flags": []
+      },
+      {
+        "name": "discount",
+        "kind": "calculator",
+        "summary": "할인채와 단기 국채의 가격·수익률·할인율 (엑셀 DISC·INTRATE·RECEIVED·PRICEDISC·YIELDDISC·TBILLEQ·TBILLPRICE·TBILLYIELD)",
+        "usage": "fintool discount [flags]",
+        "flags": []
+      },
+      {
+        "name": "equity",
+        "kind": "calculator",
+        "summary": "DDM·FCF·배수·잔여이익·사기업·SOTP 주식가치를 계산한다",
+        "usage": "fintool equity --model ddm|fcf|multiples|residual|private|sotp [flags]",
+        "flags": []
+      },
+      {
+        "name": "financial-model",
+        "kind": "calculator",
+        "summary": "strict financial-model 입력을 12~60개월 월별 재무제표로 계산한다. cash·accrual 두 회계 모드",
+        "usage": "fintool financial-model [flags]",
+        "flags": []
+      },
+      {
+        "name": "fsa",
+        "kind": "calculator",
+        "summary": "EPS·재무비율·FCFF/FCFE·현금흐름 연결과 핵심 회계 정규화를 계산한다",
+        "usage": "fintool fsa --solve eps|ratios|cashflow|adjust [flags]",
+        "flags": []
+      },
+      {
+        "name": "fx",
+        "kind": "calculator",
+        "summary": "현물·cross·선도환율, 국제 패리티, bid-offer, 삼각재정, forward MTM과 carry를 계산한다",
+        "usage": "fintool fx [flags]",
+        "flags": []
+      },
+      {
+        "name": "irr",
+        "kind": "calculator",
+        "summary": "순현재가치를 0으로 만드는 내부수익률을 구한다. --dates를 주면 불규칙 날짜 기준이다 (엑셀 IRR·XIRR)",
+        "usage": "fintool irr [flags]",
+        "flags": []
+      },
+      {
+        "name": "montecarlo",
+        "kind": "calculator",
+        "aliases": [
+          "mc"
+        ],
+        "summary": "자산 경로를 시뮬레이션해 만기 잔액 분포와 목표 달성 확률을 계산한다 (GBM/부트스트랩/팻테일/점프/다자산)",
+        "usage": "fintool montecarlo [flags]",
+        "flags": []
+      },
+      {
+        "name": "npv",
+        "kind": "calculator",
+        "summary": "현금흐름의 순현재가치를 구한다. --dates를 주면 불규칙 날짜 기준으로 계산한다 (엑셀 NPV·XNPV)",
+        "usage": "fintool npv [flags]",
+        "flags": []
+      },
+      {
+        "name": "option",
+        "kind": "calculator",
+        "summary": "옵션 가격·그릭스·IV와 만기 payoff·풋-콜 패리티·표준 전략을 계산한다",
+        "usage": "fintool option [flags]",
+        "flags": []
+      },
+      {
+        "name": "perf",
+        "kind": "calculator",
+        "summary": "수익률 시계열의 성과 지표를 한 번에 낸다 (CAGR·Sharpe·Sortino·Calmar·MDD·베타·알파 등)",
+        "usage": "fintool perf [flags]",
+        "flags": []
+      },
+      {
+        "name": "portfolio",
+        "kind": "calculator",
+        "summary": "포트폴리오 최적화·CAPM·Roy safety-first·목표·부채 면역화 지표를 계산한다",
+        "usage": "fintool portfolio [flags]",
+        "flags": []
+      },
+      {
+        "name": "pricing",
+        "kind": "calculator",
+        "summary": "상수 가격탄력성으로 제안 가격의 예상 판매량과 기준 대비 손익·보전 임계값을 계산한다",
+        "usage": "fintool pricing [flags]",
+        "flags": []
+      },
+      {
+        "name": "private-markets",
+        "kind": "calculator",
+        "summary": "사모펀드 성과·waterfall과 비상장 주식·부채·실물자산 가치를 계산한다",
+        "usage": "fintool private-markets --mode fund|vc|growth|buyout|debt|asset [flags]",
+        "flags": []
+      },
+      {
+        "name": "rate-convert",
+        "kind": "calculator",
+        "summary": "이자율 표기를 변환하고 성장률·소요 기간을 구한다 (엑셀 EFFECT·NOMINAL·RRI·PDURATION·FVSCHEDULE)",
+        "usage": "fintool rate-convert [flags]",
+        "flags": []
+      },
+      {
+        "name": "regression",
+        "kind": "calculator",
+        "summary": "CFA Level I·II OLS·ANOVA·예측구간·회귀진단과 이항 로지스틱 회귀를 계산한다",
+        "usage": "fintool regression --model ols|logistic --input \u003cJSON|@file.json\u003e [flags]",
+        "flags": []
+      },
+      {
+        "name": "report",
+        "kind": "calculator",
+        "summary": "fintool JSON 봉투를 고정 부품 HTML로 바인딩한다",
+        "usage": "fintool report [flags]",
+        "flags": []
+      },
+      {
+        "name": "scenario",
+        "kind": "workflow_primitive",
+        "summary": "시나리오 가정의 정합성을 검증하고 실행할 파라미터 조합을 전개한다",
+        "usage": "fintool scenario [flags]",
+        "flags": []
+      },
+      {
+        "name": "stats",
+        "kind": "calculator",
+        "summary": "CFA Level I 기술통계·확률·신뢰구간·가설검정을 명시적 모드로 계산한다",
+        "usage": "fintool stats --mode describe|probability|infer|test [flags]",
+        "flags": []
+      },
+      {
+        "name": "timeseries",
+        "kind": "calculator",
+        "summary": "CFA 시계열 추세·AR(1/2)·계절성·RMSE 비교·ARCH 분산 예측을 계산한다",
+        "usage": "fintool timeseries --mode trend|ar|seasonal|compare|arch (--returns \u003cseries\u003e|--prices \u003cseries\u003e) [flags]",
+        "flags": []
+      },
+      {
+        "name": "trade-cost",
+        "kind": "calculator",
+        "summary": "quoted/effective spread, VWAP 거래비용, implementation shortfall을 계산한다",
+        "usage": "fintool trade-cost [flags]",
+        "flags": []
+      },
+      {
+        "name": "tvm",
+        "kind": "calculator",
+        "summary": "화폐의 시간가치 방정식을 풀어 pv/fv/pmt/nper/rate 중 하나를 구한다 (엑셀 PV·FV·PMT·NPER·RATE)",
+        "usage": "fintool tvm [flags]",
+        "flags": []
+      },
+      {
+        "name": "unit-economics",
+        "kind": "calculator",
+        "summary": "구독형 LTV·LTV/CAC·CAC 회수기간 또는 거래형 공헌이익·손익분기점을 계산한다",
+        "usage": "fintool unit-economics --model subscription|transaction [flags]",
+        "flags": []
+      },
+      {
+        "name": "var",
+        "kind": "calculator",
+        "summary": "수익률 시계열에서 VaR와 CVaR(Expected Shortfall)를 구한다 (historical/parametric/montecarlo)",
+        "usage": "fintool var [flags]",
+        "flags": []
+      },
+      {
+        "name": "vol",
+        "kind": "calculator",
+        "summary": "수익률 시계열의 변동성을 추정한다 (realized·EWMA·GARCH(1,1))",
+        "usage": "fintool vol [flags]",
+        "flags": []
+      },
+      {
+        "name": "wacc",
+        "kind": "calculator",
+        "summary": "CAPM 자기자본비용과 세후 부채비용을 시장가치로 가중해 WACC를 계산한다",
+        "usage": "fintool wacc [flags]",
+        "flags": []
+      },
+      {
+        "name": "workflow",
+        "kind": "orchestrator",
+        "summary": "명시적 타입 참조로 여러 재무 도구와 scenario 케이스를 연결한다",
+        "usage": "fintool workflow",
+        "flags": [],
+        "subcommands": [
+          {
+            "name": "explain",
+            "kind": "orchestrator",
+            "summary": "실행 순서와 typed 참조·집계 연결을 JSON으로 설명한다",
+            "usage": "fintool workflow explain [flags]",
+            "flags": []
+          },
+          {
+            "name": "run",
+            "kind": "orchestrator",
+            "summary": "검증된 워크플로를 실행하고 단계별 원본 봉투와 출처를 보존한다",
+            "usage": "fintool workflow run [flags]",
+            "flags": []
+          },
+          {
+            "name": "validate",
+            "kind": "orchestrator",
+            "summary": "워크플로 구조와 모든 참조·타입 호환성을 실행 전에 검사한다",
+            "usage": "fintool workflow validate [flags]",
+            "flags": []
+          }
+        ]
+      }
+    ]
+  }
+}
+
+
+[assistant]
+attribution 도구가 Brinson 모델을 지원하니 상세 스펙을 확인하겠습니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{"tool":"attribution"}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "tools",
+  "data": {
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "attribution",
+        "kind": "calculator",
+        "summary": "Brinson active return과 수정듀레이션 기반 고정수익 성과 귀속을 계산한다",
+        "usage": "fintool attribution --model brinson|fixed-income --input \u003cJSON|@file.json\u003e [flags]",
+        "example": "  # Brinson-Fachler 단일·다기간 attribution\n  fintool attribution --model brinson --input @brinson.json \\\n    --brinson-method brinson-fachler --linking carino\n\n  # 수정듀레이션 기반 고정수익 curve·spread attribution\n  fintool attribution --model fixed-income --input @fixed-income.json",
+        "flags": [
+          {
+            "name": "brinson-method",
+            "type": "string",
+            "default": "brinson-fachler",
+            "description": "Brinson allocation 기준 (brinson-fachler|brinson-hood-beebower)"
+          },
+          {
+            "name": "input",
+            "type": "string",
+            "default": "",
+            "description": "periods 또는 securities를 담은 인라인 JSON 또는 @파일.json (최대 8 MiB)"
+          },
+          {
+            "name": "linking",
+            "type": "string",
+            "default": "carino",
+            "description": "다기간 active attribution 연결 방식 (carino)"
+          },
+          {
+            "name": "model",
+            "type": "string",
+            "default": "",
+            "description": "성과 귀속 모형 (brinson|fixed-income). 반드시 지정한다"
+          }
+        ],
+        "workflow": {
+          "batch": false,
+          "inputs": {
+            "brinson-method": {
+              "type": "string"
+            },
+            "input": {
+              "type": "string"
+            },
+            "linking": {
+              "type": "string"
+            },
+            "model": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+
+[assistant]
+fintool attribution 도구로 Brinson-Fachler와 Carino 연결 계산을 실행하겠습니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"attribution","flags":{"model":"brinson","brinson-method":"brinson-fachler","linking":"carino","input":{"periods":[{"name":"2026Q1","sectors":[{"name":"IT","portfolioWeight":0.32,"benchmarkWeight":0.25,"portfolioReturn":0.081,"benchmarkReturn":0.064},{"name":"금융","portfolioWeight":0.18,"benchmarkWeight":0.22,"portfolioReturn":0.021,"benchmarkReturn":0.035},{"name":"헬스케어","portfolioWeight":0.14,"benchmarkWeight":0.18,"portfolioReturn":-0.024,"benchmarkReturn":-0.011},{"name":"경기소비재","portfolioWeight":0.21,"benchmarkWeight":0.2,"portfolioReturn":0.043,"benchmarkReturn":0.038},{"name":"산업재","portfolioWeight":0.15,"benchmarkWeight":0.15,"portfolioReturn":0.012,"benchmarkReturn":0.019}]},{"name":"2026Q2","sectors":[{"name":"IT","portfolioWeight":0.35,"benchmarkWeight":0.26,"portfolioReturn":-0.032,"benchmarkReturn":-0.021},{"name":"금융","portfolioWeight":0.16,"benchmarkWeight":0.22,"portfolioReturn":0.048,"benchmarkReturn":0.041},{"name":"헬스케어","portfolioWeight":0.15,"benchmarkWeight":0.18,"portfolioReturn":0.033,"benchmarkReturn":0.027},{"name":"경기소비재","portfolioWeight":0.2,"benchmarkWeight":0.19,"portfolioReturn":0.015,"benchmarkReturn":0.022},{"name":"산업재","portfolioWeight":0.14,"benchmarkWeight":0.15,"portfolioReturn":0.026,"benchmarkReturn":0.018}]}]}}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "fintool_run",
+  "error": {
+    "code": "invalid_input",
+    "message": "플래그 \"input\"는 객체를 받을 수 없습니다"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"attribution","flags":{"model":"brinson","brinson-method":"brinson-fachler","linking":"carino","input":"{\"periods\":[{\"name\":\"2026Q1\",\"sectors\":[{\"name\":\"IT\",\"portfolioWeight\":0.32,\"benchmarkWeight\":0.25,\"portfolioReturn\":0.081,\"benchmarkReturn\":0.064},{\"name\":\"금융\",\"portfolioWeight\":0.18,\"benchmarkWeight\":0.22,\"portfolioReturn\":0.021,\"benchmarkReturn\":0.035},{\"name\":\"헬스케어\",\"portfolioWeight\":0.14,\"benchmarkWeight\":0.18,\"portfolioReturn\":-0.024,\"benchmarkReturn\":-0.011},{\"name\":\"경기소비재\",\"portfolioWeight\":0.21,\"benchmarkWeight\":0.2,\"portfolioReturn\":0.043,\"benchmarkReturn\":0.038},{\"name\":\"산업재\",\"portfolioWeight\":0.15,\"benchmarkWeight\":0.15,\"portfolioReturn\":0.012,\"benchmarkReturn\":0.019}]},{\"name\":\"2026Q2\",\"sectors\":[{\"name\":\"IT\",\"portfolioWeight\":0.35,\"benchmarkWeight\":0.26,\"portfolioReturn\":-0.032,\"benchmarkReturn\":-0.021},{\"name\":\"금융\",\"portfolioWeight\":0.16,\"benchmarkWeight\":0.22,\"portfolioReturn\":0.048,\"benchmarkReturn\":0.041},{\"name\":\"헬스케어\",\"portfolioWeight\":0.15,\"benchmarkWeight\":0.18,\"portfolioReturn\":0.033,\"benchmarkReturn\":0.027},{\"name\":\"경기소비재\",\"portfolioWeight\":0.2,\"benchmarkWeight\":0.19,\"portfolioReturn\":0.015,\"benchmarkReturn\":0.022},{\"name\":\"산업재\",\"portfolioWeight\":0.14,\"benchmarkWeight\":0.15,\"portfolioReturn\":0.026,\"benchmarkReturn\":0.018}]}]}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "attribution",
+  "error": {
+    "code": "invalid_input",
+    "message": "--input이 올바른 brinson attribution JSON이 아닙니다: json: unknown field \"sectors\""
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"attribution","flags":{"model":"brinson","input":"{\"periods\":[{\"name\":\"2026Q1\",\"groups\":[{\"name\":\"IT\",\"portfolioWeight\":0.32,\"benchmarkWeight\":0.25,\"portfolioReturn\":0.081,\"benchmarkReturn\":0.064}]}]}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "attribution",
+  "error": {
+    "code": "invalid_input",
+    "message": "--input이 올바른 brinson attribution JSON이 아닙니다: json: unknown field \"groups\""
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"attribution","flags":{"model":"brinson","input":"{}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "attribution",
+  "error": {
+    "code": "invalid_input",
+    "message": "periods를 하나 이상 지정해야 합니다"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"attribution","flags":{"model":"brinson","input":"{\"periods\":[{}]}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "attribution",
+  "error": {
+    "code": "invalid_input",
+    "message": "periods의 1번째 name을 지정해야 합니다"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"attribution","flags":{"model":"brinson","input":"{\"periods\":[{\"name\":\"2026Q1\"}]}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "attribution",
+  "error": {
+    "code": "invalid_input",
+    "message": "period \"2026Q1\"의 segments를 하나 이상 지정해야 합니다"
+  }
+}
+
+[assistant]
+"segments"가 맞는 필드명입니다. 이어서 필요한 세부 필드를 확인하겠습니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"attribution","flags":{"model":"brinson","input":"{\"periods\":[{\"name\":\"2026Q1\",\"segments\":[{}]}]}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "attribution",
+  "error": {
+    "code": "invalid_input",
+    "message": "period \"2026Q1\"의 1번째 segment name을 지정해야 합니다"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"attribution","flags":{"model":"brinson","input":"{\"periods\":[{\"name\":\"2026Q1\",\"segments\":[{\"name\":\"IT\"}]}]}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "attribution",
+  "error": {
+    "code": "invalid_input",
+    "message": "period \"2026Q1\"의 portfolio weight 합은 1이어야 합니다 (받은 값: 0)"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"attribution","flags":{"model":"brinson","input":"{\"periods\":[{\"name\":\"2026Q1\",\"segments\":[{\"name\":\"IT\",\"portfolioWeight\":1,\"benchmarkWeight\":1,\"portfolioReturn\":0.081,\"benchmarkReturn\":0.064}]}]}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "attribution",
+  "error": {
+    "code": "invalid_input",
+    "message": "--input이 올바른 brinson attribution JSON이 아닙니다: json: unknown field \"portfolioWeight\""
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"attribution","flags":{"model":"brinson","input":"{\"periods\":[{\"name\":\"2026Q1\",\"segments\":[{\"name\":\"IT\",\"portfolio_weight\":1,\"benchmark_weight\":1,\"portfolio_return\":0.081,\"benchmark_return\":0.064}]}]}"}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "attribution",
+  "data": {
+    "model": "brinson",
+    "method": "brinson-fachler",
+    "linking": "carino",
+    "return_basis": {
+      "portfolio": "weighted_segment_return",
+      "benchmark": "weighted_segment_return",
+      "active": "arithmetic_portfolio_minus_benchmark"
+    },
+    "periods": [
+      {
+        "name": "2026Q1",
+        "portfolio_return": 0.081,
+        "benchmark_return": 0.064,
+        "active_return": 0.017,
+        "linking_factors": {
+          "portfolio": 0.9999999999999999,
+          "benchmark": 0.9999999999999999,
+          "active": 1
+        },
+        "segments": [
+          {
+            "name": "IT",
+            "portfolio_contribution": 0.081,
+            "benchmark_contribution": 0.064,
+            "allocation": 0,
+            "selection": 0.017,
+            "interaction": 0,
+            "active": 0.017
+          }
+        ],
+        "totals": {
+          "portfolio_contribution": 0.081,
+          "benchmark_contribution": 0.064,
+          "allocation": 0,
+          "selection": 0.017,
+          "interaction": 0,
+          "active": 0.017
+        }
+      }
+    ],
+    "summary": {
+      "portfolio_return": 0.08099999999999996,
+      "benchmark_return": 0.06400000000000006,
+      "active_return": 0.016999999999999904,
+      "segments": [
+        {
+          "name": "IT",
+          "portfolio_contribution": 0.08099999999999999,
+          "benchmark_contribution": 0.06399999999999999,
+          "allocation": 0,
+          "selection": 0.017,
+          "interaction": 0,
+          "active": 0.017
+        }
+      ],
+      "totals": {
+        "portfolio_contribution": 0.08099999999999999,
+        "benchmark_contribution": 0.06399999999999999,
+        "allocation": 0,
+        "selection": 0.017,
+        "interaction": 0,
+        "active": 0.017
+      }
+    }
+  }
+}
+
+
+[assistant]
+필드명을 확인했습니다. 전체 5개 섹터, 2개 분기 데이터로 실행하겠습니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"attribution","flags":{"model":"brinson","brinson-method":"brinson-fachler","linking":"carino","input":"{\"periods\":[{\"name\":\"2026Q1\",\"segments\":[{\"name\":\"IT\",\"portfolio_weight\":0.32,\"benchmark_weight\":0.25,\"portfolio_return\":0.081,\"benchmark_return\":0.064},{\"name\":\"금융\",\"portfolio_weight\":0.18,\"benchmark_weight\":0.22,\"portfolio_return\":0.021,\"benchmark_return\":0.035},{\"name\":\"헬스케어\",\"portfolio_weight\":0.14,\"benchmark_weight\":0.18,\"portfolio_return\":-0.024,\"benchmark_return\":-0.011},{\"name\":\"경기소비재\",\"portfolio_weight\":0.21,\"benchmark_weight\":0.2,\"portfolio_return\":0.043,\"benchmark_return\":0.038},{\"name\":\"산업재\",\"portfolio_weight\":0.15,\"benchmark_weight\":0.15,\"portfolio_return\":0.012,\"benchmark_return\":0.019}]},{\"name\":\"2026Q2\",\"segments\":[{\"name\":\"IT\",\"portfolio_weight\":0.35,\"benchmark_weight\":0.26,\"portfolio_return\":-0.032,\"benchmark_return\":-0.021},{\"name\":\"금융\",\"portfolio_weight\":0.16,\"benchmark_weight\":0.22,\"portfolio_return\":0.048,\"benchmark_return\":0.041},{\"name\":\"헬스케어\",\"portfolio_weight\":0.15,\"benchmark_weight\":0.18,\"portfolio_return\":0.033,\"benchmark_return\":0.027},{\"name\":\"경기소비재\",\"portfolio_weight\":0.2,\"benchmark_weight\":0.19,\"portfolio_return\":0.015,\"benchmark_return\":0.022},{\"name\":\"산업재\",\"portfolio_weight\":0.14,\"benchmark_weight\":0.15,\"portfolio_return\":0.026,\"benchmark_return\":0.018}]}]}"}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "attribution",
+  "data": {
+    "model": "brinson",
+    "method": "brinson-fachler",
+    "linking": "carino",
+    "return_basis": {
+      "portfolio": "weighted_segment_return",
+      "benchmark": "weighted_segment_return",
+      "active": "arithmetic_portfolio_minus_benchmark"
+    },
+    "periods": [
+      {
+        "name": "2026Q1",
+        "portfolio_return": 0.03717,
+        "benchmark_return": 0.032170000000000004,
+        "active_return": 0.0049999999999999975,
+        "linking_factors": {
+          "portfolio": 1.0040541377199856,
+          "benchmark": 1.0076710106079232,
+          "active": 1.01167778266645
+        },
+        "segments": [
+          {
+            "name": "IT",
+            "portfolio_contribution": 0.025920000000000002,
+            "benchmark_contribution": 0.016,
+            "allocation": 0.0022281000000000002,
+            "selection": 0.00425,
+            "interaction": 0.0011900000000000003,
+            "active": 0.007668100000000001
+          },
+          {
+            "name": "금융",
+            "portfolio_contribution": 0.00378,
+            "benchmark_contribution": 0.007700000000000001,
+            "allocation": -0.00011319999999999999,
+            "selection": -0.0030800000000000003,
+            "interaction": 0.0005600000000000002,
+            "active": -0.0026332
+          },
+          {
+            "name": "헬스케어",
+            "portfolio_contribution": -0.0033600000000000006,
+            "benchmark_contribution": -0.00198,
+            "allocation": 0.001726799999999999,
+            "selection": -0.00234,
+            "interaction": 0.0005199999999999997,
+            "active": -0.00009320000000000129
+          },
+          {
+            "name": "경기소비재",
+            "portfolio_contribution": 0.009029999999999998,
+            "benchmark_contribution": 0.0076,
+            "allocation": 0.00005829999999999984,
+            "selection": 0.0009999999999999996,
+            "interaction": 0.00004999999999999988,
+            "active": 0.0011082999999999993
+          },
+          {
+            "name": "산업재",
+            "portfolio_contribution": 0.0018,
+            "benchmark_contribution": 0.0028499999999999997,
+            "allocation": -0,
+            "selection": -0.00105,
+            "interaction": -0,
+            "active": -0.00105
+          }
+        ],
+        "totals": {
+          "portfolio_contribution": 0.03717,
+          "benchmark_contribution": 0.032170000000000004,
+          "allocation": 0.003899999999999999,
+          "selection": -0.0012200000000000004,
+          "interaction": 0.00232,
+          "active": 0.004999999999999998
+        }
+      },
+      {
+        "name": "2026Q2",
+        "portfolio_return": 0.00807,
+        "benchmark_return": 0.0153,
+        "active_return": -0.007229999999999999,
+        "linking_factors": {
+          "portfolio": 1.0184968526577605,
+          "benchmark": 1.0160408227936675,
+          "active": 1.0346650087596472
+        },
+        "segments": [
+          {
+            "name": "IT",
+            "portfolio_contribution": -0.0112,
+            "benchmark_contribution": -0.0054600000000000004,
+            "allocation": -0.0032669999999999986,
+            "selection": -0.00286,
+            "interaction": -0.0009899999999999996,
+            "active": -0.007116999999999998
+          },
+          {
+            "name": "금융",
+            "portfolio_contribution": 0.00768,
+            "benchmark_contribution": 0.00902,
+            "allocation": -0.001542,
+            "selection": 0.00154,
+            "interaction": -0.00041999999999999996,
+            "active": -0.000422
+          },
+          {
+            "name": "헬스케어",
+            "portfolio_contribution": 0.00495,
+            "benchmark_contribution": 0.00486,
+            "allocation": -0.000351,
+            "selection": 0.0010800000000000002,
+            "interaction": -0.00018000000000000004,
+            "active": 0.0005490000000000002
+          },
+          {
+            "name": "경기소비재",
+            "portfolio_contribution": 0.003,
+            "benchmark_contribution": 0.00418,
+            "allocation": 0.00006700000000000006,
+            "selection": -0.0013299999999999998,
+            "interaction": -0.00007000000000000006,
+            "active": -0.0013329999999999998
+          },
+          {
+            "name": "산업재",
+            "portfolio_contribution": 0.00364,
+            "benchmark_contribution": 0.0026999999999999997,
+            "allocation": -0.00002699999999999994,
+            "selection": 0.0012,
+            "interaction": -0.00007999999999999984,
+            "active": 0.0010930000000000002
+          }
+        ],
+        "totals": {
+          "portfolio_contribution": 0.00807,
+          "benchmark_contribution": 0.0153,
+          "allocation": -0.005119999999999999,
+          "selection": -0.0003699999999999999,
+          "interaction": -0.0017399999999999994,
+          "active": -0.007229999999999997
+        }
+      }
+    ],
+    "summary": {
+      "portfolio_return": 0.04553996189999987,
+      "benchmark_return": 0.04796220100000004,
+      "active_return": -0.0024222391000001675,
+      "segments": [
+        {
+          "name": "IT",
+          "portfolio_contribution": 0.014617918499935113,
+          "benchmark_contribution": 0.010575153277273347,
+          "allocation": -0.0011261313160586487,
+          "selection": 0.0013404886512798217,
+          "interaction": 0.00017957820270102579,
+          "active": 0.00039393553792219874
+        },
+        {
+          "name": "금융",
+          "portfolio_contribution": 0.011617380468993146,
+          "benchmark_contribution": 0.01692375500327989,
+          "allocation": -0.001709975368505218,
+          "selection": -0.0015225834571228098,
+          "interaction": 0.00013198025461416034,
+          "active": -0.0031005785710138674
+        },
+        {
+          "name": "헬스케어",
+          "portfolio_contribution": 0.0016679375179167624,
+          "benchmark_contribution": 0.002942769797773536,
+          "allocation": 0.0013837977770337889,
+          "selection": -0.0012498878019790742,
+          "interaction": 0.0003398327454098172,
+          "active": 0.00047374272046453187
+        },
+        {
+          "name": "경기소비재",
+          "portfolio_contribution": 0.01212209942158475,
+          "benchmark_contribution": 0.011905350319897746,
+          "allocation": 0.0001283033703163503,
+          "selection": -0.000364426678983881,
+          "interaction": -0.00002184266147985298,
+          "active": -0.0002579659701473837
+        },
+        {
+          "name": "산업재",
+          "portfolio_contribution": 0.005514625991570222,
+          "benchmark_contribution": 0.005615172601775483,
+          "allocation": -0.00002793595523651041,
+          "selection": 0.00017933633871180404,
+          "interaction": -0.00008277320070077161,
+          "active": 0.000068627182774522
+        }
+      ],
+      "totals": {
+        "portfolio_contribution": 0.045539961899999995,
+        "benchmark_contribution": 0.047962201,
+        "allocation": -0.0013519414924502379,
+        "selection": -0.0016170729480941392,
+        "interaction": 0.0005467753405443787,
+        "active": -0.0024222390999999984
+      }
+    }
+  }
+}
+
+
+[assistant]
+fintool의 `attribution` 도구(Brinson-Fachler, Carino 로그 연결)로 계산한 결과입니다.
+
+## 2026 Q1 — 분기별 Brinson-Fachler 분해
+포트폴리오 수익률 **3.717%**, 벤치마크 **3.217%**, 초과수익 **+0.500%p(+50.0bp)**
+
+| 섹터 | 배분효과 | 선택효과 | 상호작용 | 섹터 활성수익 |
+|---|---|---|---|---|
+| IT | +22.3bp | +42.5bp | +11.9bp | +76.7bp |
+| 금융 | -1.1bp | -30.8bp | +5.6bp | -26.3bp |
+| 헬스케어 | +17.3bp | -23.4bp | +5.2bp | -0.9bp |
+| 경기소비재 | +0.6bp | +10.0bp | +0.5bp | +11.1bp |
+| 산업재 | 0.0bp | -10.5bp | 0.0bp | -10.5bp |
+| **합계** | **+39.0bp** | **-12.2bp** | **+23.2bp** | **+50.0bp** |
+
+IT 비중확대(32%→벤치마크 25%)가 배분효과의 대부분을 견인했고, IT·경기소비재 종목선택이 우수했던 반면 금융·헬스케어 선택은 저조했습니다.
+
+## 2026 Q2 — 분기별 Brinson-Fachler 분해
+포트폴리오 수익률 **0.807%**, 벤치마크 **1.530%**, 초과수익 **-0.723%p(-72.3bp)**
+
+| 섹터 | 배분효과 | 선택효과 | 상호작용 | 섹터 활성수익 |
+|---|---|---|---|---|
+| IT | -32.7bp | -28.6bp | -9.9bp | -71.2bp |
+| 금융 | -15.4bp | +15.4bp | -4.2bp | -4.2bp |
+| 헬스케어 | -3.5bp | +10.8bp | -1.8bp | +5.5bp |
+| 경기소비재 | +0.7bp | -13.3bp | -0.7bp | -13.3bp |
+| 산업재 | -0.3bp | +12.0bp | -0.8bp | +10.9bp |
+| **합계** | **-51.2bp** | **-3.7bp** | **-17.4bp** | **-72.3bp** |
+
+Q2에는 IT 과다비중(35% vs 26%)이 하락장에서 배분효과를 크게 훼손(-32.7bp)했고, 동시에 IT 내 종목선택도 부진(-28.6bp)해 두 효과가 겹쳐 손실을 키웠습니다.
+
+## Carino 로그 연결 — 누적(2026 상반기) 초과수익 분해
+
+Carino 연결계수(분기별로 산술 효과를 기하 누적수익률에 정합하게 스케일링):
+- 2026Q1: 포트폴리오 1.00405 / 벤치마크 1.00767 / 액티브 1.01168
+- 2026Q2: 포트폴리오 1.01850 / 벤치마크 1.01604 / 액티브 1.03467
+
+**누적 포트폴리오 수익률 4.554% − 누적 벤치마크 수익률 4.796% = 누적 초과수익 -0.242%p(-24.2bp)**
+
+| 섹터 | 배분효과(누적) | 선택효과(누적) | 상호작용(누적) | 섹터 활성수익(누적) |
+|---|---|---|---|---|
+| IT | -11.3bp | +13.4bp | +1.8bp | +3.9bp |
+| 금융 | -17.1bp | -15.2bp | +1.3bp | -31.0bp |
+| 헬스케어 | +13.8bp | -12.5bp | +3.4bp | +4.7bp |
+| 경기소비재 | +1.3bp | -3.6bp | -0.2bp | -2.6bp |
+| 산업재 | -0.3bp | +1.8bp | -0.8bp | +0.7bp |
+| **합계** | **-13.5bp** | **-16.2bp** | **+5.5bp** | **-24.2bp** |
+
+**해석**: Q1의 +50bp 초과수익이 Q2에 -72.3bp로 반전되면서 Carino 연결 후 누적으로는 -24.2bp 언더퍼폼입니다. 두 분기 내내 금융 섹터의 저조한 종목선택(-31.0bp)이 가장 큰 손실 요인이고, IT는 비중확대(배분 -11.3bp)가 상승장(Q1)·하락장(Q2) 타이밍이 엇갈리면서 순효과는 소폭 플러스(+3.9bp)로 상쇄되었습니다.
+
+[result] duration_ms=93681 turns=14 cost_usd=0.30022319999999997 input_tokens=468001 output_tokens=9608

@@ -1,0 +1,658 @@
+# prompt
+은퇴 자산 25억 원. 매년 초 1.2억 원을 인출하고 인출액은 매년 2.5%씩 늘린다. 포트폴리오 기대수익률 연 5.5%, 변동성 12%, 물가상승률 2%, 기간 30년. 실질 기준으로 자산 고갈 확률과 고갈 시점 분포를 구하고, 고갈된 경로와 살아남은 경로의 초기 5년 수익률이 어떻게 달랐는지(수익률 순서 위험) 알려줘.
+
+# run: plugin ON (fintool@fintool-plugin 0.5.4) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-sonnet-5 · 2026-08-23
+
+[assistant]
+fintool의 몬테카를로 시뮬레이션 도구로 이 은퇴 인출 시나리오를 분석하겠습니다. 먼저 도구 스펙을 확인합니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{"tool":"montecarlo"}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "tools",
+  "data": {
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "montecarlo",
+        "kind": "calculator",
+        "aliases": [
+          "mc"
+        ],
+        "summary": "자산 경로를 시뮬레이션해 만기 잔액 분포와 목표 달성 확률을 계산한다 (GBM/부트스트랩/팻테일/점프/다자산)",
+        "usage": "fintool montecarlo [flags]",
+        "example": "  # 1억으로 시작해 매년 1200만원씩 30년 적립, 목표 10억\n  fintool montecarlo --initial 100000000 --annual-flow 12000000 --years 30 --target 1000000000\n\n  # 10억에서 매년 4000만원씩 30년 인출할 때의 고갈 확률 (실질 기준)\n  fintool mc --initial 1000000000 --annual-flow -40000000 --years 30 --inflation 0.02\n\n  # 과거 월간 수익률을 재표본해 정규분포 가정 없이 고갈 확률을 구한다\n  fintool mc --model bootstrap --returns @history.csv --steps-per-year 12 \\\n    --initial 1000000000 --annual-flow -40000000 --years 30\n\n  # 수익률 순서 위험까지 보려면 블록 재표본을 쓴다 (블록 24개월)\n  fintool mc --model block-bootstrap --returns @history.csv --steps-per-year 12 --block-size 24 \\\n    --initial 1000000000 --annual-flow -40000000 --years 30\n\n  # 팻테일(자유도 4)과 연 1회 −15% 급락 시나리오\n  fintool mc --model student-t --df 4 --initial 100000000 --years 20\n  fintool mc --model jump --jump-intensity 1 --jump-mean -0.15 --jump-stddev 0.1 --years 20\n\n  # 시리즈A 100억이 5년 뒤 1000억으로 엑싯할 확률. 연 35% 확률로 사업이 끝난다고 본다\n  fintool mc --initial 10000000000 --mean-return 0.5 --volatility 0.7 \\\n    --failure-rate 0.35 --years 5 --target 100000000000\n\n  # 주식 60 / 채권 40, 상관 0.2인 2자산 포트폴리오\n  fintool mc --assets stock,bond --mean-returns 0.08,0.03 --volatilities 0.18,0.06 \\\n    --weights 0.6,0.4 --correlation \"1,0.2;0.2,1\" --initial 100000000 --years 30\n\n  # 시나리오 500개를 한 프로세스에서 실행한다 (같은 난수열로 파라미터 효과만 분리)\n  fintool scenario --spec @scenario.json --mode sample --n 500 | fintool mc --batch -\n\n  # 케이스 파일로 직접 준다. params에 적은 값만 위 플래그를 덮어쓴다\n  fintool mc --initial 100000000 --years 30 --batch @cases.json\n\n  # 타깃데이트펀드: 30년에 걸쳐 주식 90%에서 30%로 낮춘다\n  fintool mc --assets stock,bond --mean-returns 0.08,0.03 --volatilities 0.18,0.06 \\\n    --weights 0.9,0.1 --glide-path \"0:0.9/0.1,29:0.3/0.7\" --initial 100000000 --years 30",
+        "flags": [
+          {
+            "name": "annual-flow",
+            "type": "float64",
+            "default": "0",
+            "description": "연간 순현금흐름. 양수는 적립, 음수는 인출"
+          },
+          {
+            "name": "assets",
+            "type": "string",
+            "default": "",
+            "description": "자산 이름 목록. 쉼표로 구분한다. 생략하면 시계열 이름이나 asset1..N을 쓴다"
+          },
+          {
+            "name": "batch",
+            "type": "string",
+            "default": "",
+            "description": "케이스 목록을 받아 한 프로세스에서 전부 실행한다. @파일.json, -(표준입력), 인라인 JSON. scenario 커맨드의 출력을 그대로 파이프로 넘길 수 있다"
+          },
+          {
+            "name": "block-size",
+            "type": "int",
+            "default": "12",
+            "description": "block-bootstrap이 한 번에 뽑는 연속 관측 수. 1이면 bootstrap과 같다"
+          },
+          {
+            "name": "correlation",
+            "type": "string",
+            "default": "",
+            "description": "자산 간 상관행렬. @파일.json(2차원 배열)이거나 행을 ;로 구분한 \"1,0.3;0.3,1\" 형태. 생략하면 무상관"
+          },
+          {
+            "name": "df",
+            "type": "float64",
+            "default": "5",
+            "description": "student-t의 자유도. 2보다 커야 하고, 작을수록 꼬리가 두껍다"
+          },
+          {
+            "name": "failure-rate",
+            "type": "float64",
+            "default": "0",
+            "description": "폐업·부도처럼 가치가 즉시 0이 되는 사건의 연간 확률(0 이상 1 미만). 0이면 이 층을 끈다. 모든 모델에 적용된다"
+          },
+          {
+            "name": "fill",
+            "type": "string",
+            "default": "none",
+            "description": "결측치 처리 (none|forward|drop). none이면 결측이 있을 때 오류다"
+          },
+          {
+            "name": "flow-growth",
+            "type": "float64",
+            "default": "0",
+            "description": "현금흐름의 연 증가율(소수 표기)"
+          },
+          {
+            "name": "full",
+            "type": "bool",
+            "default": "false",
+            "description": "배치 결과에 연도별 밴드(path)까지 담는다. 케이스가 많으면 출력이 수만 줄이 되므로 기본은 생략한다"
+          },
+          {
+            "name": "glide-path",
+            "type": "string",
+            "default": "",
+            "description": "기간에 따른 배분 변화. \"0:0.9/0.1,30:0.3/0.7\"이거나 @파일.json([{start_year,weights}]). 구간 사이는 선형 보간한다"
+          },
+          {
+            "name": "independent-seeds",
+            "type": "bool",
+            "default": "false",
+            "description": "배치에서 케이스마다 다른 난수를 쓴다. 기본은 모든 케이스가 같은 난수열을 써서(common random numbers) 파라미터 효과와 몬테카를로 노이즈가 섞이지 않게 한다"
+          },
+          {
+            "name": "inflation",
+            "type": "float64",
+            "default": "0",
+            "description": "연 인플레이션. 0이 아니면 결과를 오늘 가치 기준으로 환산한다"
+          },
+          {
+            "name": "initial",
+            "type": "float64",
+            "default": "0",
+            "description": "초기 자산"
+          },
+          {
+            "name": "jump-intensity",
+            "type": "float64",
+            "default": "0",
+            "description": "jump의 연간 기대 점프 횟수 λ. 0이면 gbm과 같다"
+          },
+          {
+            "name": "jump-mean",
+            "type": "float64",
+            "default": "-0.1",
+            "description": "jump의 점프 크기 로그 평균. 급락을 보려면 음수로 준다"
+          },
+          {
+            "name": "jump-stddev",
+            "type": "float64",
+            "default": "0.1",
+            "description": "jump의 점프 크기 로그 표준편차"
+          },
+          {
+            "name": "mean-return",
+            "type": "float64",
+            "default": "0.07",
+            "description": "연 기대수익률(산술, 소수 표기). 단일 자산 파라메트릭 모델에서만 쓴다"
+          },
+          {
+            "name": "mean-returns",
+            "type": "string",
+            "default": "",
+            "description": "자산별 연 기대수익률. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다. 자산 순서와 같아야 한다"
+          },
+          {
+            "name": "model",
+            "type": "string",
+            "default": "gbm",
+            "description": "수익률 생성 모델 (gbm|bootstrap|block-bootstrap|student-t|jump)"
+          },
+          {
+            "name": "periods-per-year",
+            "type": "float64",
+            "default": "steps-per-year와 동일",
+            "description": "시계열의 연간 관측 수. 지정하지 않으면 --steps-per-year를 따른다"
+          },
+          {
+            "name": "prices",
+            "type": "string",
+            "default": "",
+            "description": "가격 시계열. @파일.csv 또는 @파일.json으로 주거나, 시리즈가 하나면 쉼표로 구분해 직접 준다"
+          },
+          {
+            "name": "return-type",
+            "type": "string",
+            "default": "simple",
+            "description": "가격을 수익률로 바꾸는 방식 (simple|log). --prices를 줄 때만 쓴다"
+          },
+          {
+            "name": "returns",
+            "type": "string",
+            "default": "",
+            "description": "수익률 시계열(소수 표기, 0.01 = 1%). @파일.csv 또는 @파일.json으로 주거나, 시리즈가 하나면 쉼표로 구분해 직접 준다"
+          },
+          {
+            "name": "seed",
+            "type": "uint64",
+            "default": "42",
+            "description": "난수 시드. 같은 시드는 같은 결과를 보장한다"
+          },
+          {
+            "name": "steps-per-year",
+            "type": "int",
+            "default": "12",
+            "description": "연간 시뮬레이션 스텝 수. bootstrap 계열은 과거 데이터 주기와 맞춘다"
+          },
+          {
+            "name": "target",
+            "type": "float64",
+            "default": "0",
+            "description": "성공으로 판정할 만기 잔액 기준"
+          },
+          {
+            "name": "trials",
+            "type": "int",
+            "default": "10000",
+            "description": "시뮬레이션 횟수"
+          },
+          {
+            "name": "volatilities",
+            "type": "string",
+            "default": "",
+            "description": "자산별 연 변동성. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다. 자산 순서와 같아야 한다"
+          },
+          {
+            "name": "volatility",
+            "type": "float64",
+            "default": "0.15",
+            "description": "연 변동성(표준편차, 소수 표기). 단일 자산 파라메트릭 모델에서만 쓴다"
+          },
+          {
+            "name": "weights",
+            "type": "string",
+            "default": "",
+            "description": "자산별 목표 배분(합 1). 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다. 자산이 2개 이상이면 반드시 지정한다"
+          },
+          {
+            "name": "years",
+            "type": "int",
+            "default": "30",
+            "description": "시뮬레이션 기간(년)"
+          }
+        ],
+        "workflow": {
+          "batch": true,
+          "inputs": {
+            "annual-flow": {
+              "type": "money",
+              "description": "연간 순현금흐름"
+            },
+            "assets": {
+              "type": "string"
+            },
+            "block-size": {
+              "type": "number"
+            },
+            "correlation": {
+              "type": "string"
+            },
+            "df": {
+              "type": "number"
+            },
+            "failure-rate": {
+              "type": "ratio_decimal",
+              "description": "연간 외생 실패 확률"
+            },
+            "fill": {
+              "type": "string"
+            },
+            "flow-growth": {
+              "type": "annual_rate_decimal",
+              "description": "현금흐름 연 증가율"
+            },
+            "full": {
+              "type": "boolean"
+            },
+            "glide-path": {
+              "type": "string"
+            },
+            "independent-seeds": {
+              "type": "boolean"
+            },
+            "inflation": {
+              "type": "annual_rate_decimal",
+              "description": "연 인플레이션율"
+            },
+            "initial": {
+              "type": "money",
+              "description": "초기 자산"
+            },
+            "jump-intensity": {
+              "type": "number"
+            },
+            "jump-mean": {
+              "type": "number"
+            },
+            "jump-stddev": {
+              "type": "number"
+            },
+            "mean-return": {
+              "type": "annual_rate_decimal",
+              "description": "연 기대수익률"
+            },
+            "mean-returns": {
+              "type": "string"
+            },
+            "model": {
+              "type": "string"
+            },
+            "periods-per-year": {
+              "type": "number"
+            },
+            "prices": {
+              "type": "string"
+            },
+            "return-type": {
+              "type": "string"
+            },
+            "returns": {
+              "type": "string"
+            },
+            "seed": {
+              "type": "number"
+            },
+            "steps-per-year": {
+              "type": "number"
+            },
+            "target": {
+              "type": "money",
+              "description": "성공 판정 만기 잔액"
+            },
+            "trials": {
+              "type": "number"
+            },
+            "volatilities": {
+              "type": "string"
+            },
+            "volatility": {
+              "type": "annual_volatility_decimal",
+              "description": "연율 변동성"
+            },
+            "weights": {
+              "type": "string"
+            },
+            "years": {
+              "type": "number"
+            }
+          },
+          "outputs": {
+            "/data/failure_rate": {
+              "type": "ratio_decimal",
+              "nullable": true
+            },
+            "/data/ruin_rate": {
+              "type": "ratio_decimal"
+            },
+            "/data/success_rate": {
+              "type": "ratio_decimal"
+            },
+            "/data/terminal_balance/mean": {
+              "type": "money"
+            },
+            "/data/terminal_balance/p10": {
+              "type": "money"
+            },
+            "/data/terminal_balance/p5": {
+              "type": "money"
+            },
+            "/data/terminal_balance/p50": {
+              "type": "money"
+            },
+            "/data/terminal_balance/p90": {
+              "type": "money"
+            },
+            "/data/terminal_balance/p95": {
+              "type": "money"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"montecarlo","flags":{"initial":2500000000,"annual-flow":-120000000,"flow-growth":0.025,"mean-return":0.055,"volatility":0.12,"inflation":0.02,"years":30,"steps-per-year":1,"trials":10000,"full":true,"seed":42}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "montecarlo",
+  "data": {
+    "params": {
+      "model": "gbm",
+      "initial": 2500000000,
+      "years": 30,
+      "steps_per_year": 1,
+      "mean_return": 0.055,
+      "volatility": 0.12,
+      "annual_flow": -120000000,
+      "flow_growth": 0.025,
+      "inflation": 0.02,
+      "target": 0,
+      "trials": 10000,
+      "seed": 42
+    },
+    "real_terms": true,
+    "terminal_balance": {
+      "mean": 1341005150.2700121,
+      "stddev": 2771848284.88825,
+      "min": 0,
+      "max": 51493407739.079185,
+      "p5": 0,
+      "p10": 0,
+      "p25": 0,
+      "p50": 0,
+      "p75": 1585707456.9634528,
+      "p90": 4223929753.2775664,
+      "p95": 6568349656.927135
+    },
+    "success_rate": 0.4626,
+    "ruin_rate": 0.5374,
+    "path": [
+      {
+        "year": 0,
+        "p10": 2500000000,
+        "p50": 2500000000,
+        "p90": 2500000000
+      },
+      {
+        "year": 1,
+        "p10": 2080945982.4968865,
+        "p50": 2446509649.8092194,
+        "p90": 2875809810.304188
+      },
+      {
+        "year": 2,
+        "p10": 1892098740.1923938,
+        "p50": 2394942456.371513,
+        "p90": 3034043239.7800612
+      },
+      {
+        "year": 3,
+        "p10": 1738282389.1741228,
+        "p50": 2343787325.5907135,
+        "p90": 3146551508.009327
+      },
+      {
+        "year": 4,
+        "p10": 1604047949.097744,
+        "p50": 2283302032.6624756,
+        "p90": 3242062920.889258
+      },
+      {
+        "year": 5,
+        "p10": 1487349617.2507832,
+        "p50": 2225807134.9192457,
+        "p90": 3310233455.6906996
+      },
+      {
+        "year": 6,
+        "p10": 1364499479.3189735,
+        "p50": 2171521874.6324534,
+        "p90": 3377707941.2942533
+      },
+      {
+        "year": 7,
+        "p10": 1253556996.9973154,
+        "p50": 2111838604.6098404,
+        "p90": 3451885830.671872
+      },
+      {
+        "year": 8,
+        "p10": 1126985981.1093223,
+        "p50": 2046477271.2426937,
+        "p90": 3523464775.9795637
+      },
+      {
+        "year": 9,
+        "p10": 1017873600.5828979,
+        "p50": 1966326862.2813098,
+        "p90": 3582629497.6009645
+      },
+      {
+        "year": 10,
+        "p10": 904821777.334732,
+        "p50": 1891517364.9819486,
+        "p90": 3625707718.512877
+      },
+      {
+        "year": 11,
+        "p10": 788431374.5765848,
+        "p50": 1826318179.7416897,
+        "p90": 3683787648.4584785
+      },
+      {
+        "year": 12,
+        "p10": 673707070.3308539,
+        "p50": 1747833465.6540203,
+        "p90": 3725042236.2402253
+      },
+      {
+        "year": 13,
+        "p10": 561068714.9339831,
+        "p50": 1663719896.4917293,
+        "p90": 3754771161.208469
+      },
+      {
+        "year": 14,
+        "p10": 442121319.2624593,
+        "p50": 1597377511.1189146,
+        "p90": 3842801701.2854147
+      },
+      {
+        "year": 15,
+        "p10": 323100818.74044025,
+        "p50": 1506297268.191601,
+        "p90": 3865054252.802025
+      },
+      {
+        "year": 16,
+        "p10": 203584671.44115758,
+        "p50": 1409231687.7716293,
+        "p90": 3881514151.623509
+      },
+      {
+        "year": 17,
+        "p10": 77324733.64262263,
+        "p50": 1320651160.7330112,
+        "p90": 3926720006.037575
+      },
+      {
+        "year": 18,
+        "p10": 0,
+        "p50": 1224857021.007553,
+        "p90": 3961293879.767373
+      },
+      {
+        "year": 19,
+        "p10": 0,
+        "p50": 1128429898.6404946,
+        "p90": 4002295149.882553
+      },
+      {
+        "year": 20,
+        "p10": 0,
+        "p50": 1025980013.7989364,
+        "p90": 4054128249.3465676
+      },
+      {
+        "year": 21,
+        "p10": 0,
+        "p50": 909157716.3690056,
+        "p90": 4103804882.0342364
+      },
+      {
+        "year": 22,
+        "p10": 0,
+        "p50": 810125857.2328897,
+        "p90": 4108054277.345884
+      },
+      {
+        "year": 23,
+        "p10": 0,
+        "p50": 696639279.0974858,
+        "p90": 4136019449.6832542
+      },
+      {
+        "year": 24,
+        "p10": 0,
+        "p50": 578729853.2052262,
+        "p90": 4162288333.1291604
+      },
+      {
+        "year": 25,
+        "p10": 0,
+        "p50": 457521419.76016545,
+        "p90": 4216767928.617286
+      },
+      {
+        "year": 26,
+        "p10": 0,
+        "p50": 340859314.90049326,
+        "p90": 4218106200.2952347
+      },
+      {
+        "year": 27,
+        "p10": 0,
+        "p50": 217746114.13349056,
+        "p90": 4244037177.5169353
+      },
+      {
+        "year": 28,
+        "p10": 0,
+        "p50": 87974009.71617058,
+        "p90": 4277281725.661474
+      },
+      {
+        "year": 29,
+        "p10": 0,
+        "p50": 0,
+        "p90": 4267485760.87433
+      },
+      {
+        "year": 30,
+        "p10": 0,
+        "p50": 0,
+        "p90": 4223929753.2775664
+      }
+    ],
+    "failure_analysis": {
+      "ruin_timing": {
+        "earliest": 10,
+        "p10": 16,
+        "p50": 23,
+        "p90": 29,
+        "count": 5374
+      },
+      "return_comparison": {
+        "ruined": {
+          "first_1y": 0.022932527031198253,
+          "first_3y": 0.020259378410506075,
+          "first_5y": 0.021377316454879038,
+          "full": 0.02641460648767149
+        },
+        "survived": {
+          "first_1y": 0.09238186504290274,
+          "first_3y": 0.08564344731021026,
+          "first_5y": 0.0831574020293482,
+          "full": 0.06594780658874443
+        }
+      }
+    }
+  }
+}
+
+
+[assistant]
+시뮬레이션 결과입니다 (GBM 모델, 연 1회 스텝, 매년 초 인출, 인플레이션 반영해 실질 기준 환산, trials=10,000, seed=42).
+
+## 1. 자산 고갈 확률
+- **고갈(ruin) 확률: 53.7%**, 생존(success) 확률: 46.3%
+- 초기 인출률이 1.2억/25억 = **4.8%**로 상당히 높습니다. 명목 인출증가율(2.5%)이 물가상승률(2%)을 살짝 웃돌아 실질 인출액이 시간이 갈수록 미세하게 늘어나는데, 실질 기대수익률(약 3.5%)로는 이를 감당하기 어려운 구조입니다.
+
+## 2. 고갈 시점 분포 (고갈된 5,374개 경로 기준)
+| 구간 | 시점 |
+|---|---|
+| 최단 고갈 | 10년차 |
+| 하위 10% | 16년차 |
+| 중앙값 | 23년차 |
+| 상위 10% | 29년차 |
+
+즉 고갈이 발생하는 경우 대부분 20~29년차에 몰려 있고, 소수는 10년대 초반이라는 매우 이른 시점에 발생합니다.
+
+전체 경로의 중앙값(p50) 잔액은 17~18년차에 0으로 떨어지고, 하위 10%(p10) 경로는 이미 18년차에 고갈됩니다. 반면 상위 10%(p90) 경로는 30년 후에도 실질 기준 약 42억 원이 남습니다 — **경로 간 격차가 극단적으로 벌어지는 전형적 인출 시뮬레이션 패턴**입니다.
+
+## 3. 수익률 순서 위험 (Sequence-of-Returns Risk)
+초기 5년 실질수익률 비교:
+
+| | 1년차 | 3년차(평균) | 5년차(평균) | 전체 30년(평균) |
+|---|---|---|---|---|
+| **고갈된 경로** | 2.3% | 2.0% | 2.1% | 2.6% |
+| **생존한 경로** | 9.2% | 8.6% | 8.3% | 6.6% |
+
+- 고갈된 경로는 초반 5년간 실질수익률이 **2%대**에 머문 반면, 생존한 경로는 **8%대**로 6%p 이상 차이가 났습니다.
+- 흥미롭게도 두 그룹 모두 "전체 30년 평균"은 격차가 크게 줄어듭니다(2.6% vs 6.6%) — 즉 **평균 수익률 자체보다 '언제' 나쁜 수익률이 오느냐가 생존 여부를 좌우**한다는 순서 위험이 뚜렷하게 나타납니다. 초반에 자산이 크게 깎이면 이후 아무리 시장이 회복돼도 원금이 줄어든 상태에서 계속 정액(실질 기준 유사) 인출이 나가기 때문에 복리 회복이 불가능해집니다.
+
+## 시사점
+- 4.8%라는 초기 인출률과 인플레이션 이상으로 늘어나는 인출 계획은 이 변동성(12%)·기대수익률(5.5%) 조합에서 **절반 이상 고갈**되는 결과를 냅니다.
+- 개선 방향으로는 ① 초기 인출률을 3.5~4% 수준으로 낮추거나, ② 인출 증가율을 물가상승률에 고정(또는 하회)시키거나, ③ 초반 몇 년의 순서 위험을 줄이기 위해 현금성 버킷을 별도로 두는 방안을 검토해볼 수 있습니다. 원하시면 이 중 하나로 재시뮬레이션해서 고갈 확률이 얼마나 개선되는지 보여드릴 수 있습니다.
+
+[result] duration_ms=37325 turns=3 cost_usd=0.1228478 input_tokens=86007 output_tokens=2579
