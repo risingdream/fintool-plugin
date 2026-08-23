@@ -1,154 +1,127 @@
 # prompt
-3억, 연 4.5%, 30년 원리금균등. 2년차에 낸 이자 총액은?
+액면 100억 원, 표면금리 연 1%(연 1회 이표), 만기 3년(2026-08-23 발행, 2029-08-23 만기), 전환가 20,000원, 현재 주가 18,000원, 주가 변동성 35%, 무위험금리 3.2%, 이 회사 일반채 신용스프레드 4%. 이 전환사채 가치는?
 
-# run: plugin ON (fintool@fintool-plugin 0.5.2) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-opus-5[1m] · 2026-08-23
+# run: plugin ON (fintool@fintool-plugin 0.5.3) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-opus-5[1m] · 2026-08-23
 
-[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
-{"tool":"amort"}
+[tool_use Skill]
+{"skill":"fintool:fixed-income","args":"전환사채 가치평가: 액면 100억, 쿠폰 1% 연1회, 만기 3년, 전환가 20000, 주가 18000, 변동성 35%, 무위험 3.2%, 신용스프레드 4%"}
+
+[tool_result]
+Launching skill: fintool:fixed-income
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"bond","flags":{"solve":"price","settlement":"2026-08-23","maturity":"2029-08-23","rate":0.01,"yield":0.072,"redemption":100,"frequency":1,"basis":1}}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"option","flags":{"model":"binomial","exercise":"american","solve":"price","type":"call","spot":18000,"strike":20000,"rate":0.032,"vol":0.35,"maturity":3,"steps":500}}
 
 [tool_result]
 {
   "ok": true,
-  "tool": "tools",
+  "tool": "bond",
   "data": {
-    "global_flags": [
-      {
-        "name": "format",
-        "type": "string",
-        "default": "json",
-        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
-      }
-    ],
-    "tools": [
-      {
-        "name": "amort",
-        "kind": "calculator",
-        "summary": "상환 스케줄 전체와 구간 누적을 한 번에 낸다 (엑셀 IPMT·PPMT·CUMIPMT·CUMPRINC·ISPMT)",
-        "usage": "fintool amort [flags]",
-        "example": "  # 3억을 연 4.5% 30년 원리금균등으로 빌렸을 때의 전체 스케줄\n  fintool amort --pv 300000000 --rate 0.00375 --nper 360\n\n  # 2년차(13~24회차)에 낸 이자와 갚은 원금\n  fintool amort --pv 125000000 --rate 0.0075 --nper 360 --from 13 --to 24\n\n  # 같은 대출을 원금균등으로 갚을 때 (엑셀 ISPMT)\n  fintool amort --method equal-principal --pv 300000000 --rate 0.00375 --nper 360\n\n  # 사람이 읽는 표로 확인\n  fintool amort --pv 50000000 --rate 0.005 --nper 60 --format table",
-        "flags": [
-          {
-            "name": "from",
-            "type": "int",
-            "default": "0",
-            "description": "누적 구간 시작 회차(1부터). 지정하면 CUMIPMT/CUMPRINC가 함께 나온다"
-          },
-          {
-            "name": "fv",
-            "type": "float64",
-            "default": "0",
-            "description": "만기 잔액. 기본 0(원금을 모두 상환)"
-          },
-          {
-            "name": "method",
-            "type": "string",
-            "default": "equal-payment",
-            "description": "상환 방식 (equal-payment|equal-principal). equal-principal이 엑셀 ISPMT에 대응한다"
-          },
-          {
-            "name": "nper",
-            "type": "int",
-            "default": "0",
-            "description": "총 상환 횟수. 1 이상이어야 한다"
-          },
-          {
-            "name": "pv",
-            "type": "float64",
-            "default": "0",
-            "description": "현재가치. 대출 원금이면 양수"
-          },
-          {
-            "name": "rate",
-            "type": "float64",
-            "default": "0",
-            "description": "기간 이자율(소수 표기). 연 4.5% 월납이면 0.045/12 = 0.00375"
-          },
-          {
-            "name": "to",
-            "type": "int",
-            "default": "0",
-            "description": "누적 구간 끝 회차(포함). --from만 주면 마지막 회차까지로 본다"
-          },
-          {
-            "name": "type",
-            "type": "int",
-            "default": "0",
-            "description": "납입 시점. 0=기말 납입(기본), 1=기초 납입"
-          }
-        ],
-        "workflow": {
-          "batch": false,
-          "inputs": {
-            "from": {
-              "type": "number"
-            },
-            "fv": {
-              "type": "number"
-            },
-            "method": {
-              "type": "string"
-            },
-            "nper": {
-              "type": "number"
-            },
-            "pv": {
-              "type": "number"
-            },
-            "rate": {
-              "type": "number"
-            },
-            "to": {
-              "type": "number"
-            },
-            "type": {
-              "type": "number"
-            }
-          }
-        }
-      }
-    ]
+    "solve": "price",
+    "value": 83.78851246662653,
+    "settlement": "2026-08-23",
+    "maturity": "2029-08-23",
+    "rate": 0.01,
+    "yield": 0.072,
+    "price": 83.78851246662653,
+    "redemption": 100,
+    "accrued_interest": 0,
+    "frequency": 1,
+    "basis": 1,
+    "schedule": {
+      "previous_coupon_date": "2026-08-23",
+      "next_coupon_date": "2027-08-23",
+      "days_before_settlement": 0,
+      "days_in_period": 365,
+      "days_to_next": 365,
+      "coupons_remaining": 3
+    },
+    "convention": "엑셀 PRICE와 같다. 액면 100 기준 청산가격(clean price)이며 경과이자를 뺀 값이다. 실제 결제대금은 value + accrued_interest에 액면/100을 곱한 금액이다."
   }
 }
 
 
-[tool_use mcp__plugin_fintool_fintool__fintool_run]
-{"tool":"amort","flags":{"pv":300000000,"rate":0.00375,"nper":360,"from":13,"to":24}}
-
 [tool_result]
-<persisted-output>
-Output too large (77KB). Full output saved to: ~/.claude/projects/-private-var-folders-v5-wvzncv9s5mq9jmdp0-8sm8n80000gn-T-tmp-strpV0I8TD/8bed4696-a5b8-41c8-86c1-1c7a3dfd4a4e/tool-results/toolu_01T1fidfvQKxCpApq8JMnjd6.json
+{
+  "ok": true,
+  "tool": "option",
+  "data": {
+    "model": "binomial",
+    "solve": "price",
+    "type": "call",
+    "exercise": "american",
+    "price": 4222.127038737545,
+    "steps": 500,
+    "inputs": {
+      "spot": 18000,
+      "strike": 20000,
+      "rate": 0.032,
+      "yield": 0,
+      "vol": 0.35,
+      "maturity": 3,
+      "carry": 0.032
+    },
+    "convention": "Cox-Ross-Rubinstein 이항 트리. u = e^(σ√dt), d = 1/u, p = (e^((r−q)dt) − d)/(u − d). 스텝을 늘리면 유럽형은 Black-Scholes로 수렴한다. 만기는 연 단위 소수다(0.5 = 6개월). 그릭스는 vega가 변동성 1%p당, theta가 하루당(365일 기준), rho가 이자율 1%p당이며 원시 미분값도 함께 낸다."
+  }
+}
 
-Preview (first 2KB):
-[
-  {
-    "type": "text",
-    "text": "{\n  \"ok\": true,\n  \"tool\": \"amort\",\n  \"data\": {\n    \"params\": {\n      \"method\": \"equal-payment\",\n      \"rate\": 0.00375,\n      \"nper\": 360,\n      \"pv\": 300000000,\n      \"fv\": 0,\n      \"type\": 0,\n      \"from\": 13,\n      \"to\": 24\n    },\n    \"payment\": -1520055.9294776423,\n    \"total_payment\": -547220134.611949,\n    \"total_interest\": -247220134.61195105,\n    \"total_principal\": -300000000.00000036,\n    \"cumulative\": {\n      \"from\": 13,\n      \"to\": 24,\n      \"interest\": -13178657.022777783,\n      \"principal\": -5062014.130953928,\n      \"payment\": -18240671.15373171\n    },\n    \"convention\": \"엑셀 IPMT/PPMT/CUMIPMT/CUMPRINC와 같은 부호 규약을 쓴다. 대출을 받는 쪽이면 pv가 양수이고 payment/interest/principal은 유출이므로 음수다. balance는 엑셀 FV 규약이라 남은 원금이 음수로 나온다.\",\n    \"schedule\": [\n      {\n        \"period\": 1,\n        \"payment\": -1520055.9294776423,\n        \"interest\": -1125000,\n        \"principal\": -395055.9294776423,\n        \"balance\": -299604944.07052237\n      },\n      {\n        \"period\": 2,\n        \"payment\": -1520055.9294776423,\n        \"interest\": -1123518.5402644589,\n        \"principal\": -396537.3892131834,\n        \"balance\": -299208406.68130916\n      },\n      {\n        \"period\": 3,\n        \"payment\": -1520055.9294776423,\n        \"interest\": -1122031.5250549093,\n        \"principal\": -398024.404422733,\n        \"balance\": -298810382.27688646\n      },\n      {\n        \"period\": 4,\n        \"payment\": -1520055.9294776423,\n        \"interest\": -1120538.9335383242,\n        \"principal\": -399516.9959393181,\n        \"balance\": -298410865.28094715\n      },\n      {\n        \"period\": 5,\n        \"payment\": -1520055.9294776423,\n        \"interest\": -1119040.7448035518,\n        \"principal\": -401015.1846740905,\n        \"balance\": -298009850.09627306\n      },\n      {\n        \"period\": 6,\n        \"payment\": -1520055
-...
-</persisted-output>
 
 [assistant]
-## 2년차(13~24회차) 이자 총액: **약 13,178,657원**
+## 전환사채 이론가: 약 **104.9억 원** (액면 대비 104.9%)
 
-**조건**
+스트레이트 채권 + 전환옵션으로 분해해 산출했습니다.
+
+### 1) 채권 부문 (bond floor)
 
 | 항목 | 값 |
 |---|---|
-| 대출원금 (pv) | 300,000,000원 |
-| 이자율 | 연 4.5% → 월 0.375% (0.045/12) |
-| 기간 (nper) | 360회 (30년) |
-| 방식 | 원리금균등, 기말 납입 |
+| 할인율 | 7.2% (무위험 3.2% + 신용스프레드 4.0%) |
+| 결제일 / 만기 | 2026-08-23 / 2029-08-23, 연 1회, actual/actual |
+| 표면금리 | 1.0% |
+| **가격 (액면 100 기준)** | **83.7885** |
+| 경과이자 | 0 (발행일 결제) |
 
-**결과**
+→ 채권가치 = 100억 × 83.7885 / 100 = **8,378,851,247원**
 
-| 항목 | 금액 |
+### 2) 전환옵션 부문
+
+| 항목 | 값 |
 |---|---|
-| 월 납입금 | 1,520,055.93원 |
-| **2년차 이자 합계 (13~24회)** | **13,178,657.02원** |
-| 2년차 원금 상환액 | 5,062,014.13원 |
-| 2년차 총 납입액 | 18,240,671.15원 |
+| 모형 | CRR 이항트리, 미국형 콜, 500스텝 |
+| 기초자산 / 행사가 | 18,000원 / 20,000원 |
+| 변동성 / 무위험금리 / 잔존만기 | 35% / 3.2% / 3년 |
+| **옵션 1주 가치** | **4,222.13원** |
 
-참고로 전체 만기까지의 총이자는 247,220,134.61원, 총 납입액은 547,220,134.61원입니다.
+전환주식수 = 100억 ÷ 20,000 = 500,000주
+→ 옵션가치 = 500,000 × 4,222.13 = **2,111,063,519원**
 
-2년차 납입액 1,824만원 중 이자가 72.2%를 차지합니다. 초기 구간이라 원금 감소 속도가 느린 전형적인 원리금균등 구조입니다.
+### 3) 합산
 
-[result] duration_ms=12540 turns=3 cost_usd=0.19543199999999997
+```
+CB 이론가 = 8,378,851,247 + 2,111,063,519 = 10,489,914,766원
+          ≈ 104.9억 원 (액면의 104.90%)
+```
+
+### 해석
+
+| 지표 | 값 |
+|---|---|
+| 채권 floor | 83.79억 (액면의 83.8%) |
+| 전환 패리티 (500,000주 × 18,000원) | 90.00억 |
+| 옵션가치 비중 | 21.11억 / 104.90억 = 20.1% |
+| 전환 프리미엄 (전환가 vs 주가) | +11.1% |
+| 이론가의 패리티 대비 프리미엄 | +16.6% |
+
+현재 주가가 전환가를 밑도는 out-of-the-money 상태(패리티 90억 < 액면 100억)지만, 만기 3년 · 변동성 35%라는 긴 시간가치 덕분에 옵션 부문이 액면의 21%를 채워 이론가가 액면을 넘습니다. 반대로 표면금리 1%에 요구수익률 7.2%라 채권 부문만으로는 액면의 84%에 그치므로, 이 CB의 가치는 사실상 **주가 상승 시나리오에 크게 의존**합니다.
+
+### 모형의 한계 (중요)
+
+- **신용위험이 옵션에 반영되지 않았습니다.** 발행사 부도 시 전환권도 함께 소멸하는데, 이 분해는 옵션을 무위험금리로만 평가하므로 옵션가치가 **과대평가**됩니다. 정밀 평가는 이항트리에 신용스프레드를 결합한 Tsiveriotis-Fernandes 모형이 필요하며 fintool 범위 밖입니다.
+- **콜/풋 옵션 조항, 리픽싱(전환가 조정), 희석효과를 모두 무시**했습니다. 국내 사모 CB에 흔한 하향 리픽싱 조항이 있다면 실제 가치는 위 수치보다 높아지고, 발행사 콜옵션이 있다면 낮아집니다.
+- 만기보장수익률(YTM 프리미엄) 조항이 있다면 상환금액 100 대신 그 값을 넣어 채권 부문을 다시 계산해야 합니다.
+- 배당수익률 0%를 가정했습니다.
+
+[result] duration_ms=34283 turns=5 cost_usd=0.2361635 input_tokens=60256 output_tokens=2201

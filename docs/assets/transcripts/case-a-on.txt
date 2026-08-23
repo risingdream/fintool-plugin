@@ -663,4 +663,4 @@ Base 결과가 "조달 불필요"로 나왔으니, 그 결론이 얼마나 취�
 
 *세금은 세 케이스 모두 0%로 두었습니다. Base는 2027-01부터 흑자라 실제 현금은 이보다 낮습니다. 감쇠율·원가율·고정비 증가율은 제안값이므로 승인/수정이 필요합니다.*
 
-[result] duration_ms=130653 turns=6 cost_usd=0.6337085
+[result] duration_ms=130653 turns=6 cost_usd=0.6337085 input_tokens=106667 output_tokens=9605

@@ -55,4 +55,4 @@ PV(TV) = 229.50 / 1.61051 = 142.50억
 
 실제 WACC와 g 값을 알려주시면 그 기준으로 다시 계산해 드리겠습니다.
 
-[result] duration_ms=35683 turns=1 cost_usd=0.08592849999999999
+[result] duration_ms=35683 turns=1 cost_usd=0.08592849999999999 input_tokens=12595 output_tokens=3011

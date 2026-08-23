@@ -1,29 +1,488 @@
 # prompt
 내년부터 5년 FCF 10억, 12억, 14억, 16억, 18억, 순부채 20억, 발행주식 100만 주. DCF로 주당가치는?
 
-# run: plugin ON (fintool@fintool-plugin 0.5.2) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-opus-5[1m] · 2026-08-23
+# run: plugin ON (fintool@fintool-plugin 0.5.3) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-opus-5[1m] · 2026-08-23
 
 [tool_use Skill]
-{"skill":"fintool:valuation","args":"5년 FCF 10/12/14/16/18억, 순부채 20억, 발행주식 100만주 DCF 주당가치"}
+{"skill":"fintool:valuation","args":"5년 FCF 10/12/14/16/18억, 순부채 20억, 주식수 100만주, 주당가치 계산"}
 
 [tool_result]
 Launching skill: fintool:valuation
 
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{"tool":"dcf"}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "tools",
+  "data": {
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "dcf",
+        "kind": "calculator",
+        "summary": "명시적 FCF와 terminal value를 할인해 기업가치·주주가치·주당가치와 민감도를 구한다",
+        "usage": "fintool dcf [flags]",
+        "example": "  # 영구성장법과 WACC × 성장률 민감도\n  fintool dcf --fcf 100,110,121 --wacc 0.10 --net-debt 250 --shares 50 \\\n    --terminal-method growth --terminal-growth 0.03 \\\n    --wacc-range 0.09,0.11 --terminal-growth-range 0.02,0.04\n\n  # exit multiple 방식\n  fintool dcf --fcf @fcf.json --wacc 0.09 --net-debt 300 \\\n    --terminal-method multiple --terminal-metric 140 --exit-multiple 7.5\n\n  # 평가일 이후 실제 날짜와 ROIC 연동 안정성장\n  fintool dcf --fcf '[100,110]' --valuation-date 2026-07-27 \\\n    --cashflow-dates '[\"2026-12-31\",\"2027-12-31\"]' --wacc 0.10 \\\n    --terminal-method stable-growth --terminal-growth 0.03 \\\n    --terminal-nopat 150 --terminal-roic 0.12\n\n  # WACC와 영구성장률을 함께 흔들어 주당가치 분포를 본다\n  fintool scenario --spec @valuation.json --mode sample --n 500 --seed 7 | \\\n    fintool dcf --fcf 100,110,121 --net-debt 250 --shares 50 --batch -",
+        "flags": [
+          {
+            "name": "batch",
+            "type": "string",
+            "default": "",
+            "description": "케이스 목록을 받아 한 프로세스에서 전부 실행한다. @파일.json, -(표준입력), 인라인 JSON. scenario 커맨드의 출력을 그대로 파이프로 넘길 수 있다"
+          },
+          {
+            "name": "cashflow-dates",
+            "type": "string",
+            "default": "",
+            "description": "각 FCF 발생일. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다. --valuation-date와 함께 지정한다"
+          },
+          {
+            "name": "exit-multiple",
+            "type": "float64",
+            "default": "0",
+            "description": "terminal metric에 곱할 exit multiple. multiple 방식에서 필수"
+          },
+          {
+            "name": "fcf",
+            "type": "string",
+            "default": "",
+            "description": "명시적 예측기간의 비레버드 FCF. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다. 첫 값은 1년차 말 현금흐름"
+          },
+          {
+            "name": "full",
+            "type": "bool",
+            "default": "false",
+            "description": "배치 결과에 연도별 flows와 민감도 격자까지 담는다. 케이스가 많으면 출력이 수만 줄이 되므로 기본은 생략한다"
+          },
+          {
+            "name": "multiple-range",
+            "type": "string",
+            "default": "",
+            "description": "multiple 민감도 배수 목록. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다. --wacc-range와 함께 지정한다"
+          },
+          {
+            "name": "net-debt",
+            "type": "float64",
+            "default": "0",
+            "description": "순부채. enterprise value에서 차감하며 순현금이면 음수로 준다"
+          },
+          {
+            "name": "shares",
+            "type": "float64",
+            "default": "0",
+            "description": "발행주식 수. 지정하면 equity value를 나눈 주당가치를 출력한다"
+          },
+          {
+            "name": "terminal-growth",
+            "type": "float64",
+            "default": "0",
+            "description": "영구성장률(연율 소수). growth 방식에서 필수이며 WACC보다 작아야 한다"
+          },
+          {
+            "name": "terminal-growth-range",
+            "type": "string",
+            "default": "",
+            "description": "growth 민감도 성장률 목록. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다. --wacc-range와 함께 지정한다"
+          },
+          {
+            "name": "terminal-method",
+            "type": "string",
+            "default": "growth",
+            "description": "terminal value 방식 (growth|stable-growth|multiple)"
+          },
+          {
+            "name": "terminal-metric",
+            "type": "float64",
+            "default": "0",
+            "description": "마지막 예측연도의 EBITDA 등 terminal 기준 지표. multiple 방식에서 필수"
+          },
+          {
+            "name": "terminal-nopat",
+            "type": "float64",
+            "default": "0",
+            "description": "안정기 첫해 NOPAT. stable-growth 방식에서 필수"
+          },
+          {
+            "name": "terminal-roic",
+            "type": "float64",
+            "default": "0",
+            "description": "안정기 ROIC(소수 표기). stable-growth 방식에서 필수이며 성장률보다 커야 한다"
+          },
+          {
+            "name": "valuation-date",
+            "type": "string",
+            "default": "",
+            "description": "평가기준일(ISO 8601). --cashflow-dates와 함께 지정한다"
+          },
+          {
+            "name": "wacc",
+            "type": "float64",
+            "default": "0",
+            "description": "가중평균자본비용(연율 소수 표기, 0.10 = 10%)"
+          },
+          {
+            "name": "wacc-range",
+            "type": "string",
+            "default": "",
+            "description": "민감도 WACC 목록. 쉼표로 구분하거나 @파일.json(JSON 배열)으로 준다. 모드별 terminal range와 함께 지정한다"
+          }
+        ],
+        "workflow": {
+          "batch": true,
+          "inputs": {
+            "cashflow-dates": {
+              "type": "date_series",
+              "description": "FCFF별 실제 발생일"
+            },
+            "exit-multiple": {
+              "type": "number"
+            },
+            "fcf": {
+              "type": "cash_flow_series",
+              "description": "명시적 예측기간 FCFF 배열"
+            },
+            "full": {
+              "type": "boolean"
+            },
+            "multiple-range": {
+              "type": "string"
+            },
+            "net-debt": {
+              "type": "money",
+              "description": "순부채 또는 음수 순현금"
+            },
+            "shares": {
+              "type": "share_count",
+              "description": "희석 보통주 환산 주식수"
+            },
+            "terminal-growth": {
+              "type": "annual_rate_decimal",
+              "description": "연율 소수 표기(0.07 = 7%)"
+            },
+            "terminal-growth-range": {
+              "type": "string"
+            },
+            "terminal-method": {
+              "type": "string"
+            },
+            "terminal-metric": {
+              "type": "number"
+            },
+            "terminal-nopat": {
+              "type": "money",
+              "description": "안정기 첫해 NOPAT"
+            },
+            "terminal-roic": {
+              "type": "annual_rate_decimal",
+              "description": "연율 소수 표기(0.07 = 7%)"
+            },
+            "valuation-date": {
+              "type": "date",
+              "description": "평가기준일"
+            },
+            "wacc": {
+              "type": "annual_rate_decimal",
+              "description": "연율 소수 표기(0.07 = 7%)"
+            },
+            "wacc-range": {
+              "type": "string"
+            }
+          },
+          "outputs": {
+            "/data/enterprise_value": {
+              "type": "money"
+            },
+            "/data/equity_value": {
+              "type": "money"
+            },
+            "/data/value_per_share": {
+              "type": "money_per_share",
+              "nullable": true
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"dcf","flags":{"fcf":"1000000000,1200000000,1400000000,1600000000,1800000000","wacc":0.11,"terminal-method":"growth","terminal-growth":0.02,"net-debt":2000000000,"shares":1000000,"wacc-range":"0.09,0.10,0.11,0.12,0.13","terminal-growth-range":"0.01,0.02,0.03"}}
+
+[tool_result]
+{
+  "ok": true,
+  "tool": "dcf",
+  "data": {
+    "terminal_method": "growth",
+    "wacc": 0.11,
+    "terminal_growth": 0.02,
+    "net_debt": 2000000000,
+    "shares": 1000000,
+    "first_cashflow_at": 1,
+    "cashflow_timing": "year_end",
+    "day_count": "annual_index",
+    "forecast_years": 5,
+    "flows": [
+      {
+        "year": 1,
+        "years_from_valuation": 1,
+        "fcf": 1000000000,
+        "discount_factor": 0.9009009009009008,
+        "present_value": 900900900.9009008
+      },
+      {
+        "year": 2,
+        "years_from_valuation": 2,
+        "fcf": 1200000000,
+        "discount_factor": 0.8116224332440547,
+        "present_value": 973946919.8928657
+      },
+      {
+        "year": 3,
+        "years_from_valuation": 3,
+        "fcf": 1400000000,
+        "discount_factor": 0.7311913813009502,
+        "present_value": 1023667933.8213303
+      },
+      {
+        "year": 4,
+        "years_from_valuation": 4,
+        "fcf": 1600000000,
+        "discount_factor": 0.6587309741450001,
+        "present_value": 1053969558.6320002
+      },
+      {
+        "year": 5,
+        "years_from_valuation": 5,
+        "fcf": 1800000000,
+        "discount_factor": 0.5934513280585586,
+        "present_value": 1068212390.5054054
+      }
+    ],
+    "explicit_forecast_pv": 5020697703.752502,
+    "terminal_value": 20400000000,
+    "terminal_present_value": 12106407092.394596,
+    "enterprise_value": 17127104796.147099,
+    "equity_value": 15127104796.147099,
+    "value_per_share": 15127.104796147098,
+    "terminal_value_share": 0.7068566016550588,
+    "sensitivity": {
+      "terminal_method": "growth",
+      "row_axis": "wacc",
+      "column_axis": "terminal_growth",
+      "wacc_range": [
+        0.09,
+        0.1,
+        0.11,
+        0.12,
+        0.13
+      ],
+      "terminal_growth_range": [
+        0.01,
+        0.02,
+        0.03
+      ],
+      "rows": [
+        {
+          "wacc": 0.09,
+          "cells": [
+            {
+              "wacc": 0.09,
+              "terminal_growth": 0.01,
+              "enterprise_value": 20081551643.337143,
+              "equity_value": 18081551643.337143,
+              "value_per_share": 18081.55164333714,
+              "is_base": false
+            },
+            {
+              "wacc": 0.09,
+              "terminal_growth": 0.02,
+              "enterprise_value": 22358632678.903847,
+              "equity_value": 20358632678.903847,
+              "value_per_share": 20358.632678903847,
+              "is_base": false
+            },
+            {
+              "wacc": 0.09,
+              "terminal_growth": 0.03,
+              "enterprise_value": 25394740726.32612,
+              "equity_value": 23394740726.32612,
+              "value_per_share": 23394.74072632612,
+              "is_base": false
+            }
+          ]
+        },
+        {
+          "wacc": 0.1,
+          "cells": [
+            {
+              "wacc": 0.1,
+              "terminal_growth": 0.01,
+              "enterprise_value": 17705757803.42872,
+              "equity_value": 15705757803.428719,
+              "value_per_share": 15705.757803428718,
+              "is_base": false
+            },
+            {
+              "wacc": 0.1,
+              "terminal_growth": 0.02,
+              "enterprise_value": 19413291441.8414,
+              "equity_value": 17413291441.8414,
+              "value_per_share": 17413.2914418414,
+              "is_base": false
+            },
+            {
+              "wacc": 0.1,
+              "terminal_growth": 0.03,
+              "enterprise_value": 21608691834.086266,
+              "equity_value": 19608691834.086266,
+              "value_per_share": 19608.691834086265,
+              "is_base": false
+            }
+          ]
+        },
+        {
+          "wacc": 0.11,
+          "cells": [
+            {
+              "wacc": 0.11,
+              "terminal_growth": 0.01,
+              "enterprise_value": 15809642847.857098,
+              "equity_value": 13809642847.857098,
+              "value_per_share": 13809.642847857098,
+              "is_base": false
+            },
+            {
+              "wacc": 0.11,
+              "terminal_growth": 0.02,
+              "enterprise_value": 17127104796.147099,
+              "equity_value": 15127104796.147099,
+              "value_per_share": 15127.104796147098,
+              "is_base": true
+            },
+            {
+              "wacc": 0.11,
+              "terminal_growth": 0.03,
+              "enterprise_value": 18773932231.509598,
+              "equity_value": 16773932231.509598,
+              "value_per_share": 16773.932231509596,
+              "is_base": false
+            }
+          ]
+        },
+        {
+          "wacc": 0.12,
+          "cells": [
+            {
+              "wacc": 0.12,
+              "terminal_growth": 0.01,
+              "enterprise_value": 14262197805.838472,
+              "equity_value": 12262197805.838472,
+              "value_per_share": 12262.197805838472,
+              "is_base": false
+            },
+            {
+              "wacc": 0.12,
+              "terminal_growth": 0.02,
+              "enterprise_value": 15302136479.591833,
+              "equity_value": 13302136479.591833,
+              "value_per_share": 13302.136479591833,
+              "is_base": false
+            },
+            {
+              "wacc": 0.12,
+              "terminal_growth": 0.03,
+              "enterprise_value": 16573172636.401495,
+              "equity_value": 14573172636.401495,
+              "value_per_share": 14573.172636401496,
+              "is_base": false
+            }
+          ]
+        },
+        {
+          "wacc": 0.13,
+          "cells": [
+            {
+              "wacc": 0.13,
+              "terminal_growth": 0.01,
+              "enterprise_value": 12976092878.927376,
+              "equity_value": 10976092878.927376,
+              "value_per_share": 10976.092878927377,
+              "is_base": false
+            },
+            {
+              "wacc": 0.13,
+              "terminal_growth": 0.02,
+              "enterprise_value": 13812436598.490162,
+              "equity_value": 11812436598.490162,
+              "value_per_share": 11812.436598490161,
+              "is_base": false
+            },
+            {
+              "wacc": 0.13,
+              "terminal_growth": 0.03,
+              "enterprise_value": 14816049061.965508,
+              "equity_value": 12816049061.965508,
+              "value_per_share": 12816.049061965508,
+              "is_base": false
+            }
+          ]
+        }
+      ]
+    },
+    "convention": "FCF[0]은 1년차 말 현금흐름이다. terminal value는 마지막 명시적 현금흐름 시점에 발생한다."
+  }
+}
+
+
 [assistant]
-DCF를 돌리려면 **할인율(WACC)**과 **영구성장률**이 필요한데, 주신 정보에는 FCF 경로·순부채·주식 수만 있습니다. 이 둘은 결과를 몇 배씩 바꾸는 변수라 임의로 가정해서 계산하지 않겠습니다.
+**가정: WACC 11%, 영구성장률 g 2% (제가 정한 값 — 할인율·성장률을 안 주셔서, 한국 비상장 중소기업 통상 범위 10~12%의 중간과 장기 물가+실질성장 수준 1~3%의 중간을 썼습니다.)**
 
-**확인 필요한 값**
+## 결과 (base: WACC 11%, g 2%)
 
-1. 할인율 — 둘 중 하나로 주세요
-   - 직접 지정: "WACC 10%로 해"
-   - 또는 구성요소: 무위험수익률, 베타, 시장위험프리미엄(ERP), 세전 부채비용, 법인세율, 자기자본 시장가치(E), 부채 시장가치(D)
-2. 영구성장률(g) — 터미널 밸류용. WACC보다 작아야 합니다. (예: 2%)
-   - 영구성장 대신 **exit multiple**(예: 최종연도 EBITDA × 8배) 방식을 원하시면 그것도 가능합니다.
+| 항목 | 금액 |
+|---|---|
+| 예측기간(1~5년) FCF 현재가치 | 약 50.2억 원 |
+| Terminal Value (5년차 시점) | 204.0억 원 |
+| Terminal Value 현재가치 | 약 121.1억 원 |
+| **기업가치 (EV)** | **약 171.3억 원** |
+| − 순부채 | 20억 원 |
+| **주주가치** | **약 151.3억 원** |
+| **주당가치 (100만 주)** | **약 15,127원** |
 
-**추가 확인**
-- FCF 10억이 "내년 말" 시점 값 맞나요? (기본 가정은 1년차 말 수령)
-- 주신 FCF가 **이자 차감 전 비레버드 FCFF**인가요? 이자 뺀 후 금액이면 순부채를 다시 빼면 이중차감이 됩니다.
+연도별 현재가치: 1년차 9.01억 → 2년차 9.74억 → 3년차 10.24억 → 4년차 10.54억 → 5년차 10.68억
 
-값 주시면 바로 계산해서 EV → 자기자본가치 → 주당가치까지 뽑겠습니다. 판단이 어려우시면 "WACC 10%, g 2%"처럼 흔히 쓰는 조합으로 지정해 주셔도 되고, 여러 조합(예: WACC 9/10/11% × g 1/2/3%) 민감도 표로 만들어 드릴 수도 있습니다.
+## 민감도 — 주당가치 (원)
 
-[result] duration_ms=18795 turns=3 cost_usd=0.183367
+| WACC \ g | 1% | 2% | 3% |
+|---|---|---|---|
+| 9% | 18,082 | 20,359 | 23,395 |
+| 10% | 15,706 | 17,413 | 19,609 |
+| **11%** | 13,810 | **15,127** | 16,774 |
+| 12% | 12,262 | 13,302 | 14,573 |
+| 13% | 10,976 | 11,812 | 12,816 |
+
+대략 **11,000~23,000원** 범위이고, 가정을 좁히면 15,000원 안팎입니다.
+
+## 읽을 때 주의할 점
+
+- **터미널 밸류 의존도가 70.7%**입니다. 가치의 3분의 2 이상이 6년차 이후 영구가치에서 나오므로, g와 WACC 한 칸 차이가 주당 1,000~2,000원씩 움직입니다. 5년 FCF 숫자보다 이 두 가정이 결과를 지배합니다.
+- 입력하신 FCF는 **비레버드 FCFF**(이자비용 차감 전)여야 합니다. 사업계획서상 이자 차감 후 FCF라면 순부채를 이중으로 반영하는 셈이라 결과가 과소평가됩니다.
+- 순부채 20억은 **시장가치 기준**으로 봤습니다. 장부가와 크게 다르면 조정이 필요합니다.
+- 비상장 중소기업이라면 규모 프리미엄·비유동성 할인이 추가로 붙는 게 보통인데, 이 계산에는 들어있지 않습니다(WACC 계산 범위 밖). 실무에선 여기서 20~30% 더 깎기도 합니다.
+- FCF 첫 값은 1년차 말(내년 말) 발생 기준입니다.
+
+WACC와 영구성장률 값을 주시면 그 기준으로 다시 계산해 드리겠습니다. 자본구조(부채/자기자본 시장가치), 베타, 세율을 주시면 WACC부터 산출해서 연결할 수도 있습니다.
+
+[result] duration_ms=30734 turns=5 cost_usd=0.2853935 input_tokens=88957 output_tokens=1738

@@ -64,4 +64,4 @@
 
 1번만 알려주시면 시나리오 C를 실제 숫자로 다시 돌려드리겠습니다.
 
-[result] duration_ms=66572 turns=1 cost_usd=0.402329
+[result] duration_ms=66572 turns=1 cost_usd=0.402329 input_tokens=28362 output_tokens=4706
