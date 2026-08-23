@@ -241,6 +241,8 @@ accrual 워크북의 `BS`에는 `balance_check` 행이 있다 — `ROUND(총자�
 재무 리포트만으로 충분한지, 조작 가능한 워크북이 필요한지 **먼저 묻는다.** 둘은 다른 산출물이다. 계약 전문은 `docs/decisions/workbook-contract.md`.
 
 ## 호출 함정
+- **금액을 원 단위 정수로 바꿀 때 자릿수를 다시 센다.** "5,000억"은 `500000000000`(0이 11개)이다. 엔진은 단위를 검증하지 못하고 그대로 계산한다.
+
 
 - `fintool_run`의 `spec`은 **문자열**로 직렬화한다.
 - 기본 플래그는 kebab-case. batch `params`는 **snake_case**, 스칼라만.

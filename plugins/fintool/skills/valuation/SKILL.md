@@ -46,6 +46,8 @@ description: fintool MCP로 WACC·DCF·배수 가치평가를 한다. 내재가�
 ```
 
 ## 함정
+- **금액을 원 단위 정수로 바꿀 때 자릿수를 다시 센다.** "5,000억"은 `500000000000`(0이 11개)이다. 엔진은 단위를 검증하지 못하고 그대로 계산한다.
+
 
 - **`business-plan.free_cash_flow`를 `dcf --fcf`에 넣지 않는다.** BP는 이자 차감 후 레버드 FCF다. dcf는 비레버드 FCFF다.
 - `equity-value`·`debt-value`는 장부가가 아니라 **시장가치**.
