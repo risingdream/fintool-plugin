@@ -1,6 +1,6 @@
 {
   "name": "fintool",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "원격 fintool MCP와 startup-finance·valuation·portfolio-risk·fixed-income 스킬.",
   "author": {
     "name": "risingdream"
