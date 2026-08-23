@@ -1,32 +1,122 @@
 # prompt
 3억, 연 4.5%, 30년 원리금균등. 2년차에 낸 이자 총액은?
 
-# run: plugin ON (fintool@fintool-plugin 0.5.1) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · claude-fable-5 · 2026-08-23
-
-[assistant]
-fintool 카탈로그를 확인한 뒤 원리금균등 상환표로 2년차(13~24회차) 이자 합계를 계산하겠습니다.
+# run: plugin ON (fintool@fintool-plugin 0.5.2) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · 전역 CLAUDE.md 제거 · claude-opus-5[1m] · 2026-08-23
 
 [tool_use mcp__plugin_fintool_fintool__fintool_catalog]
-{}
+{"tool":"amort"}
 
 [tool_result]
-<persisted-output>
-Output too large (231.5KB). Full output saved to: ~/.claude/projects/-private-var-folders-v5-wvzncv9s5mq9jmdp0-8sm8n80000gn-T-tmp-strpV0I8TD/603a9668-bf79-439c-9b20-f6e6213309b5/tool-results/toolu_01FRFP4cpvQ2adDqK9nnocPN.json
+{
+  "ok": true,
+  "tool": "tools",
+  "data": {
+    "global_flags": [
+      {
+        "name": "format",
+        "type": "string",
+        "default": "json",
+        "description": "출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다"
+      }
+    ],
+    "tools": [
+      {
+        "name": "amort",
+        "kind": "calculator",
+        "summary": "상환 스케줄 전체와 구간 누적을 한 번에 낸다 (엑셀 IPMT·PPMT·CUMIPMT·CUMPRINC·ISPMT)",
+        "usage": "fintool amort [flags]",
+        "example": "  # 3억을 연 4.5% 30년 원리금균등으로 빌렸을 때의 전체 스케줄\n  fintool amort --pv 300000000 --rate 0.00375 --nper 360\n\n  # 2년차(13~24회차)에 낸 이자와 갚은 원금\n  fintool amort --pv 125000000 --rate 0.0075 --nper 360 --from 13 --to 24\n\n  # 같은 대출을 원금균등으로 갚을 때 (엑셀 ISPMT)\n  fintool amort --method equal-principal --pv 300000000 --rate 0.00375 --nper 360\n\n  # 사람이 읽는 표로 확인\n  fintool amort --pv 50000000 --rate 0.005 --nper 60 --format table",
+        "flags": [
+          {
+            "name": "from",
+            "type": "int",
+            "default": "0",
+            "description": "누적 구간 시작 회차(1부터). 지정하면 CUMIPMT/CUMPRINC가 함께 나온다"
+          },
+          {
+            "name": "fv",
+            "type": "float64",
+            "default": "0",
+            "description": "만기 잔액. 기본 0(원금을 모두 상환)"
+          },
+          {
+            "name": "method",
+            "type": "string",
+            "default": "equal-payment",
+            "description": "상환 방식 (equal-payment|equal-principal). equal-principal이 엑셀 ISPMT에 대응한다"
+          },
+          {
+            "name": "nper",
+            "type": "int",
+            "default": "0",
+            "description": "총 상환 횟수. 1 이상이어야 한다"
+          },
+          {
+            "name": "pv",
+            "type": "float64",
+            "default": "0",
+            "description": "현재가치. 대출 원금이면 양수"
+          },
+          {
+            "name": "rate",
+            "type": "float64",
+            "default": "0",
+            "description": "기간 이자율(소수 표기). 연 4.5% 월납이면 0.045/12 = 0.00375"
+          },
+          {
+            "name": "to",
+            "type": "int",
+            "default": "0",
+            "description": "누적 구간 끝 회차(포함). --from만 주면 마지막 회차까지로 본다"
+          },
+          {
+            "name": "type",
+            "type": "int",
+            "default": "0",
+            "description": "납입 시점. 0=기말 납입(기본), 1=기초 납입"
+          }
+        ],
+        "workflow": {
+          "batch": false,
+          "inputs": {
+            "from": {
+              "type": "number"
+            },
+            "fv": {
+              "type": "number"
+            },
+            "method": {
+              "type": "string"
+            },
+            "nper": {
+              "type": "number"
+            },
+            "pv": {
+              "type": "number"
+            },
+            "rate": {
+              "type": "number"
+            },
+            "to": {
+              "type": "number"
+            },
+            "type": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
 
-Preview (first 2KB):
-[
-  {
-    "type": "text",
-    "text": "{\n  \"ok\": true,\n  \"tool\": \"tools\",\n  \"data\": {\n    \"global_flags\": [\n      {\n        \"name\": \"format\",\n        \"type\": \"string\",\n        \"default\": \"json\",\n        \"description\": \"출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다\"\n      }\n    ],\n    \"tools\": [\n      {\n        \"name\": \"amort\",\n        \"kind\": \"calculator\",\n        \"summary\": \"상환 스케줄 전체와 구간 누적을 한 번에 낸다 (엑셀 IPMT·PPMT·CUMIPMT·CUMPRINC·ISPMT)\",\n        \"usage\": \"fintool amort [flags]\",\n        \"example\": \"  # 3억을 연 4.5% 30년 원리금균등으로 빌렸을 때의 전체 스케줄\\n  fintool amort --pv 300000000 --rate 0.00375 --nper 360\\n\\n  # 2년차(13~24회차)에 낸 이자와 갚은 원금\\n  fintool amort --pv 125000000 --rate 0.0075 --nper 360 --from 13 --to 24\\n\\n  # 같은 대출을 원금균등으로 갚을 때 (엑셀 ISPMT)\\n  fintool amort --method equal-principal --pv 300000000 --rate 0.00375 --nper 360\\n\\n  # 사람이 읽는 표로 확인\\n  fintool amort --pv 50000000 --rate 0.005 --nper 60 --format table\",\n        \"flags\": [\n          {\n            \"name\": \"from\",\n            \"type\": \"int\",\n            \"default\": \"0\",\n            \"description\": \"누적 구간 시작 회차(1부터). 지정하면 CUMIPMT/CUMPRINC가 함께 나온다\"\n          },\n          {\n            \"name\": \"fv\",\n            \"type\": \"float64\",\n            \"default\": \"0\",\n            \"description\": \"만기 잔액. 기본 0(원금을 모두 상환)\"\n          },\n          {\n            \"name\": \"method\",\n            \"type\": \"string\",\n            \"default\": \"equal-payment\",\n            \"description\": \"상환 방식 (equal-payment|equal-principal). equal-principal이 엑셀 ISPMT에 대응한다\"\n          },\n          {\n            \"name\": \"nper\",\n            \"type\": \"int\",\n            \"default\": \"0\",\n            \"description\": \"총 상환 횟수. 1 이상이어야 한다\"\n          },\n          {\n            \"name\": \"pv\",\n            \"type\": \"float64\",\n            \"default\": \"0\",\n            \"description\": \"현재가치. 대출 원금이
-...
-</persisted-output>
 
 [tool_use mcp__plugin_fintool_fintool__fintool_run]
 {"tool":"amort","flags":{"pv":300000000,"rate":0.00375,"nper":360,"from":13,"to":24}}
 
 [tool_result]
 <persisted-output>
-Output too large (77KB). Full output saved to: ~/.claude/projects/-private-var-folders-v5-wvzncv9s5mq9jmdp0-8sm8n80000gn-T-tmp-strpV0I8TD/603a9668-bf79-439c-9b20-f6e6213309b5/tool-results/toolu_0162hPwQe26bhCfgADNndVqP.json
+Output too large (77KB). Full output saved to: ~/.claude/projects/-private-var-folders-v5-wvzncv9s5mq9jmdp0-8sm8n80000gn-T-tmp-strpV0I8TD/8bed4696-a5b8-41c8-86c1-1c7a3dfd4a4e/tool-results/toolu_01T1fidfvQKxCpApq8JMnjd6.json
 
 Preview (first 2KB):
 [
@@ -37,17 +127,28 @@ Preview (first 2KB):
 </persisted-output>
 
 [assistant]
-**2년차(13~24회차) 이자 총액: 약 13,178,657원**
+## 2년차(13~24회차) 이자 총액: **약 13,178,657원**
 
-fintool `amort` 계산 결과 (월이율 0.375%, 360회, 원리금균등):
+**조건**
+
+| 항목 | 값 |
+|---|---|
+| 대출원금 (pv) | 300,000,000원 |
+| 이자율 | 연 4.5% → 월 0.375% (0.045/12) |
+| 기간 (nper) | 360회 (30년) |
+| 방식 | 원리금균등, 기말 납입 |
+
+**결과**
 
 | 항목 | 금액 |
 |---|---|
-| 월 상환액 | 1,520,056원 |
-| 2년차 이자 합계 (CUMIPMT 13~24) | **13,178,657원** |
-| 2년차 원금 상환 합계 (CUMPRINC 13~24) | 5,062,014원 |
-| 2년차 총 납입액 | 18,240,671원 |
+| 월 납입금 | 1,520,055.93원 |
+| **2년차 이자 합계 (13~24회)** | **13,178,657.02원** |
+| 2년차 원금 상환액 | 5,062,014.13원 |
+| 2년차 총 납입액 | 18,240,671.15원 |
 
-참고로 1년차 이자는 약 1,341만원이라 2년차에 약 23만원 줄어드는 정도이고, 30년 전체 이자 총액은 약 2억 4,722만원입니다. (월 복리 환산 기준, 은행별 일할 계산 방식에 따라 수천 원 단위 차이는 있을 수 있습니다.)
+참고로 전체 만기까지의 총이자는 247,220,134.61원, 총 납입액은 547,220,134.61원입니다.
 
-[result] duration_ms=15365 turns=3 cost_usd=0.503269
+2년차 납입액 1,824만원 중 이자가 72.2%를 차지합니다. 초기 구간이라 원금 감소 속도가 느린 전형적인 원리금균등 구조입니다.
+
+[result] duration_ms=12540 turns=3 cost_usd=0.19543199999999997
