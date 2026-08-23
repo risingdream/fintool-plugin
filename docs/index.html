@@ -866,13 +866,14 @@ print(f&quot;초기5년 실질(연율)  고갈 {g5[failed].mean():.2%} / 생존 
 
     <div class="ties">
       <h3 class="group-title">숫자가 같았던 L3 문제들</h3>
-      <p class="group-sub">CFA Level III 범위에서 더 시도한 것들이다. 결과를 숨기지 않는다 — 아래 둘은 양쪽이 같은 답에 도달했다.</p>
+      <p class="group-sub">CFA Level III 범위에서 더 시도한 것들이다. 결과를 숨기지 않는다 — 아래 셋은 양쪽이 같은 답에 도달했다.</p>
       <div class="turns-wrap">
       <table class="turns">
         <thead><tr><th>문제</th><th>플러그인 없음</th><th>fintool</th><th>결과</th></tr></thead>
         <tbody>
         <tr><td class="tp"><b>Implementation shortfall</b><br><span class="dim">50만 주 매수, 부분 체결·미체결 취소. 지연·거래·기회·명시비용 분해</span></td><td class="tm">40s · 3,334 tok · $0.37</td><td class="tm on">48s · 3,058 tok · $0.34<br><span class="pill pill-mcp">fintool_catalog ×2</span><span class="pill pill-mcp">fintool_run · trade-cost</span></td><td class="tp"><b>완전 일치.</b> 251,000,000원 / 106.36bp, 4개 항목 모두 동일. 왼쪽은 지연·기회 귀속 관례가 둘로 갈린다는 점까지 스스로 짚었다.<br><span class="dim"><a href="assets/transcripts/case-f-off.txt">off</a> · <a href="assets/transcripts/case-f-on.txt">on</a></span></td></tr>
         <tr><td class="tp"><b>Brinson-Fachler + Carino 연결</b><br><span class="dim">5섹터 2분기 배분·선택·상호작용, 로그 연결</span></td><td class="tm">91s · 9,248 tok · $0.25</td><td class="tm on">95s · 7,275 tok · $0.49<br><span class="pill pill-mcp">fintool_catalog ×2</span><span class="pill pill-mcp">fintool_run · attribution ×3</span></td><td class="tp"><b>결론 일치</b>(누적 액티브 −24.22bp). 다만 왼쪽이 손으로 구한 Carino 계수는 소수 넷째 자리에서 갈렸다(1.011645 vs 1.011678).<br><span class="dim"><a href="assets/transcripts/case-g-off.txt">off</a> · <a href="assets/transcripts/case-g-on.txt">on</a></span></td></tr>
+        <tr><td class="tp"><b>국채선물 듀레이션 오버레이</b><br><span class="dim">5,000억·D 4.2 → 7.5, 3년 국채선물로 계약수·50bp 손익</span></td><td class="tm">79s · 5,229 tok · $0.15</td><td class="tm on">94s · 6,005 tok · $0.44<br><span class="pill pill-mcp">fintool_catalog ×2</span><span class="pill pill-mcp">fintool_run · derivative</span></td><td class="tp"><b>완전 일치.</b> 1,705계약 매수, 50bp 하락 시 +187.5억. 양쪽 다 <b>주어진 선물 듀레이션 8.6이 3년물 값이 아니라는 점</b>(실제 2.7~2.9)을 스스로 지적했다.<br><span class="dim"><a href="assets/transcripts/case-h-off.txt">off</a> · <a href="assets/transcripts/case-h-on.txt">on</a></span></td></tr>
         </tbody>
       </table>
       </div>
