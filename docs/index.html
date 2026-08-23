@@ -43,6 +43,7 @@
   h2{font-size:24px;font-weight:700;letter-spacing:-.01em;margin-bottom:10px;}
   .sec-intro{color:var(--muted);max-width:720px;margin-bottom:28px;}
   /* case */
+  .ties{margin-top:34px;}
   .group-title{font-size:17px;font-weight:700;margin:34px 0 4px;}
   .group-sub{font-size:13.5px;color:var(--muted);max-width:720px;margin-bottom:18px;}
   .case{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:22px 22px 18px;margin-bottom:28px;}
@@ -350,6 +351,203 @@
         </div>
       </div>
     </article>
+
+    <article class="case" id="case-e">
+      <header class="case-head">
+        <span class="case-idx">E</span>
+        <h3>은퇴자산 고갈 확률</h3>
+        <span class="essence">본질 · 시뮬레이션</span>
+      </header>
+      <div class="prompt"><span class="who">프롬프트</span>은퇴 자산 25억 원. 매년 초 1.2억 원을 인출하고 인출액은 매년 2.5%씩 늘린다. 포트폴리오 기대수익률 연 5.5%, 변동성 12%, 물가상승률 2%, 기간 30년. 실질 기준으로 자산 고갈 확률과 고갈 시점 분포를 구하고, 고갈된 경로와 살아남은 경로의 초기 5년 수익률이 어떻게 달랐는지(수익률 순서 위험) 알려줘.</div>
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-target="before" role="tab">플러그인 없음</button>
+        <button class="tab" data-target="after" role="tab">fintool</button>
+      </div>
+      <div class="cols">
+        <div class="col before" data-pane="before">
+          <div class="col-head">플러그인 없음</div><div class="meta-strip"><span><b>243s</b> 소요</span><span><b>1</b> turns</span><span>입력 <b>12,716</b> tok</span><span>출력 <b>21,001</b> tok</span><span><b>$0.65</b></span></div>
+          <div class="chat"><h4>먼저 한 가지 밝혀둘 점</h4>
+<p>이 세션에는 코드 실행 도구가 없습니다(캘린더 도구만 연결되어 있음). 그래서 실제 Monte Carlo를 돌리는 대신 <b>닫힌 형태(closed-form) 해석</b>으로 계산했습니다. 다행히 이 문제는 정확한 항등식이 존재해서 근사가 마지막 한 단계에만 들어갑니다. 방법과 오차 범위는 아래에 명시했고, 맨 끝에 직접 돌려서 검증할 수 있는 스크립트를 붙였습니다.</p>
+<hr>
+<h4>1. 실질 기준 파라미터 변환</h4>
+<table><thead><tr><th>항목</th><th>명목</th><th>실질</th></tr></thead><tbody>
+<tr><td>기대수익률(산술)</td><td>5.5%</td><td>(1.055/1.02)−1 = <b>3.431%</b></td></tr>
+<tr><td>변동성</td><td>12%</td><td><b>12%</b> (물가 결정론적 가정)</td></tr>
+<tr><td>인출 증가율</td><td>2.5%</td><td>(1.025/1.02)−1 = <b>0.490%</b></td></tr>
+<tr><td>로그 기준</td><td>—</td><td>μ = 0.02705, σ = 0.11563</td></tr>
+<tr><td>기하평균(중앙값) 수익률</td><td>—</td><td><b>약 2.71%</b> (변동성 드래그 −0.72%p)</td></tr>
+</tbody></table>
+<p>초기 인출률 = 1.2 / 25 = <b>4.8%</b>. 이게 이 문제의 핵심입니다.</p>
+<h4>2. 핵심 항등식 (근사 없음)</h4>
+<p>연초 인출 구조 $A_{t+1} = (A_t - C_t)(1+R_t)$ 를 누적수익 $G_t = \prod_{s&lt;t}(1+R_s)$ 로 디플레이트하면 정확히</p>
+<p>$$A_n / G_n = A_0 - \sum_{t=0}^{n-1} \frac{C_t}{G_t}$$</p>
+<p>즉 <b>n년 시점 고갈 ⟺ $S_n \equiv \sum_{t&lt;n} C_t/G_t \geq 25$</b>. $S_n$은 단조증가라 최초통과시점이 곧 고갈 시점입니다. 30년 전체:</p>
+<ul>
+<li>$E[S_{30}] = 29.02$억, $\mathrm{SD}(S_{30}) = 10.18$억 (적률은 정확히 계산 가능)</li>
+<li>$E[S] = 29.0 &gt; 25$ — 인출 스트림의 실효 현가가 이미 원금을 넘습니다</li>
+</ul>
+<h4>3. 고갈 확률</h4>
+<p>$S_{30}$을 적률정합 로그정규(Fenton–Wilkinson)로 근사:</p>
+<p>&gt; ### <b>30년 내 실질 고갈 확률 ≈ 60%</b> (추정 오차 ±3~4%p)</p>
+<p>직관적 대조군:</p>
+<ul>
+<li><b>산술평균 3.431% 결정론적 경로</b>: 30년을 겨우 버티고 <b>1.5억(실질) 남김</b> — 칼날 위</li>
+<li><b>기하평균 2.71% 결정론적 경로</b>: <b>26~27년차에 고갈</b></li>
+</ul>
+<p>즉 이 플랜은 "평균수익률로는 간신히 성공"하지만, 변동성 드래그만 얹어도 실패합니다. 변동성이 실패를 만든 것이지 기대수익률이 부족한 게 아닙니다.</p>
+<h4>4. 고갈 시점 분포</h4>
+<p>$P(S_n \ge 25)$ 를 n별로 계산한 누적분포:</p>
+<table><thead><tr><th>연차 n</th><th>10</th><th>15</th><th>18</th><th>20</th><th>22</th><th>25</th><th>27</th><th>30</th></tr></thead><tbody>
+<tr><td>누적 고갈확률</td><td>~0%</td><td>2.7%</td><td>12.1%</td><td>21.2%</td><td>30.9%</td><td>44.2%</td><td>51.6%</td><td><b>60.6%</b></td></tr>
+</tbody></table>
+<p>구간별 분포:</p>
+<table><thead><tr><th>구간</th><th>전체 대비</th><th>고갈 경로 중</th></tr></thead><tbody>
+<tr><td>1–10년</td><td>~0.0%</td><td>—</td></tr>
+<tr><td>11–15년</td><td>2.7%</td><td>4.5%</td></tr>
+<tr><td>16–20년</td><td>18.5%</td><td>30.5%</td></tr>
+<tr><td>21–25년</td><td>22.0%</td><td>36.3%</td></tr>
+<tr><td>26–30년</td><td>16.4%</td><td>27.1%</td></tr>
+<tr><td><b>30년 생존</b></td><td><b>39.4%</b></td><td>—</td></tr>
+</tbody></table>
+<ul>
+<li><b>10년 이전 고갈은 사실상 0</b> (아무리 나빠도 4.8% 인출로 10년 안에 털리진 않음)</li>
+<li>고갈 조건부 <b>중앙값 = 22년차</b>, 사분위 범위 <b>19~26년차</b></li>
+<li>위험이 15년차부터 급상승해 18~25년 구간에 연 4~5%씩 균일하게 깔림 → <b>60대 후반~70대 중반에 위기가 집중</b></li>
+</ul>
+<h4>5. 수익률 순서 위험 (핵심)</h4>
+<p>$(\ln S,\ Y)$ 이변량 정규 근사로 조건부 기댓값을 구했습니다. $Y$ = 초기 5년 누적 로그수익률.</p>
+<p><b>초기 5년 실질 수익률 (연율):</b></p>
+<table><thead><tr><th></th><th>연율 실질</th><th>5년 누적 실질</th><th>참고: 명목</th></tr></thead><tbody>
+<tr><td><b>고갈 경로</b></td><td><b>+0.51%</b></td><td>+2.6%</td><td>약 +2.5%</td></tr>
+<tr><td><b>생존 경로</b></td><td><b>+6.27%</b></td><td>+35.5%</td><td>약 +8.4%</td></tr>
+<tr><td>격차</td><td><b>5.75%p/년</b></td><td><b>32.9%p</b></td><td>—</td></tr>
+</tbody></table>
+<p>30년 중 5년, 즉 <b>기간의 17%에 불과한 초기 5년이 최종 결과 분산의 약 45%를 설명</b>합니다 ($\rho(\ln S, Y) = -0.67$). 이게 수익률 순서 위험의 정량적 크기입니다.</p>
+<p><b>초기 5년 실적별 조건부 고갈 확률:</b></p>
+<table><thead><tr><th>초기 5년 연율 실질수익률</th><th>30년 고갈 확률</th></tr></thead><tbody>
+<tr><td>−3%</td><td><b>91%</b></td></tr>
+<tr><td>0%</td><td><b>80%</b></td></tr>
+<tr><td>+5%</td><td>49%</td></tr>
+<tr><td>+8%</td><td>31%</td></tr>
+<tr><td>+12%</td><td><b>13%</b></td></tr>
+</tbody></table>
+<p>첫 5년만 보고도 최종 운명이 거의 결정됩니다. 남은 25년이 아무리 평균으로 회귀해도, 초반에 깎인 원금에서 이미 나간 인출은 복구되지 않기 때문입니다.</p>
+<h4>6. 실무적 함의</h4>
+<p>인출액은 전 구간에 선형으로 작용하므로 초기 인출률만 바꿔 다시 풀면:</p>
+<table><thead><tr><th>초기 인출액</th><th>초기 인출률</th><th>30년 고갈 확률</th></tr></thead><tbody>
+<tr><td>1.2억</td><td>4.8%</td><td>60%</td></tr>
+<tr><td>1.1억</td><td>4.4%</td><td>50%</td></tr>
+<tr><td>1.0억</td><td>4.0%</td><td>39%</td></tr>
+<tr><td>0.875억</td><td>3.5%</td><td>25%</td></tr>
+<tr><td><b>0.82억</b></td><td><b>3.3%</b></td><td><b>20%</b></td></tr>
+<tr><td>0.75억</td><td>3.0%</td><td>13%</td></tr>
+<tr><td>0.71억</td><td>2.8%</td><td>10%</td></tr>
+</tbody></table>
+<p>고갈 확률 10~20%대를 목표로 한다면 <b>초기 인출률 2.8~3.3%(연 0.71~0.82억)</b> 구간입니다. 1.2억을 유지하려면 인출 고정이 아니라 <b>초기 5~10년에 한해 조건부 감액 룰</b>(예: 전년 실질 손실 시 인출 동결, 자산이 기준선 −15% 이탈 시 10% 삭감)이 필요합니다 — 위 표가 보여주듯 이 플랜의 위험은 거의 전부 초반부에 몰려 있어서, 초반에만 유연성을 주어도 효과가 큽니다.</p>
+<h4>7. 가정과 한계</h4>
+<ul>
+<li>수익률 iid 로그정규, 물가 2% 결정론적, 연초 인출, 세금·수수료·사망률·연금소득 없음</li>
+<li>항등식(§2)과 $S_n$의 1·2차 적률은 <b>정확</b>. 근사는 (a) $S_n$의 로그정규 근사, (b) $\ln S$–$Y$ 이변량 정규 근사 두 곳뿐이며, 임계값 25가 $S$의 중앙값 근처라 근사가 잘 듣는 영역입니다. 다만 <b>시점 분포의 양 끝(12년 이전, 29~30년차)은 오차가 상대적으로 큽니다.</b></li>
+<li>iid 가정은 평균회귀를 무시하므로 실제 시장 대비 고갈 확률을 다소 <b>과대</b> 추정하는 경향이 있습니다.</li>
+</ul>
+<h4>검증용 스크립트</h4>
+<pre>import numpy as np
+rng = np.random.default_rng(0)
+N, T = 200_000, 30
+mu_r, sig = 1.055/1.02 - 1, 0.12          # 실질 산술평균, 변동성
+s = np.sqrt(np.log(1 + sig**2/(1+mu_r)**2))
+m = np.log(1+mu_r) - s**2/2
+R = np.exp(rng.normal(m, s, (N, T)))       # 실질 총수익 팩터
+C = 1.2 * (1.025/1.02)**np.arange(T)       # 실질 인출액
+
+A = np.full(N, 25.0); ruin_yr = np.full(N, -1)
+for t in range(T):
+    dead = (ruin_yr &gt;= 0) | (A &lt; C[t])
+    ruin_yr[dead &amp; (ruin_yr &lt; 0)] = t
+    A = np.where(ruin_yr &gt;= 0, 0.0, (A - C[t]) * R[:, t])
+
+failed = ruin_yr &gt;= 0
+g5 = R[:, :5].prod(1)**(1/5) - 1
+print(f&quot;고갈확률 {failed.mean():.1%}  중앙 고갈연차 {np.median(ruin_yr[failed]):.0f}&quot;)
+print(f&quot;초기5년 실질(연율)  고갈 {g5[failed].mean():.2%} / 생존 {g5[~failed].mean():.2%}&quot;)</pre>
+<p>돌려보시고 결과가 위 수치와 벌어지면 알려주세요 — 어느 근사에서 갈라졌는지 짚어드리겠습니다.</p></div>
+          <a class="src" href="assets/transcripts/case-e-off.txt">원문 case-e-off.txt</a>
+        </div>
+        <div class="col after" data-pane="after">
+          <div class="col-head">fintool</div><div class="meta-strip"><span><b>325s</b> 소요</span><span><b>19</b> turns</span><span>입력 <b>952,579</b> tok</span><span>출력 <b>21,100</b> tok</span><span><b>$1.75</b></span></div>
+          <div class="chain"><span class="pill pill-mcp">fintool_catalog ×2</span><span class="pill pill-mcp">fintool_run · montecarlo ×16</span></div>
+          <p class="env-note">여기서만 답이 갈리는 게 아니라 <b>할 수 있는 일 자체가 다르다.</b> 왼쪽은 도구가 없어 경로를 못 돌리고, 대신 닫힌 형태 근사(Fenton–Wilkinson)로 <b>60.6%(±3~4%p 자인)</b>를 냈다 — 4분, 21,000토큰짜리 수학이다.
+      오른쪽은 <span class="mono">montecarlo</span>로 20,000경로를 실제로 돌려 <b>60.8%</b>와 고갈 시점 분위수를 냈고, 덤으로 "인출을 연초에 하느냐 연말에 하느냐"가 고갈확률 <b>5.5%p</b>를 좌우한다는 것을 두 번 돌려 분리했다.
+      대신 비용은 오른쪽이 2.7배다($1.75 vs $0.65). 근사로 충분한 자리인지, 분포가 필요한 자리인지의 문제다.</p>
+          <div class="chat"><h4>전제</h4>
+<table><thead><tr><th>항목</th><th>값</th></tr></thead><tbody>
+<tr><td>초기자산</td><td>25억 (매년 <b>초</b> 인출 → t=0에 1.2억 차감, 23.8억부터 운용)</td></tr>
+<tr><td>인출</td><td>1.2억, 연 2.5% 증액, 30회</td></tr>
+<tr><td>수익률</td><td>산술 기대 5.5%, 변동성 12%, GBM 로그정규</td></tr>
+<tr><td>물가</td><td>연 2% 확정, 모든 결과는 <b>오늘 가치(실질)</b></td></tr>
+<tr><td>시뮬레이션</td><td>20,000 경로, 연 1스텝, seed 42</td></tr>
+</tbody></table>
+<p>실질 기준으로 보면 <b>초기 인출률 4.8%, 인출액 실질 +0.49%/yr 증가, 기대 실질수익률 3.43%</b> 입니다. 인출이 기대수익을 구조적으로 초과하는 설계라 결과가 나쁠 수밖에 없습니다.</p>
+<hr>
+<h4>1. 고갈 확률 — 60.8%</h4>
+<table><thead><tr><th>지표</th><th>값</th></tr></thead><tbody>
+<tr><td><b>고갈 확률 (30년)</b></td><td><b>60.8%</b> (12,167 / 20,000)</td></tr>
+<tr><td>생존 확률</td><td>39.2%</td></tr>
+<tr><td>30년 후 실질 잔액 p50</td><td><b>0원</b></td></tr>
+<tr><td>p75 / p90 / p95</td><td>9.5억 / 31.0억 / 49.3억</td></tr>
+<tr><td>평균</td><td>9.4억 (평균은 상위 꼬리가 끌어올린 값, 대표성 없음)</td></tr>
+</tbody></table>
+<p>중앙값 경로조차 25년차에 6.2억까지 줄고 26년차에 0이 됩니다. p10 경로는 17년차에 이미 소진됩니다.</p>
+<p>참고로 <b>인출을 기말로 가정하면 55.3%</b> 로 5.5%p 낮아집니다. "매년 초 인출"이라는 조건 하나가 고갈확률 5%p 이상을 좌우합니다.</p>
+<h4>2. 고갈 시점 분포</h4>
+<p>누적 고갈 확률 (각 시계 별도 시뮬레이션):</p>
+<table><thead><tr><th>경과</th><th>10년</th><th>15년</th><th>20년</th><th>25년</th><th>30년</th></tr></thead><tbody>
+<tr><td>누적 고갈률</td><td>0.0%</td><td>3.7%</td><td>22.0%</td><td>44.0%</td><td>60.8%</td></tr>
+<tr><td>구간 신규</td><td>–</td><td>3.7%p</td><td>18.3%p</td><td>22.0%p</td><td>16.8%p</td></tr>
+</tbody></table>
+<p>고갈된 경로만 놓고 본 시점 분포 — <b>최단 11년차, p10 16년차, 중앙값 22년차, p90 28년차</b>.</p>
+<p>위험은 20~25년차에 가장 집중됩니다. 10년 안에 망하는 경로는 사실상 없지만, 그때는 이미 결과가 결정되어 있습니다. 아래가 그 이야기입니다.</p>
+<h4>3. 수익률 순서 위험 — 초기 5년이 전부</h4>
+<p>고갈 경로 vs 생존 경로의 연환산 수익률 (실질 기준):</p>
+<table><thead><tr><th>구간</th><th>고갈 경로</th><th>생존 경로</th><th>격차</th></tr></thead><tbody>
+<tr><td>초기 1년</td><td>+0.48%</td><td>+7.74%</td><td>7.3%p</td></tr>
+<tr><td>초기 3년</td><td>+0.21%</td><td>+6.87%</td><td>6.7%p</td></tr>
+<tr><td><b>초기 5년</b></td><td><b>+0.32%</b></td><td><b>+6.63%</b></td><td><b>6.3%p</b></td></tr>
+<tr><td>6~29년 (역산)</td><td>+0.77%</td><td>+4.19%</td><td>3.4%p</td></tr>
+<tr><td>전체 29년</td><td>+0.69%</td><td>+4.60%</td><td>3.9%p</td></tr>
+</tbody></table>
+<p>핵심은 <b>초기 5년 격차(6.3%p)가 이후 24년 격차(3.4%p)의 약 1.9배</b>라는 점입니다. 더 결정적인 건 각 그룹 내부의 시간 패턴입니다.</p>
+<ul>
+<li>고갈 경로는 초기 5년(+0.32%)이 이후 24년(+0.77%)보다 <b>더 나빴습니다</b> — 손실이 앞쪽에 몰렸습니다.</li>
+<li>생존 경로는 초기 5년(+6.63%)이 이후 24년(+4.19%)보다 <b>더 좋았습니다</b> — 이익이 앞쪽에 몰렸습니다.</li>
+</ul>
+<p>같은 30년 평균 수익률이라도 순서가 반대면 결과가 갈린다는 뜻입니다.</p>
+<p><b>조건부 검증</b> — GBM은 수익률이 독립이라 5년차 잔액이 충분통계량입니다. 5년차 잔액별로 이후 24년을 다시 20,000회 돌린 결과:</p>
+<table><thead><tr><th>5년차 실질 잔액</th><th>초기 5년 실질수익률(등가)</th><th>이후 24년 고갈확률</th></tr></thead><tbody>
+<tr><td>13.6억 (하위 10%)</td><td>약 <b>−4.2%/yr</b></td><td><b>95.4%</b></td></tr>
+<tr><td>20.6억 (중앙)</td><td>약 +2.6%/yr</td><td>64.1%</td></tr>
+<tr><td>30.9억 (상위 10%)</td><td>약 +10.0%/yr</td><td>19.6%</td></tr>
+</tbody></table>
+<p>초기 5년 성적만으로 최종 운명이 19.6%~95.4%로 갈립니다. 뒤에서 아무리 잘해도 앞에서 자산을 깎아먹으면 회복 불가능한데, 인출이 계속 원금을 갉아 복리 기반 자체가 사라지기 때문입니다. (등가 수익률은 결정론적 인출 점화식에서 제가 역산한 근사치입니다.)</p>
+<h4>4. 민감도</h4>
+<table><thead><tr><th>시나리오</th><th>30년 고갈확률</th><th>비고</th></tr></thead><tbody>
+<tr><td>기준안 (1.2억, 4.8%)</td><td>60.8%</td><td>최단 고갈 11년차</td></tr>
+<tr><td>팻테일 student-t(df=4)</td><td>61.0%</td><td><b>최단 고갈 6년차</b> — 수준은 같고 조기 파국 위험이 커짐</td></tr>
+<tr><td>인출 9,000만 (3.6%)</td><td>28.6%</td><td>중앙 고갈시점 25년차</td></tr>
+<tr><td>인출 7,500만 (3.0%)</td><td>14.4%</td><td>30년 후 실질 잔액 p50 16.6억</td></tr>
+</tbody></table>
+<h4>유의사항</h4>
+<ul>
+<li>세금·수수료·연금소득 등 유입은 반영하지 않았습니다. 국민연금 등 고정 유입이 있으면 실질 인출액이 줄어 결과가 크게 개선됩니다.</li>
+<li>툴이 <code>mean-return</code>을 로그 드리프트로 처리하므로 산술 기대수익률이 정확히 5.5%가 되도록 ln(1.055)=0.053541을 입력했습니다. 0.055를 그대로 넣으면 실효 산술수익률이 5.65%가 되어 고갈확률이 약 2%p 낮게 나옵니다.</li>
+<li>GBM은 자기상관·평균회귀·변동성 군집을 반영하지 않습니다. 실제 시장의 평균회귀가 있다면 고갈확률은 다소 낮아지고, 변동성 군집이 있다면 초기 5년 위험은 더 커집니다.</li>
+</ul></div>
+          <a class="src" href="assets/transcripts/case-e-on.txt">원문 case-e-on.txt</a>
+        </div>
+      </div>
+    </article>
+<h3 class="group-title">한 방 계산도 물론</h3>
+<p class="group-sub">아래 셋은 입력을 한 번 주고 답을 받는 질문이다. 이 난이도에서는 플러그인 없이도 정답 근처에 간다 — 그 사실을 그대로 실었다. 차이는 답이 아니라 근거·속도·출력량에 있다.</p>
 
     <article class="case" id="case-b">
       <header class="case-head">
@@ -665,6 +863,20 @@
         </div>
       </div>
     </article>
+
+    <div class="ties">
+      <h3 class="group-title">숫자가 같았던 L3 문제들</h3>
+      <p class="group-sub">CFA Level III 범위에서 더 시도한 것들이다. 결과를 숨기지 않는다 — 아래 둘은 양쪽이 같은 답에 도달했다.</p>
+      <div class="turns-wrap">
+      <table class="turns">
+        <thead><tr><th>문제</th><th>플러그인 없음</th><th>fintool</th><th>결과</th></tr></thead>
+        <tbody>
+        <tr><td class="tp"><b>Implementation shortfall</b><br><span class="dim">50만 주 매수, 부분 체결·미체결 취소. 지연·거래·기회·명시비용 분해</span></td><td class="tm">40s · 3,334 tok · $0.37</td><td class="tm on">48s · 3,058 tok · $0.34<br><span class="pill pill-mcp">fintool_catalog ×2</span><span class="pill pill-mcp">fintool_run · trade-cost</span></td><td class="tp"><b>완전 일치.</b> 251,000,000원 / 106.36bp, 4개 항목 모두 동일. 왼쪽은 지연·기회 귀속 관례가 둘로 갈린다는 점까지 스스로 짚었다.<br><span class="dim"><a href="assets/transcripts/case-f-off.txt">off</a> · <a href="assets/transcripts/case-f-on.txt">on</a></span></td></tr>
+        <tr><td class="tp"><b>Brinson-Fachler + Carino 연결</b><br><span class="dim">5섹터 2분기 배분·선택·상호작용, 로그 연결</span></td><td class="tm">91s · 9,248 tok · $0.25</td><td class="tm on">95s · 7,275 tok · $0.49<br><span class="pill pill-mcp">fintool_catalog ×2</span><span class="pill pill-mcp">fintool_run · attribution ×3</span></td><td class="tp"><b>결론 일치</b>(누적 액티브 −24.22bp). 다만 왼쪽이 손으로 구한 Carino 계수는 소수 넷째 자리에서 갈렸다(1.011645 vs 1.011678).<br><span class="dim"><a href="assets/transcripts/case-g-off.txt">off</a> · <a href="assets/transcripts/case-g-on.txt">on</a></span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
   </section>
 
   <section id="why">
