@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>fintool — Claude가 재무 숫자를 짓지 않게 하는 플러그인</title>
+<title>fintool — 다섯 번째 수정에서도 무너지지 않는 재무 모델</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230C6B52%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-size=%2718%27 text-anchor=%27middle%27 fill=%27white%27 font-family=%27monospace%27%3Ef%3C/text%3E%3C/svg%3E">
-<meta name="description" content="계산은 검증된 엔진이, 해석은 Claude가. 같은 프롬프트를 플러그인 없이/있이 실제로 돌린 결과를 나란히 보여준다.">
+<meta name="description" content="수정이 다섯 번 이어져도 spec 한 줄만 바꿔 엔진을 다시 돌린다. 같은 프롬프트를 플러그인 없이/있이 실제로 돌린 기록.">
 <style>
   :root{--paper:#F5F7F6;--card:#FFFFFF;--ink:#132420;--muted:#5C6B66;--green:#0C6B52;--green-soft:#E3EFEA;--bear:#BC4A2E;--bear-soft:#F6E7E1;--line:#D8DFDC;--line-strong:#132420;--before-bg:#F0F1F0;--before-ink:#4A5450;--code:#EEF2F0;}
   :root[data-theme="dark"]{--paper:#0F1715;--card:#162220;--ink:#E6EFEB;--muted:#93A39D;--green:#5FC9A5;--green-soft:#17342B;--bear:#E88A6E;--bear-soft:#3A221B;--line:#273632;--line-strong:#E6EFEB;--before-bg:#141A19;--before-ink:#A8B1AD;--code:#1E2B28;}
@@ -43,6 +43,8 @@
   h2{font-size:24px;font-weight:700;letter-spacing:-.01em;margin-bottom:10px;}
   .sec-intro{color:var(--muted);max-width:720px;margin-bottom:28px;}
   /* case */
+  .group-title{font-size:17px;font-weight:700;margin:34px 0 4px;}
+  .group-sub{font-size:13.5px;color:var(--muted);max-width:720px;margin-bottom:18px;}
   .case{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:22px 22px 18px;margin-bottom:28px;}
   .case-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
   .case-idx{font-size:12px;letter-spacing:.1em;color:var(--green);border:1px solid var(--green);padding:0 7px;border-radius:2px;}
@@ -159,20 +161,196 @@
 
   <header class="hero" id="top">
     <span class="doc-tag">CLAUDE PLUGIN · FINTOOL</span>
-    <h1>Claude가 재무 숫자를 "짓지" 않게 하는 플러그인</h1>
-    <p class="lead">계산은 검증된 Go 엔진이, 해석은 Claude가. 런웨이·상환표·DCF의 모든 숫자는 엔진이 돌려준 JSON 봉투에서만 인용되고, 월별 모델에는 계산 해시가 붙는다.</p>
+    <h1>다섯 번째 수정에서도 무너지지 않는 재무 모델</h1>
+    <p class="lead">"성장률 낮춰봐", "채용 넣어봐", "원가율도" — 실제 재무 작업은 수정이 이어지는 일이다. 표를 매번 다시 쓰는 대신 spec 한 줄만 바꿔 검증된 Go 엔진을 다시 돌린다. 같은 입력이면 언제나 같은 해시.</p>
     <div class="cta">
       <div class="copy"><code id="market">risingdream/fintool-plugin</code><button id="copy" type="button">마켓 주소 복사</button></div>
-      <a class="ghost" href="sample-report.html">샘플 리포트 보기</a>
+      <a class="ghost" href="#case-d">5턴 시퀀스 보기 ↓</a>
+      <a class="ghost" href="sample-report.html">샘플 리포트</a>
     </div>
     <div class="badges"><span class="badge">Claude Desktop</span><span class="badge">Claude Code</span><span class="badge">Codex</span><span class="badge">MIT</span></div>
   </header>
 
   <section id="before-after">
     <div class="sec-label">01 · BEFORE / AFTER</div>
-    <h2>같은 프롬프트, 플러그인 없이 / 있이</h2>
-    <p class="sec-intro">2026-08-23 Claude Code(claude-opus-5)에서 같은 모델·같은 프롬프트를 플러그인 off/on으로 실제 실행한 기록이다. 두 열 모두 응답을 고치지 않았고, 양쪽 다 셸·파일 도구와 사용자 지시문 없이(Claude Desktop의 일반 채팅과 같은 조건) 돌렸다. 각 열 머리의 소요 시간·턴·토큰·비용은 그 실행의 실측값이다. 각 열 아래 원문 링크로 도구 호출·반환까지 전부 볼 수 있다.</p>
+    <h2>같은 작업, 플러그인 없이 / 있이</h2>
+    <p class="sec-intro">2026-08-23 Claude Code(claude-opus-5)에서 같은 모델·같은 입력을 플러그인 off/on으로 실제 실행한 기록이다. 먼저 수정이 다섯 번 이어지는 실제 작업(D), 그다음 한 방 계산 셋(B·C·A). 두 열 모두 응답을 고치지 않았고, 양쪽 다 셸·파일 도구와 사용자 지시문 없이(Claude Desktop의 일반 채팅과 같은 조건) 돌렸다. 각 열 머리의 소요 시간·턴·토큰·비용은 그 실행의 실측값이다. 각 열 아래 원문 링크로 도구 호출·반환까지 전부 볼 수 있다.</p>
     
+    <article class="case" id="case-d">
+      <header class="case-head">
+        <span class="case-idx">D</span>
+        <h3>수정이 다섯 번 들어올 때</h3>
+        <span class="essence">본질 · 누적 수정</span>
+      </header>
+      <p class="sec-intro" style="margin-bottom:16px">한 방 계산은 모델도 잘한다. 실제 재무 작업은 "성장률 낮춰봐", "채용 넣어봐", "원가율도"가 다섯 번 이어지는 일이다.
+      같은 세션에서 같은 순서로 물었다(<span class="mono">claude -p --resume</span>).</p>
+      <div class="turns-wrap">
+      <table class="turns">
+        <thead><tr><th>#</th><th>수정 요청</th><th>플러그인 없음</th><th>fintool</th></tr></thead>
+        <tbody><tr><td class="tn">1</td><td class="tp">월 매출 3천만 원, 월 30% 성장, 고정비 8천만 원, 현금 6억. 12개월 런웨이와 월별 현금을 정리해줘.</td><td class="tm">35s · 2,651 tok · $0.08<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">35s · 2,727 tok · $0.29<br><span class="pill pill-mcp">Skill · fintool:startup-finance</span><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">2</td><td class="tp">성장률이 30%는 무리야. 월 12%로 낮춰서 다시.</td><td class="tm">37s · 2,845 tok · $0.51<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">47s · 3,332 tok · $0.16<br><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">3</td><td class="tp">개발자 3명을 3개월 뒤부터 채용해. 1인당 월 700만 원이야. 다시 계산해줘.</td><td class="tm">58s · 4,202 tok · $0.80<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">56s · 3,979 tok · $0.18<br><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">4</td><td class="tp">원가율 25%도 반영해줘.</td><td class="tm">57s · 4,297 tok · $0.18<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">56s · 4,255 tok · $0.20<br><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">5</td><td class="tp">지금까지 결과로 IR용 요약을 만들어줘. 런웨이, 현금 저점, 필요 조달액, 손익분기 시점.</td><td class="tm">43s · 2,914 tok · $0.15<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">115s · 7,770 tok · $0.39<br><span class="pill pill-mcp">fintool_run · financial-model ×2</span><br><span class="hashmark">해시 3</span></td></tr></tbody>
+        <tfoot><tr><td></td><td>합계</td><td>230s · 16,909 tok · <b>$1.72</b></td>
+        <td class="on">309s · 22,063 tok · <b>$1.22</b></td></tr></tfoot>
+      </table>
+      </div>
+      <p class="env-note">다섯 번을 거치는 동안 <b>양쪽 다 월별 표가 어긋나지 않았다.</b> 원가율을 넣는 순간 런웨이가 11개월로 뒤집히는 결론도 같다.
+      갈린 것은 마지막 산출물이다 — <b>권장 조달액이 1억(왼쪽) vs 5억(오른쪽)</b>. 오른쪽은 5억을 넣은 모델을 한 번 더 돌려
+      런웨이 24개월 초과·손익분기 도달을 확인하고 그 실행의 해시 3개를 함께 실었고, 왼쪽은 손익분기까지 필요한 최소액에서 눈대중으로 잡았다.
+      과정도 다르다. 왼쪽은 매 턴 12줄 표를 손으로 다시 쓰고, 오른쪽은 spec의 바뀐 필드만 교체해 엔진을 다시 돌린다 —
+      3턴에서 고정비가 12개월 배열로, 4턴에서 원가가 월별 배열로, 5턴에서 손익분기를 찾으려 24개월로 늘었다.
+      여섯 번째 수정도, 석 달 뒤의 재현도 같은 방식이다. 이번 시퀀스에서는 비용도 오른쪽이 낮았다($1.22 vs $1.72).</p>
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-target="before" role="tab">플러그인 없음</button>
+        <button class="tab" data-target="after" role="tab">fintool</button>
+      </div>
+      <div class="cols">
+        <div class="col before" data-pane="before">
+          <div class="col-head">플러그인 없음 · 5턴 IR 요약</div>
+          <div class="chat"><h3>IR 요약 — 12개월 현금 계획</h3>
+<p><b>기준 가정:</b> 월 매출 3,000만 원 시작 · 월 성장률 12% · 매출총이익률 75%(원가율 25%) · 고정비 8,000만 원 · 개발자 3명 4개월차 채용(월 2,100만 원) · 시작 현금 6.0억</p>
+<hr>
+<h4>핵심 지표</h4>
+<table><thead><tr><th>항목</th><th>수치</th></tr></thead><tbody>
+<tr><td><b>런웨이</b></td><td><b>11.7개월</b> (12개월차 중순 소진)</td></tr>
+<tr><td><b>현금 저점</b></td><td><b>-2,220만 원 / 14개월차</b> (무조달 기준)</td></tr>
+<tr><td><b>필요 조달액</b></td><td><b>최소 2,200만 원 · 권장 1억 원</b></td></tr>
+<tr><td><b>손익분기(BEP)</b></td><td><b>14.3개월차</b> (흑자 전환 15개월차)</td></tr>
+<tr><td>현금흐름 자력 회복</td><td>16개월차</td></tr>
+</tbody></table>
+<hr>
+<h4>1. 런웨이 — 11.7개월</h4>
+<p>시작 현금 6.0억으로 11개월차 말 잔고 1,670만 원, 12개월차 약 22일 시점에 소진됩니다.</p>
+<p>12개월 누적: 매출 7.24억 · 매출총이익 5.43억 · 고정비 11.49억 → <b>순소진 5.06억</b></p>
+<h4>2. 현금 저점 — 14개월차</h4>
+<table><thead><tr><th>구분</th><th>저점 시점</th><th>저점 잔고</th></tr></thead><tbody>
+<tr><td>무조달</td><td>14개월차</td><td><b>-2,220만 원</b></td></tr>
+<tr><td>1억 조달 시</td><td>14개월차</td><td><b>+7,780만 원</b></td></tr>
+</tbody></table>
+<p>12→14개월차 구간이 최대 압박 구간이며, 15개월차부터 월 현금흐름이 플러스로 전환되어 저점을 지납니다.</p>
+<h4>3. 필요 조달액 — 권장 1억 원</h4>
+<ul>
+<li><b>최소 필요액 2,220만 원</b> — BEP까지의 누적 부족분</li>
+<li><b>권장 1억 원</b> — 12~16개월 구간을 잔고 0 근처로 운영하는 리스크를 제거하고, 성장률 둔화 시나리오까지 흡수</li>
+<li><b>조달 완료 목표 시점: 11개월차 이전</b></li>
+</ul>
+<p>조달 규모가 작다는 점이 이 계획의 강점입니다. 1억으로 BEP를 넘겨 자력 성장 구간에 진입합니다.</p>
+<h4>4. 손익분기 — 14.3개월차</h4>
+<p>매출총이익이 고정비 1억 100만 원을 넘어서는 시점입니다. 해당 월 매출은 약 1.35억 원.</p>
+<table><thead><tr><th>단계</th><th>시점</th></tr></thead><tbody>
+<tr><td>월 흑자 전환</td><td>15개월차</td></tr>
+<tr><td>누적 현금 플러스 복귀</td><td>16개월차</td></tr>
+</tbody></table>
+<hr>
+<h4>민감도</h4>
+<table><thead><tr><th>월 성장률</th><th>현금 소진</th><th>BEP</th></tr></thead><tbody>
+<tr><td>15%</td><td>13개월차</td><td>12.0개월차</td></tr>
+<tr><td><b>12% (기준)</b></td><td><b>12개월차</b></td><td><b>14.3개월차</b></td></tr>
+<tr><td>8%</td><td>10개월차</td><td>19.9개월차</td></tr>
+<tr><td>5%</td><td>8개월차</td><td>후반</td></tr>
+</tbody></table>
+<p><b>12개월 자력 생존 임계 성장률은 월 12.2%</b>입니다. 기준 시나리오가 이 경계에 근접해 있어, 조달은 선택이 아니라 전제입니다.</p>
+<hr>
+<h4>리스크 및 대응</h4>
+<table><thead><tr><th>리스크</th><th>영향</th><th>대응</th></tr></thead><tbody>
+<tr><td>성장률 8%로 둔화</td><td>소진 2개월 조기화</td><td>8개월차 실적을 트리거로 채용 속도 조절</td></tr>
+<tr><td>4대보험·퇴직충당 미반영</td><td>소진 1개월 조기화</td><td>1인당 실질 800만 원으로 재산정 필요</td></tr>
+<tr><td>고정비 8,000만 원 고정 가정</td><td>BEP 지연</td><td>매출 3.5배 성장 구간의 인프라·인건비 증가 별도 검토</td></tr>
+<tr><td>매출 회수 지연 미반영</td><td>저점 심화</td><td>실제 입금 주기 반영 시 재계산</td></tr>
+</tbody></table>
+<p><b>모니터링 트리거:</b> 8개월차 실제 성장률 10% 미만 → 추가 채용 중단 및 조달 착수 (해당 시점 잔고 8,650만 원)</p>
+<hr>
+<h4>두 가지 짚어둘 점</h4>
+<p><b>1. 이 모델은 개발자 3명의 매출 기여를 0으로 잡았습니다.</b> 채용 목적이 성장률 제고라면 실제 결과는 이보다 낫습니다. 보수적 하한선으로 보시면 됩니다. IR에서는 이 점을 명시하는 편이 신뢰도에 유리합니다.</p>
+<p><b>2. 고정비 불변 가정이 가장 낙관적인 부분입니다.</b> 투자자가 가장 먼저 지적할 지점이므로, 12개월차 인건비·인프라 계획을 별도 슬라이드로 준비하시길 권합니다.</p>
+<hr>
+<p>필요하시면 ① 4대보험·퇴직충당 반영 버전, ② 채용 2명 축소안, ③ 원가율 20% 개선안을 나란히 놓은 비교표로도 만들어 드리겠습니다. Slack 캔버스나 채널 공유가 필요하시면 말씀해 주세요 — 지금은 여기에만 작성해 두었습니다.</p></div>
+          <a class="src" href="assets/transcripts/case-d-off.txt">원문 case-d-off.txt (5턴 전체)</a>
+        </div>
+        <div class="col after" data-pane="after">
+          <div class="col-head">fintool · 5턴 IR 요약</div>
+          <div class="chat"><h3>IR 요약 — 재무 하이라이트</h3>
+<p><b>작성 기준일 2026-08-23 · 모델 시작 2026-09 · 통화 KRW</b></p>
+<hr>
+<h4>핵심 4지표 (현재 계획 = 미조달 기준)</h4>
+<table><thead><tr><th>지표</th><th>값</th></tr></thead><tbody>
+<tr><td><b>런웨이</b></td><td><b>11개월</b> — 현금 소진 <b>2027-08</b></td></tr>
+<tr><td><b>현금 저점</b></td><td><b>−22,166,448원</b> (2027-10, 최대 누적 부족액)</td></tr>
+<tr><td><b>필요 조달액</b></td><td><b>5억 원</b> (권장 Ask) / 최소 브리지 2,300만 원</td></tr>
+<tr><td><b>손익분기</b></td><td><b>2027-11</b> (영업 15개월 차, 월 매출 1.47억 시점)</td></tr>
+</tbody></table>
+<hr>
+<h4>1. 런웨이</h4>
+<p>기초 현금 6억 원으로 <b>11개월</b>을 버틴다. 2027-08에 현금이 마이너스로 전환된다(엔진 경고: <code>runway_exhausted</code>).</p>
+<table><thead><tr><th>시점</th><th>기말 현금</th></tr></thead><tbody>
+<tr><td>2026-09 (시작)</td><td>542,500,000</td></tr>
+<tr><td>2027-01</td><td>300,939,066</td></tr>
+<tr><td>2027-04</td><td>131,743,095</td></tr>
+<tr><td>2027-07</td><td>16,728,122</td></tr>
+<tr><td><b>2027-08</b></td><td><b>−6,004,503</b> ← 소진</td></tr>
+</tbody></table>
+<h4>2. 현금 저점</h4>
+<p>저점은 소진 시점이 아니라 <b>손익분기 직전인 2027-10</b>에 온다. 최대 누적 부족액 <b>22,166,448원</b>. 이후 흑자 전환으로 자력 회복한다.</p>
+<table><thead><tr><th>월</th><th>기말 현금</th><th>EBITDA</th></tr></thead><tbody>
+<tr><td>2027-08</td><td>−6,004,503</td><td>−22,732,625</td></tr>
+<tr><td>2027-09</td><td>−19,345,043</td><td>−13,340,540</td></tr>
+<tr><td><b>2027-10</b></td><td><b>−22,166,448</b></td><td>−2,821,405</td></tr>
+<tr><td>2027-11</td><td>−13,206,421</td><td>+8,960,027 ← 흑자 전환</td></tr>
+<tr><td>2027-12</td><td>+8,948,809</td><td>+22,155,230</td></tr>
+</tbody></table>
+<h4>3. 필요 조달액</h4>
+<p><b>Ask: 5억 원 (2027-01 클로징 목표)</b></p>
+<table><thead><tr><th>항목</th><th>금액</th><th>근거</th></tr></thead><tbody>
+<tr><td>최소 브리지</td><td>22,166,448</td><td>최대 누적 부족액. 생존 최소선, 버퍼 0</td></tr>
+<tr><td><b>권장 Ask</b></td><td><b>500,000,000</b></td><td>아래 조달 케이스 검증치</td></tr>
+</tbody></table>
+<p>5억 조달 시 검증 결과:</p>
+<ul>
+<li>런웨이: <b>24개월 초과</b> (<code>exhaustion_month: null</code>)</li>
+<li>조달 후 현금 저점: <b>477,833,552원</b> (2027-10) — 음수 구간 완전 제거</li>
+<li>24개월 기말 현금: <b>1,397,492,924원</b></li>
+<li>손익분기: 2027-11 (조달과 무관, 영업 구조로 결정)</li>
+</ul>
+<p>&gt; 최소 브리지 2,200만 원은 산술적 생존선일 뿐 IR Ask로 쓸 수 없다. 성장률이 12%에서 조금만 흔들려도 즉시 붕괴하기 때문이다. 5억은 손익분기(2027-11) 통과 후에도 4.8억이 남아, <b>가정이 틀려도 재협상 없이 한 사이클을 더 돌릴 수 있는 최소 규모</b>다.</p>
+<p><b>타이밍</b>: 현금 3억이 남는 <b>2027-01이 클로징 데드라인</b>이다. 실무상 라운드에 4~6개월이 걸리므로 <b>2026년 9~10월 착수</b>해야 한다.</p>
+<h4>4. 손익분기</h4>
+<p><b>2027-11, 영업 15개월 차.</b></p>
+<ul>
+<li>손익분기 요구 매출: <b>월 134,666,667원</b> (= 고정비 1.01억 ÷ 매출총이익률 75%)</li>
+<li>도달 시점 매출: 146,613,369원 → EBITDA +8,960,027원</li>
+<li>이후 24개월 차(2028-08) EBITDA <b>203,927,813원</b>, EBITDA 마진 50%</li>
+</ul>
+<h4>재무 가정</h4>
+<table><thead><tr><th>항목</th><th>값</th><th>비고</th></tr></thead><tbody>
+<tr><td>시작 월 매출</td><td>30,000,000원</td><td>2026-09</td></tr>
+<tr><td>월 성장률</td><td>12%</td><td>30%에서 보수적으로 하향</td></tr>
+<tr><td>원가율</td><td>25%</td><td>매출총이익률 75%, 전 기간 고정</td></tr>
+<tr><td>고정비</td><td>80,000,000원 → 101,000,000원</td><td>2026-12부터 개발자 3명(1인 700만) 반영</td></tr>
+<tr><td>기초 현금</td><td>600,000,000원</td><td></td></tr>
+<tr><td>법인세</td><td>0</td><td>누적 결손 구간</td></tr>
+</tbody></table>
+<p>출처: 창업자 인터뷰 2026-08-23.</p>
+<h4>감도 — 투자자가 물어볼 지점</h4>
+<table><thead><tr><th>변수</th><th>영향</th></tr></thead><tbody>
+<tr><td>성장률 12% → 30%</td><td>손익분기 2027-01로 10개월 단축, 조달 불필요</td></tr>
+<tr><td>원가율 25% → 15%</td><td>요구 매출 1.19억으로 하락, 손익분기 약 2개월 단축</td></tr>
+<tr><td>인건비 700만 → 850만(4대보험 포함)</td><td>소진 약 1개월 조기화</td></tr>
+<tr><td>채용 2027-03 연기</td><td>6,300만 절감, 소진 2~3개월 지연 (근본 해결 아님)</td></tr>
+</tbody></table>
+<p><b>이 모델의 방어선은 하나다: 월 12% 성장이 15개월간 유지되는지.</b> 원가율과 인건비는 관리 가능한 변수지만, 성장률이 10% 아래로 내려가면 손익분기가 24개월 밖으로 밀리고 5억으로도 부족해진다.</p>
+<hr>
+<h5>검증 해시</h5>
+<table><thead><tr><th>케이스</th><th>calculation_hash</th></tr></thead><tbody>
+<tr><td>미조달 24개월 (기준선)</td><td><code>sha256:b2970f96854ef5c144e414df88611e6104eb6493fc82f06313111e615799996d</code></td></tr>
+<tr><td>5억 조달 24개월</td><td><code>sha256:af5adc45393ffb492e5ed3c9c688c54005ad3afc3b633a40632116a124bbeb52</code></td></tr>
+<tr><td>12개월 원안</td><td><code>sha256:68d3da702a9a8bf060c3381d2d15da43b58696578524bffd360dee09e583968f</code></td></tr>
+</tbody></table>
+<hr>
+<p><b>참고</b>: 원 질문 범위가 12개월이었으나, 12개월 horizon 안에서는 손익분기에 도달하지 않아 필요 조달액을 산출할 수 없었다. 24개월로 확장해 최대 부족액과 실제 손익분기 월을 뽑았고, 조달 케이스를 별도 검증했다.</p>
+<p>이 내용을 <code>pitch-deck</code> 또는 <code>investor-update</code> 레시피로 HTML IR 문서화할 수 있다. 필요하면 캡테이블(희석률 포함)까지 붙여서 만들겠다.</p></div>
+          <a class="src" href="assets/transcripts/case-d-on.txt">원문 case-d-on.txt (5턴 전체)</a>
+        </div>
+      </div>
+    </article>
+
     <article class="case" id="case-b">
       <header class="case-head">
         <span class="case-idx">B</span>
@@ -484,180 +662,6 @@
 <li><b>프리머니 밸류</b> — 주시면 <code>cap-table-simulate</code>로 희석률까지 뽑아 IR 자료 형태로 정리하겠습니다.</li>
 </ol></div>
           <a class="src" href="assets/transcripts/case-a-on.txt">원문 case-a-on.txt</a>
-        </div>
-      </div>
-    </article>
-    <article class="case" id="case-d">
-      <header class="case-head">
-        <span class="case-idx">D</span>
-        <h3>수정이 다섯 번 들어올 때</h3>
-        <span class="essence">본질 · 누적 수정</span>
-      </header>
-      <p class="sec-intro" style="margin-bottom:16px">한 방 계산은 모델도 잘한다. 실제 재무 작업은 "성장률 낮춰봐", "채용 넣어봐", "원가율도"가 다섯 번 이어지는 일이다.
-      같은 세션에서 같은 순서로 물었다(<span class="mono">claude -p --resume</span>).</p>
-      <div class="turns-wrap">
-      <table class="turns">
-        <thead><tr><th>#</th><th>수정 요청</th><th>플러그인 없음</th><th>fintool</th></tr></thead>
-        <tbody><tr><td class="tn">1</td><td class="tp">월 매출 3천만 원, 월 30% 성장, 고정비 8천만 원, 현금 6억. 12개월 런웨이와 월별 현금을 정리해줘.</td><td class="tm">35s · 2,651 tok · $0.08<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">35s · 2,727 tok · $0.29<br><span class="pill pill-mcp">Skill · fintool:startup-finance</span><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">2</td><td class="tp">성장률이 30%는 무리야. 월 12%로 낮춰서 다시.</td><td class="tm">37s · 2,845 tok · $0.51<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">47s · 3,332 tok · $0.16<br><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">3</td><td class="tp">개발자 3명을 3개월 뒤부터 채용해. 1인당 월 700만 원이야. 다시 계산해줘.</td><td class="tm">58s · 4,202 tok · $0.80<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">56s · 3,979 tok · $0.18<br><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">4</td><td class="tp">원가율 25%도 반영해줘.</td><td class="tm">57s · 4,297 tok · $0.18<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">56s · 4,255 tok · $0.20<br><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">5</td><td class="tp">지금까지 결과로 IR용 요약을 만들어줘. 런웨이, 현금 저점, 필요 조달액, 손익분기 시점.</td><td class="tm">43s · 2,914 tok · $0.15<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">115s · 7,770 tok · $0.39<br><span class="pill pill-mcp">fintool_run · financial-model ×2</span><br><span class="hashmark">해시 3</span></td></tr></tbody>
-        <tfoot><tr><td></td><td>합계</td><td>230s · 16,909 tok · <b>$1.72</b></td>
-        <td class="on">309s · 22,063 tok · <b>$1.22</b></td></tr></tfoot>
-      </table>
-      </div>
-      <p class="env-note">다섯 번을 거치는 동안 <b>양쪽 다 월별 표가 어긋나지 않았다.</b> 원가율을 넣는 순간 런웨이가 11개월로 뒤집히는 결론도 같다.
-      갈린 것은 마지막 산출물이다 — <b>권장 조달액이 1억(왼쪽) vs 5억(오른쪽)</b>. 오른쪽은 5억을 넣은 모델을 한 번 더 돌려
-      런웨이 24개월 초과·손익분기 도달을 확인하고 그 실행의 해시 3개를 함께 실었고, 왼쪽은 손익분기까지 필요한 최소액에서 눈대중으로 잡았다.
-      과정도 다르다. 왼쪽은 매 턴 12줄 표를 손으로 다시 쓰고, 오른쪽은 spec의 바뀐 필드만 교체해 엔진을 다시 돌린다 —
-      3턴에서 고정비가 12개월 배열로, 4턴에서 원가가 월별 배열로, 5턴에서 손익분기를 찾으려 24개월로 늘었다.
-      여섯 번째 수정도, 석 달 뒤의 재현도 같은 방식이다. 이번 시퀀스에서는 비용도 오른쪽이 낮았다($1.22 vs $1.72).</p>
-      <div class="tabs" role="tablist">
-        <button class="tab active" data-target="before" role="tab">플러그인 없음</button>
-        <button class="tab" data-target="after" role="tab">fintool</button>
-      </div>
-      <div class="cols">
-        <div class="col before" data-pane="before">
-          <div class="col-head">플러그인 없음 · 5턴 IR 요약</div>
-          <div class="chat"><h3>IR 요약 — 12개월 현금 계획</h3>
-<p><b>기준 가정:</b> 월 매출 3,000만 원 시작 · 월 성장률 12% · 매출총이익률 75%(원가율 25%) · 고정비 8,000만 원 · 개발자 3명 4개월차 채용(월 2,100만 원) · 시작 현금 6.0억</p>
-<hr>
-<h4>핵심 지표</h4>
-<table><thead><tr><th>항목</th><th>수치</th></tr></thead><tbody>
-<tr><td><b>런웨이</b></td><td><b>11.7개월</b> (12개월차 중순 소진)</td></tr>
-<tr><td><b>현금 저점</b></td><td><b>-2,220만 원 / 14개월차</b> (무조달 기준)</td></tr>
-<tr><td><b>필요 조달액</b></td><td><b>최소 2,200만 원 · 권장 1억 원</b></td></tr>
-<tr><td><b>손익분기(BEP)</b></td><td><b>14.3개월차</b> (흑자 전환 15개월차)</td></tr>
-<tr><td>현금흐름 자력 회복</td><td>16개월차</td></tr>
-</tbody></table>
-<hr>
-<h4>1. 런웨이 — 11.7개월</h4>
-<p>시작 현금 6.0억으로 11개월차 말 잔고 1,670만 원, 12개월차 약 22일 시점에 소진됩니다.</p>
-<p>12개월 누적: 매출 7.24억 · 매출총이익 5.43억 · 고정비 11.49억 → <b>순소진 5.06억</b></p>
-<h4>2. 현금 저점 — 14개월차</h4>
-<table><thead><tr><th>구분</th><th>저점 시점</th><th>저점 잔고</th></tr></thead><tbody>
-<tr><td>무조달</td><td>14개월차</td><td><b>-2,220만 원</b></td></tr>
-<tr><td>1억 조달 시</td><td>14개월차</td><td><b>+7,780만 원</b></td></tr>
-</tbody></table>
-<p>12→14개월차 구간이 최대 압박 구간이며, 15개월차부터 월 현금흐름이 플러스로 전환되어 저점을 지납니다.</p>
-<h4>3. 필요 조달액 — 권장 1억 원</h4>
-<ul>
-<li><b>최소 필요액 2,220만 원</b> — BEP까지의 누적 부족분</li>
-<li><b>권장 1억 원</b> — 12~16개월 구간을 잔고 0 근처로 운영하는 리스크를 제거하고, 성장률 둔화 시나리오까지 흡수</li>
-<li><b>조달 완료 목표 시점: 11개월차 이전</b></li>
-</ul>
-<p>조달 규모가 작다는 점이 이 계획의 강점입니다. 1억으로 BEP를 넘겨 자력 성장 구간에 진입합니다.</p>
-<h4>4. 손익분기 — 14.3개월차</h4>
-<p>매출총이익이 고정비 1억 100만 원을 넘어서는 시점입니다. 해당 월 매출은 약 1.35억 원.</p>
-<table><thead><tr><th>단계</th><th>시점</th></tr></thead><tbody>
-<tr><td>월 흑자 전환</td><td>15개월차</td></tr>
-<tr><td>누적 현금 플러스 복귀</td><td>16개월차</td></tr>
-</tbody></table>
-<hr>
-<h4>민감도</h4>
-<table><thead><tr><th>월 성장률</th><th>현금 소진</th><th>BEP</th></tr></thead><tbody>
-<tr><td>15%</td><td>13개월차</td><td>12.0개월차</td></tr>
-<tr><td><b>12% (기준)</b></td><td><b>12개월차</b></td><td><b>14.3개월차</b></td></tr>
-<tr><td>8%</td><td>10개월차</td><td>19.9개월차</td></tr>
-<tr><td>5%</td><td>8개월차</td><td>후반</td></tr>
-</tbody></table>
-<p><b>12개월 자력 생존 임계 성장률은 월 12.2%</b>입니다. 기준 시나리오가 이 경계에 근접해 있어, 조달은 선택이 아니라 전제입니다.</p>
-<hr>
-<h4>리스크 및 대응</h4>
-<table><thead><tr><th>리스크</th><th>영향</th><th>대응</th></tr></thead><tbody>
-<tr><td>성장률 8%로 둔화</td><td>소진 2개월 조기화</td><td>8개월차 실적을 트리거로 채용 속도 조절</td></tr>
-<tr><td>4대보험·퇴직충당 미반영</td><td>소진 1개월 조기화</td><td>1인당 실질 800만 원으로 재산정 필요</td></tr>
-<tr><td>고정비 8,000만 원 고정 가정</td><td>BEP 지연</td><td>매출 3.5배 성장 구간의 인프라·인건비 증가 별도 검토</td></tr>
-<tr><td>매출 회수 지연 미반영</td><td>저점 심화</td><td>실제 입금 주기 반영 시 재계산</td></tr>
-</tbody></table>
-<p><b>모니터링 트리거:</b> 8개월차 실제 성장률 10% 미만 → 추가 채용 중단 및 조달 착수 (해당 시점 잔고 8,650만 원)</p>
-<hr>
-<h4>두 가지 짚어둘 점</h4>
-<p><b>1. 이 모델은 개발자 3명의 매출 기여를 0으로 잡았습니다.</b> 채용 목적이 성장률 제고라면 실제 결과는 이보다 낫습니다. 보수적 하한선으로 보시면 됩니다. IR에서는 이 점을 명시하는 편이 신뢰도에 유리합니다.</p>
-<p><b>2. 고정비 불변 가정이 가장 낙관적인 부분입니다.</b> 투자자가 가장 먼저 지적할 지점이므로, 12개월차 인건비·인프라 계획을 별도 슬라이드로 준비하시길 권합니다.</p>
-<hr>
-<p>필요하시면 ① 4대보험·퇴직충당 반영 버전, ② 채용 2명 축소안, ③ 원가율 20% 개선안을 나란히 놓은 비교표로도 만들어 드리겠습니다. Slack 캔버스나 채널 공유가 필요하시면 말씀해 주세요 — 지금은 여기에만 작성해 두었습니다.</p></div>
-          <a class="src" href="assets/transcripts/case-d-off.txt">원문 case-d-off.txt (5턴 전체)</a>
-        </div>
-        <div class="col after" data-pane="after">
-          <div class="col-head">fintool · 5턴 IR 요약</div>
-          <div class="chat"><h3>IR 요약 — 재무 하이라이트</h3>
-<p><b>작성 기준일 2026-08-23 · 모델 시작 2026-09 · 통화 KRW</b></p>
-<hr>
-<h4>핵심 4지표 (현재 계획 = 미조달 기준)</h4>
-<table><thead><tr><th>지표</th><th>값</th></tr></thead><tbody>
-<tr><td><b>런웨이</b></td><td><b>11개월</b> — 현금 소진 <b>2027-08</b></td></tr>
-<tr><td><b>현금 저점</b></td><td><b>−22,166,448원</b> (2027-10, 최대 누적 부족액)</td></tr>
-<tr><td><b>필요 조달액</b></td><td><b>5억 원</b> (권장 Ask) / 최소 브리지 2,300만 원</td></tr>
-<tr><td><b>손익분기</b></td><td><b>2027-11</b> (영업 15개월 차, 월 매출 1.47억 시점)</td></tr>
-</tbody></table>
-<hr>
-<h4>1. 런웨이</h4>
-<p>기초 현금 6억 원으로 <b>11개월</b>을 버틴다. 2027-08에 현금이 마이너스로 전환된다(엔진 경고: <code>runway_exhausted</code>).</p>
-<table><thead><tr><th>시점</th><th>기말 현금</th></tr></thead><tbody>
-<tr><td>2026-09 (시작)</td><td>542,500,000</td></tr>
-<tr><td>2027-01</td><td>300,939,066</td></tr>
-<tr><td>2027-04</td><td>131,743,095</td></tr>
-<tr><td>2027-07</td><td>16,728,122</td></tr>
-<tr><td><b>2027-08</b></td><td><b>−6,004,503</b> ← 소진</td></tr>
-</tbody></table>
-<h4>2. 현금 저점</h4>
-<p>저점은 소진 시점이 아니라 <b>손익분기 직전인 2027-10</b>에 온다. 최대 누적 부족액 <b>22,166,448원</b>. 이후 흑자 전환으로 자력 회복한다.</p>
-<table><thead><tr><th>월</th><th>기말 현금</th><th>EBITDA</th></tr></thead><tbody>
-<tr><td>2027-08</td><td>−6,004,503</td><td>−22,732,625</td></tr>
-<tr><td>2027-09</td><td>−19,345,043</td><td>−13,340,540</td></tr>
-<tr><td><b>2027-10</b></td><td><b>−22,166,448</b></td><td>−2,821,405</td></tr>
-<tr><td>2027-11</td><td>−13,206,421</td><td>+8,960,027 ← 흑자 전환</td></tr>
-<tr><td>2027-12</td><td>+8,948,809</td><td>+22,155,230</td></tr>
-</tbody></table>
-<h4>3. 필요 조달액</h4>
-<p><b>Ask: 5억 원 (2027-01 클로징 목표)</b></p>
-<table><thead><tr><th>항목</th><th>금액</th><th>근거</th></tr></thead><tbody>
-<tr><td>최소 브리지</td><td>22,166,448</td><td>최대 누적 부족액. 생존 최소선, 버퍼 0</td></tr>
-<tr><td><b>권장 Ask</b></td><td><b>500,000,000</b></td><td>아래 조달 케이스 검증치</td></tr>
-</tbody></table>
-<p>5억 조달 시 검증 결과:</p>
-<ul>
-<li>런웨이: <b>24개월 초과</b> (<code>exhaustion_month: null</code>)</li>
-<li>조달 후 현금 저점: <b>477,833,552원</b> (2027-10) — 음수 구간 완전 제거</li>
-<li>24개월 기말 현금: <b>1,397,492,924원</b></li>
-<li>손익분기: 2027-11 (조달과 무관, 영업 구조로 결정)</li>
-</ul>
-<p>&gt; 최소 브리지 2,200만 원은 산술적 생존선일 뿐 IR Ask로 쓸 수 없다. 성장률이 12%에서 조금만 흔들려도 즉시 붕괴하기 때문이다. 5억은 손익분기(2027-11) 통과 후에도 4.8억이 남아, <b>가정이 틀려도 재협상 없이 한 사이클을 더 돌릴 수 있는 최소 규모</b>다.</p>
-<p><b>타이밍</b>: 현금 3억이 남는 <b>2027-01이 클로징 데드라인</b>이다. 실무상 라운드에 4~6개월이 걸리므로 <b>2026년 9~10월 착수</b>해야 한다.</p>
-<h4>4. 손익분기</h4>
-<p><b>2027-11, 영업 15개월 차.</b></p>
-<ul>
-<li>손익분기 요구 매출: <b>월 134,666,667원</b> (= 고정비 1.01억 ÷ 매출총이익률 75%)</li>
-<li>도달 시점 매출: 146,613,369원 → EBITDA +8,960,027원</li>
-<li>이후 24개월 차(2028-08) EBITDA <b>203,927,813원</b>, EBITDA 마진 50%</li>
-</ul>
-<h4>재무 가정</h4>
-<table><thead><tr><th>항목</th><th>값</th><th>비고</th></tr></thead><tbody>
-<tr><td>시작 월 매출</td><td>30,000,000원</td><td>2026-09</td></tr>
-<tr><td>월 성장률</td><td>12%</td><td>30%에서 보수적으로 하향</td></tr>
-<tr><td>원가율</td><td>25%</td><td>매출총이익률 75%, 전 기간 고정</td></tr>
-<tr><td>고정비</td><td>80,000,000원 → 101,000,000원</td><td>2026-12부터 개발자 3명(1인 700만) 반영</td></tr>
-<tr><td>기초 현금</td><td>600,000,000원</td><td></td></tr>
-<tr><td>법인세</td><td>0</td><td>누적 결손 구간</td></tr>
-</tbody></table>
-<p>출처: 창업자 인터뷰 2026-08-23.</p>
-<h4>감도 — 투자자가 물어볼 지점</h4>
-<table><thead><tr><th>변수</th><th>영향</th></tr></thead><tbody>
-<tr><td>성장률 12% → 30%</td><td>손익분기 2027-01로 10개월 단축, 조달 불필요</td></tr>
-<tr><td>원가율 25% → 15%</td><td>요구 매출 1.19억으로 하락, 손익분기 약 2개월 단축</td></tr>
-<tr><td>인건비 700만 → 850만(4대보험 포함)</td><td>소진 약 1개월 조기화</td></tr>
-<tr><td>채용 2027-03 연기</td><td>6,300만 절감, 소진 2~3개월 지연 (근본 해결 아님)</td></tr>
-</tbody></table>
-<p><b>이 모델의 방어선은 하나다: 월 12% 성장이 15개월간 유지되는지.</b> 원가율과 인건비는 관리 가능한 변수지만, 성장률이 10% 아래로 내려가면 손익분기가 24개월 밖으로 밀리고 5억으로도 부족해진다.</p>
-<hr>
-<h5>검증 해시</h5>
-<table><thead><tr><th>케이스</th><th>calculation_hash</th></tr></thead><tbody>
-<tr><td>미조달 24개월 (기준선)</td><td><code>sha256:b2970f96854ef5c144e414df88611e6104eb6493fc82f06313111e615799996d</code></td></tr>
-<tr><td>5억 조달 24개월</td><td><code>sha256:af5adc45393ffb492e5ed3c9c688c54005ad3afc3b633a40632116a124bbeb52</code></td></tr>
-<tr><td>12개월 원안</td><td><code>sha256:68d3da702a9a8bf060c3381d2d15da43b58696578524bffd360dee09e583968f</code></td></tr>
-</tbody></table>
-<hr>
-<p><b>참고</b>: 원 질문 범위가 12개월이었으나, 12개월 horizon 안에서는 손익분기에 도달하지 않아 필요 조달액을 산출할 수 없었다. 24개월로 확장해 최대 부족액과 실제 손익분기 월을 뽑았고, 조달 케이스를 별도 검증했다.</p>
-<p>이 내용을 <code>pitch-deck</code> 또는 <code>investor-update</code> 레시피로 HTML IR 문서화할 수 있다. 필요하면 캡테이블(희석률 포함)까지 붙여서 만들겠다.</p></div>
-          <a class="src" href="assets/transcripts/case-d-on.txt">원문 case-d-on.txt (5턴 전체)</a>
         </div>
       </div>
     </article>
