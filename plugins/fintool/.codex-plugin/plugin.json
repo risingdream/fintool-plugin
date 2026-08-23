@@ -1,0 +1,20 @@
+{
+  "name": "fintool",
+  "version": "0.5.1",
+  "description": "원격 fintool MCP와 startup-finance·valuation·portfolio-risk·fixed-income 스킬.",
+  "author": {
+    "name": "risingdream"
+  },
+  "homepage": "https://github.com/risingdream/fintool-plugin",
+  "repository": "https://github.com/risingdream/fintool-plugin",
+  "license": "MIT",
+  "keywords": ["finance", "mcp", "startup", "ir"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "fintool",
+    "shortDescription": "스타트업 재무 계산 + IR 스킬",
+    "category": "Productivity",
+    "developerName": "risingdream"
+  }
+}

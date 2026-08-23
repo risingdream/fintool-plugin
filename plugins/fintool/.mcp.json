@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "fintool": {
+      "type": "http",
+      "url": "https://fintool-mcp.risingdream.workers.dev/mcp"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "fintool-plugin",
+  "owner": {
+    "name": "risingdream"
+  },
+  "metadata": {
+    "description": "fintool 에이전트 플러그인 마켓플레이스 — 원격 fintool MCP + 스타트업 재무·IR 스킬",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "fintool",
+      "source": "./plugins/fintool",
+      "description": "스타트업 재무 계산(원격 MCP) + startup-finance·valuation·portfolio-risk·fixed-income 스킬, 스타트업 검증 패키지(startup-design·competitors·positioning·pitch)",
+      "version": "0.5.1",
+      "author": { "name": "risingdream" },
+      "homepage": "https://github.com/risingdream/fintool-plugin",
+      "license": "MIT",
+      "category": "productivity",
+      "keywords": ["finance", "mcp", "startup", "ir"]
+    }
+  ]
+}

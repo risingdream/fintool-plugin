@@ -1,0 +1,12 @@
+interface:
+  display_name: "Startup Finance"
+  short_description: "fintool로 스타트업 재무모델·IR을 만든다"
+  default_prompt: "스타트업 재무모델과 IR 자료를 fintool로 만들어줘"
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "fintool"
+      description: "fintool remote MCP"
+      transport: "streamable_http"
+      url: "https://fintool-mcp.risingdream.workers.dev/mcp"

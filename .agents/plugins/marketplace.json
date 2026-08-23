@@ -1,0 +1,20 @@
+{
+  "name": "fintool-plugin",
+  "interface": {
+    "displayName": "fintool-plugin"
+  },
+  "plugins": [
+    {
+      "name": "fintool",
+      "source": {
+        "source": "local",
+        "path": "./plugins/fintool"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

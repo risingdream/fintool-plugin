@@ -1,0 +1,13 @@
+{
+  "name": "fintool",
+  "displayName": "fintool",
+  "version": "0.5.1",
+  "description": "원격 fintool MCP와 startup-finance·valuation·portfolio-risk·fixed-income 스킬, 스타트업 검증 패키지(startup-design·competitors·positioning·pitch).",
+  "author": {
+    "name": "risingdream"
+  },
+  "homepage": "https://github.com/risingdream/fintool-plugin",
+  "repository": "https://github.com/risingdream/fintool-plugin",
+  "license": "MIT",
+  "keywords": ["finance", "mcp", "startup", "ir"]
+}
