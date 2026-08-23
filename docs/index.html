@@ -167,7 +167,7 @@
       </div>
       <div class="cols">
         <div class="col before" data-pane="before">
-          <div class="col-head">플러그인 없음 <span class="meta"></span></div>
+          <div class="col-head">플러그인 없음 <span class="meta">30s · 1 turns</span></div>
           <div class="chat"><p>계산만 필요한 질문이라 도구 없이 바로 답합니다.</p>
 <h4>가정</h4>
 <ul>
@@ -201,12 +201,11 @@
 <ul>
 <li>성장률이 <b>월 10% 이하로 떨어지는 것이 관측되면</b> 즉시 라운드 준비를 시작하세요. 런웨이 12개월 지점(성장 0% 기준)이 마지노선이고, 펀드레이징에 보통 6개월이 걸리므로 6개월 전에는 움직여야 합니다.</li>
 <li>라운드 규모를 잡는다면 공식은 <code>다운사이드 시나리오(예: 5% 성장) 손익분기까지 누적 번 + 6개월 버퍼(3억) − 보유 현금</code>. 5% 시나리오 기준이면 약 <b>3~4억</b> 정도가 안전 마진이고, 투자 확대 계획이 있으면 그 금액을 더하세요.</li>
-</ul>
-<p>[result] duration_ms=30145 turns=1 cost_usd=0.78307</p></div>
+</ul></div>
           <a class="src" href="assets/transcripts/case-a-off.txt">원문 case-a-off.txt</a>
         </div>
         <div class="col after" data-pane="after">
-          <div class="col-head">fintool <span class="meta"></span></div>
+          <div class="col-head">fintool <span class="meta">175s · 33 turns</span></div>
           <div class="chain"><span class="pill pill-mcp">Skill · fintool:startup-finance</span><span class="pill pill-mcp">fintool_catalog</span><span class="pill">Read ×2</span><span class="pill pill-mcp">fintool_run · financial-model ×25</span><span class="pill">Read ×2</span></div>
           
         <div class="envelope">
@@ -252,8 +251,7 @@
 <ul>
 <li>원가(COGS) 0, 세금 0, 매출채권 회수 지연 0으로 계산했습니다. 원가율이 있거나 결제가 30~60일 밀리면 최저점이 더 내려갑니다 — 원가율·회수 조건을 알려주시면 fintool로 정밀 모델(월별 BS/CF)을 다시 돌리겠습니다.</li>
 <li>고정비를 6억 달러 아닌 8천만 원 <b>고정</b>으로 두었습니다. 성장과 함께 고정비도 늘어나는 게 보통이라 그 가정을 넣으면 결론이 달라집니다.</li>
-</ul>
-<p>[result] duration_ms=175105 turns=33 cost_usd=2.481297000000001</p></div>
+</ul></div>
           <a class="src" href="assets/transcripts/case-a-on.txt">원문 case-a-on.txt</a>
         </div>
       </div>
@@ -272,7 +270,7 @@
       </div>
       <div class="cols">
         <div class="col before" data-pane="before">
-          <div class="col-head">플러그인 없음 <span class="meta"></span></div>
+          <div class="col-head">플러그인 없음 <span class="meta">16s · 1 turns</span></div>
           <div class="chat"><p><b>2년차(13~24회차) 이자 총액: 약 13,178,650원 (≈1,318만 원)</b></p>
 <p>계산 근거 (월 이율 0.375%, 360회):</p>
 <ul>
@@ -281,12 +279,11 @@
 <li>2년차 원금 상환: 약 5,062,000원</li>
 <li>2년차 이자 = 18,240,684 − 5,062,000 ≈ <b>13,178,650원</b></li>
 </ul>
-<p>참고로 1년차 이자는 약 13,401,000원이라 2년차에 약 22만 원 줄어듭니다. 은행별 일할 계산·반올림 방식에 따라 수천 원 정도 차이가 날 수 있습니다.</p>
-<p>[result] duration_ms=16335 turns=1 cost_usd=0.43265000000000003</p></div>
+<p>참고로 1년차 이자는 약 13,401,000원이라 2년차에 약 22만 원 줄어듭니다. 은행별 일할 계산·반올림 방식에 따라 수천 원 정도 차이가 날 수 있습니다.</p></div>
           <a class="src" href="assets/transcripts/case-b-off.txt">원문 case-b-off.txt</a>
         </div>
         <div class="col after" data-pane="after">
-          <div class="col-head">fintool <span class="meta"></span></div>
+          <div class="col-head">fintool <span class="meta">15s · 3 turns</span></div>
           <div class="chain"><span class="pill pill-mcp">fintool_catalog</span><span class="pill pill-mcp">fintool_run · amort</span></div>
           <p class="env-note">호출 1회. <span class="mono">amort --from 13 --to 24</span> 봉투의 <span class="mono">cumulative.interest = -13178657.02</span>가 그대로 답이 됐다. 왼쪽 암산은 <span class="mono">13,178,650</span>(7원 차이), 월 상환액 <span class="mono">1,520,057</span>(1원 차이).</p>
           <div class="chat"><p><b>2년차(13~24회차) 이자 총액: 약 13,178,657원</b></p>
@@ -297,8 +294,7 @@
 <tr><td>2년차 원금 상환 합계 (CUMPRINC 13~24)</td><td>5,062,014원</td></tr>
 <tr><td>2년차 총 납입액</td><td>18,240,671원</td></tr>
 </tbody></table>
-<p>참고로 1년차 이자는 약 1,341만원이라 2년차에 약 23만원 줄어드는 정도이고, 30년 전체 이자 총액은 약 2억 4,722만원입니다. (월 복리 환산 기준, 은행별 일할 계산 방식에 따라 수천 원 단위 차이는 있을 수 있습니다.)</p>
-<p>[result] duration_ms=15365 turns=3 cost_usd=0.503269</p></div>
+<p>참고로 1년차 이자는 약 1,341만원이라 2년차에 약 23만원 줄어드는 정도이고, 30년 전체 이자 총액은 약 2억 4,722만원입니다. (월 복리 환산 기준, 은행별 일할 계산 방식에 따라 수천 원 단위 차이는 있을 수 있습니다.)</p></div>
           <a class="src" href="assets/transcripts/case-b-on.txt">원문 case-b-on.txt</a>
         </div>
       </div>
@@ -317,7 +313,7 @@
       </div>
       <div class="cols">
         <div class="col before" data-pane="before">
-          <div class="col-head">플러그인 없음 <span class="meta"></span></div>
+          <div class="col-head">플러그인 없음 <span class="meta">10s · 1 turns</span></div>
           <div class="chat"><p>어떤 회사인지 알 수 없어서 바로 진행하기 어렵습니다. 현재 작업 디렉터리는 빈 임시 폴더(git 저장소 아님)이고, 대화에도 회사 이름이나 재무 자료가 없습니다.</p>
 <p>DCF를 진행하려면 아래를 알려주세요:</p>
 <ol>
@@ -326,12 +322,11 @@
 <li><b>핵심 가정</b> (없으면 제가 합리적 기본값으로 잡고 명시하겠습니다)<ul><li>추정 기간 (기본 5년)</li><li>매출 성장률, 영업이익률, CapEx·운전자본 가정</li><li>WACC (무위험수익률, 베타, 시장위험프리미엄, 부채비용, 세율)</li><li>영구성장률 (기본 2~3%)</li></ul></li>
 <li><b>산출 형태</b> — 마크다운 보고서(<code>docs/</code>)만 원하시는지, 파이썬 모델(+pytest) 또는 엑셀 시트까지 필요하신지</li>
 </ol>
-<p>회사명만 알려주셔도 나머지는 기본 가정으로 진행하고 가정을 명시해서 보고하겠습니다.</p>
-<p>[result] duration_ms=10024 turns=1 cost_usd=0.15525</p></div>
+<p>회사명만 알려주셔도 나머지는 기본 가정으로 진행하고 가정을 명시해서 보고하겠습니다.</p></div>
           <a class="src" href="assets/transcripts/case-c-off.txt">원문 case-c-off.txt</a>
         </div>
         <div class="col after" data-pane="after">
-          <div class="col-head">fintool <span class="meta"></span></div>
+          <div class="col-head">fintool <span class="meta">16s · 3 turns</span></div>
           <div class="chain"><span class="pill pill-mcp">Skill · fintool:valuation</span></div>
           <p class="env-note">valuation 스킬이 WACC 입력(무위험수익률·베타·ERP·부채비용·세율·시장가치)과 FCFF·영구성장률을 먼저 요구한다. "보통 10%"로 가정하고 넘어가지 않는다.</p>
           <div class="chat"><p>어떤 회사인지 확인할 수가 없어서 멈춥니다. 현재 작업 폴더(<code>/private/var/folders/.../tmp.strpV0I8TD</code>)는 임시 디렉터리이고, 대화에도 회사명이나 재무 자료가 없습니다. DCF는 제가 숫자를 지어내지 않고 fintool 봉투만 인용하는 방식이라 아래 입력이 필요합니다.</p>
@@ -342,8 +337,7 @@
 <li>비레버드 FCFF 경로 (연도별, 원 단위) — 또는 재무 파일 경로 (<code>@파일</code>)</li>
 <li>영구성장률 또는 exit multiple</li>
 </ol>
-<p>재무 파일이 있으면 경로만 알려주셔도 됩니다. 받는 즉시 <code>wacc → dcf</code> workflow로 계산해 기업가치·주주가치를 드리겠습니다.</p>
-<p>[result] duration_ms=15963 turns=3 cost_usd=0.45921999999999996</p></div>
+<p>재무 파일이 있으면 경로만 알려주셔도 됩니다. 받는 즉시 <code>wacc → dcf</code> workflow로 계산해 기업가치·주주가치를 드리겠습니다.</p></div>
           <a class="src" href="assets/transcripts/case-c-on.txt">원문 case-c-on.txt</a>
         </div>
       </div>
