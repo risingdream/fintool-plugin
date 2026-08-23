@@ -96,15 +96,16 @@
     <div class="tbl-wrap">
     <table class="summary">
       <thead><tr><th>모델</th><th>플러그인 없음</th><th class="on">fintool</th><th>차이</th></tr></thead>
-      <tbody><tr><td class="mname">Opus 5</td><td class=""><b>16/16</b> <span class="dim">(100%)</span><br><span class="mini">833s · 67,013 tok · $3.54</span><br><span class="mini">도구 0 · 해시 0</span></td><td class="on"><b>16/16</b> <span class="dim">(100%)</span><br><span class="mini">1094s · 74,137 tok · $5.45</span><br><span class="mini">도구 47 · 해시 10</span></td><td><b class="flat">0</b> 항목<br><span class="mini">비용 +$1.91</span></td></tr><tr><td class="mname">Sonnet 5</td><td class=""><b>15/16</b> <span class="dim">(94%)</span><br><span class="mini">582s · 60,670 tok · $1.16</span><br><span class="mini">도구 0 · 해시 0</span></td><td class="on"><b>15/16</b> <span class="dim">(94%)</span><br><span class="mini">596s · 51,290 tok · $1.55</span><br><span class="mini">도구 31 · 해시 5</span></td><td><b class="flat">0</b> 항목<br><span class="mini">비용 +$0.40</span></td></tr><tr><td class="mname">Haiku 4.5</td><td class=""><b>9/16</b> <span class="dim">(56%)</span><br><span class="mini">499s · 59,975 tok · $0.71</span><br><span class="mini">도구 5 · 해시 0</span></td><td class="on"><b>11/16</b> <span class="dim">(69%)</span><br><span class="mini">447s · 40,996 tok · $0.50</span><br><span class="mini">도구 28 · 해시 0</span></td><td><b class="good">+2</b> 항목<br><span class="mini">비용 $-0.21</span></td></tr></tbody>
+      <tbody><tr><td class="mname">Opus 5</td><td class=""><b>16/16</b> <span class="dim">(100%)</span><br><span class="mini">833s · 67,013 tok · $3.54</span><br><span class="mini">도구 0 · 해시 0</span></td><td class="on"><b>16/16</b> <span class="dim">(100%)</span><br><span class="mini">1094s · 74,137 tok · $5.45</span><br><span class="mini">도구 47 · 해시 10</span></td><td><b class="flat">0</b> 항목<br><span class="mini">비용 +$1.91</span></td></tr><tr><td class="mname">Sonnet 5</td><td class=""><b>15/16</b> <span class="dim">(94%)</span><br><span class="mini">582s · 60,670 tok · $1.16</span><br><span class="mini">도구 0 · 해시 0</span></td><td class="on"><b>16/16</b> <span class="dim">(100%)</span><br><span class="mini">596s · 51,290 tok · $1.55</span><br><span class="mini">도구 31 · 해시 5</span></td><td><b class="good">+1</b> 항목<br><span class="mini">비용 +$0.40</span></td></tr><tr><td class="mname">Haiku 4.5</td><td class=""><b>10/16</b> <span class="dim">(62%)</span><br><span class="mini">499s · 59,975 tok · $0.71</span><br><span class="mini">도구 5 · 해시 0</span></td><td class="on"><b>11/16</b> <span class="dim">(69%)</span><br><span class="mini">447s · 40,996 tok · $0.50</span><br><span class="mini">도구 28 · 해시 0</span></td><td><b class="good">+1</b> 항목<br><span class="mini">비용 $-0.21</span></td></tr></tbody>
     </table>
     </div>
     <ul class="notes" style="margin-top:18px">
-      <li><b>모델이 작을수록 플러그인이 크게 기여한다.</b> Opus는 도구 없이도 16/16이라 순위가 안 바뀌지만, Haiku는 9/16 → 11/16으로 올라간다.</li>
+      <li><b>모델이 작을수록 플러그인이 크게 기여한다.</b> Opus는 도구 없이도 16/16이라 순위가 안 바뀌고, Sonnet은 15/16 → 16/16, Haiku는 10/16 → 11/16이다.</li>
       <li><b>Haiku는 플러그인을 쓰면 더 싸진다</b>($0.71 → $0.50). 도구 없이 답하려고 긴 수계산을 쏟아내는 비용이 도구 호출 비용보다 크다.</li>
       <li><b>엔진은 입력 오류를 막아주지 않는다.</b> 사례 H에서 Haiku는 "5,000억"을 500억으로 읽고 그대로 엔진에 넣어 1,705계약 대신 170계약을 냈다. 계산은 맞고 입력이 틀렸다.</li>
       <li><b>도구가 없으면 지어내기도 한다.</b> Haiku off는 존재하지 않는 <code>Bash</code>·<code>Write_file</code> 도구를 호출하려 했고, Sonnet off는 사례 E에서 답 대신 <code>{ruin_prob:.1%}</code> 자리표시자가 든 파이썬 스크립트를 냈다.</li>
       <li>해시(<code>calculation_hash</code>)를 답변에 인용한 것은 Opus(10건)·Sonnet(5건)뿐이고 Haiku는 0건이다. 봉투를 받아도 인용까지 가는 건 별개 문제다.</li>
+      <li><b>엔진 호출 97건 중 22건(23%)이 입력 오류로 실패했다.</b> 그중 14건이 <code>attribution</code> 한 도구에 몰려 있다 — 카탈로그가 <code>--input</code> JSON의 필드 이름을 알려주지 않아 모델이 <code>sectors</code>·<code>holdings</code>·<code>groups</code>·<code>portfolioWeight</code>를 차례로 찍어본다. 자세한 분석은 <a href="https://github.com/risingdream/finance-toolbox">finance-toolbox</a> 이슈에 정리했다.</li>
     </ul>
   </section>
 
@@ -1390,7 +1391,7 @@ if depleted_simulations and survived_simulations:
 <li>매출총이익률(원가율)</li>
 <li>성장률이 몇 개월간 유지될 것으로 보는지 (예: 3개월 후 10%로 둔화)</li>
 <li>고정비도 인원 증가에 따라 늘어나는지</li>
-</ol></div><p class="src"><a href="assets/transcripts/case-a-sonnet-off.txt">원문 트랜스크립트 (도구 호출·반환 포함)</a></p></details></td><td class="on"><div class="chips"><span class="chk no">✗ 현금 저점 4.6억대</span><span class="chk ok">✓ 손익분기 5개월/2027-01</span></div><div class="mini">68s · 5 turns · 5,374 tok · $0.212</div><div class="chain"><span class="pill">Skill:fintool:startup-finance</span><span class="pill">fintool_run:financial-model ×2</span></div><details><summary>답변 보기</summary><div class="chat"><h5>결과 (fintool <code>financial-model</code> v2, 월별 정밀 계산)</h5>
+</ol></div><p class="src"><a href="assets/transcripts/case-a-sonnet-off.txt">원문 트랜스크립트 (도구 호출·반환 포함)</a></p></details></td><td class="on"><div class="chips"><span class="chk ok">✓ 현금 저점 4.6억대</span><span class="chk ok">✓ 손익분기 5개월/2027-01</span></div><div class="mini">68s · 5 turns · 5,374 tok · $0.212</div><div class="chain"><span class="pill">Skill:fintool:startup-finance</span><span class="pill">fintool_run:financial-model ×2</span></div><details><summary>답변 보기</summary><div class="chat"><h5>결과 (fintool <code>financial-model</code> v2, 월별 정밀 계산)</h5>
 <p><b>전제:</b> COGS 0원(매출≈매출총이익), 현금 6억, 고정비 월 8천만 원 고정, 세금 0%로 가정. (원가율·세금은 입력받지 않아 반영 안 함 — 실제로는 이 값들만큼 소진 속도가 빨라짐)</p>
 <h5>시나리오 1 — 월 30% 성장 (기준)</h5>
 <ul>
@@ -1672,7 +1673,7 @@ for m in months[:12]:
 <tr><td><b>총 Implementation Shortfall</b></td><td><b>251,000,000원</b></td><td><b>106.36 bp</b></td></tr>
 </tbody></table>
 <p><b>검증</b>: 실제 총비용(체결액 21,442,200,000원 + 미체결분 종가평가 2,405,000,000원 + 명시비용 3,800,000원 = 23,851,000,000원) − 명목가치(23,600,000,000원) = 251,000,000원으로 일치합니다.</p>
-<p>가장 큰 비중은 지연비용(주문이 시장에 도달하기 전 250원 이미 상승)이고, 그다음이 체결 과정의 시장충격입니다. 알고리즘 실행 속도를 높여 도달 지연을 줄이는 것이 이 케이스에서 비용 절감 효과가 가장 클 것으로 보입니다.</p></div><p class="src"><a href="assets/transcripts/case-f-sonnet-on.txt">원문 트랜스크립트 (도구 호출·반환 포함)</a></p></details></td></tr><tr><td class="mname">Haiku 4.5</td><td class=""><div class="chips"><span class="chk ok">✓ IS 251,000,000원</span><span class="chk no">✗ 106.36bp</span></div><div class="mini">29s · 1 turns · 4,692 tok · $0.028</div><details><summary>답변 보기</summary><div class="chat"><h5>Implementation Shortfall 분해 분석</h5>
+<p>가장 큰 비중은 지연비용(주문이 시장에 도달하기 전 250원 이미 상승)이고, 그다음이 체결 과정의 시장충격입니다. 알고리즘 실행 속도를 높여 도달 지연을 줄이는 것이 이 케이스에서 비용 절감 효과가 가장 클 것으로 보입니다.</p></div><p class="src"><a href="assets/transcripts/case-f-sonnet-on.txt">원문 트랜스크립트 (도구 호출·반환 포함)</a></p></details></td></tr><tr><td class="mname">Haiku 4.5</td><td class=""><div class="chips"><span class="chk ok">✓ IS 251,000,000원</span><span class="chk ok">✓ 106.36bp</span></div><div class="mini">29s · 1 turns · 4,692 tok · $0.028</div><details><summary>답변 보기</summary><div class="chat"><h5>Implementation Shortfall 분해 분석</h5>
 <p>주어진 정보를 정리하고 단계별로 계산하겠습니다.</p>
 <h5>기본 정보 정리</h5>
 <ul>
