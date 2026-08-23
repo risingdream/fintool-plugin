@@ -1,0 +1,488 @@
+# prompt
+월 매출 3천만 원, 월 30% 성장, 고정비 8천만 원, 현금 6억. 런웨이와 다음 라운드 필요액은?
+
+# run: plugin ON (fintool@fintool-plugin 0.5.1) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · claude-fable-5 · 2026-08-23
+
+[assistant]
+fintool의 startup-finance 스킬로 런웨이와 자금소요를 계산하겠습니다.
+
+[tool_use Skill]
+{"skill":"fintool:startup-finance","args":"월 매출 3천만 원, 월 30% 성장, 고정비 8천만 원, 현금 6억 — 런웨이와 다음 라운드 필요액"}
+
+[tool_result]
+Launching skill: fintool:startup-finance
+
+[assistant]
+먼저 카탈로그에서 월별 모델(`financial-model`) 스키마를 확인하겠습니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_catalog]
+{}
+
+[tool_result]
+<persisted-output>
+Output too large (231.5KB). Full output saved to: ~/.claude/projects/-private-var-folders-v5-wvzncv9s5mq9jmdp0-8sm8n80000gn-T-tmp-strpV0I8TD/06ba419b-c1bc-4dc5-8b46-d561fe5449cd/tool-results/toolu_017TXqQXt82Hj3S2qwCW82FG.json
+
+Preview (first 2KB):
+[
+  {
+    "type": "text",
+    "text": "{\n  \"ok\": true,\n  \"tool\": \"tools\",\n  \"data\": {\n    \"global_flags\": [\n      {\n        \"name\": \"format\",\n        \"type\": \"string\",\n        \"default\": \"json\",\n        \"description\": \"출력 포맷 (json|table). 기본값 json은 항상 파싱 가능한 형태를 보장한다\"\n      }\n    ],\n    \"tools\": [\n      {\n        \"name\": \"amort\",\n        \"kind\": \"calculator\",\n        \"summary\": \"상환 스케줄 전체와 구간 누적을 한 번에 낸다 (엑셀 IPMT·PPMT·CUMIPMT·CUMPRINC·ISPMT)\",\n        \"usage\": \"fintool amort [flags]\",\n        \"example\": \"  # 3억을 연 4.5% 30년 원리금균등으로 빌렸을 때의 전체 스케줄\\n  fintool amort --pv 300000000 --rate 0.00375 --nper 360\\n\\n  # 2년차(13~24회차)에 낸 이자와 갚은 원금\\n  fintool amort --pv 125000000 --rate 0.0075 --nper 360 --from 13 --to 24\\n\\n  # 같은 대출을 원금균등으로 갚을 때 (엑셀 ISPMT)\\n  fintool amort --method equal-principal --pv 300000000 --rate 0.00375 --nper 360\\n\\n  # 사람이 읽는 표로 확인\\n  fintool amort --pv 50000000 --rate 0.005 --nper 60 --format table\",\n        \"flags\": [\n          {\n            \"name\": \"from\",\n            \"type\": \"int\",\n            \"default\": \"0\",\n            \"description\": \"누적 구간 시작 회차(1부터). 지정하면 CUMIPMT/CUMPRINC가 함께 나온다\"\n          },\n          {\n            \"name\": \"fv\",\n            \"type\": \"float64\",\n            \"default\": \"0\",\n            \"description\": \"만기 잔액. 기본 0(원금을 모두 상환)\"\n          },\n          {\n            \"name\": \"method\",\n            \"type\": \"string\",\n            \"default\": \"equal-payment\",\n            \"description\": \"상환 방식 (equal-payment|equal-principal). equal-principal이 엑셀 ISPMT에 대응한다\"\n          },\n          {\n            \"name\": \"nper\",\n            \"type\": \"int\",\n            \"default\": \"0\",\n            \"description\": \"총 상환 횟수. 1 이상이어야 한다\"\n          },\n          {\n            \"name\": \"pv\",\n            \"type\": \"float64\",\n            \"default\": \"0\",\n            \"description\": \"현재가치. 대출 원금이
+...
+</persisted-output>
+
+[tool_use Read]
+{"file_path":"~/.claude/projects/-private-var-folders-v5-wvzncv9s5mq9jmdp0-8sm8n80000gn-T-tmp-strpV0I8TD/06ba419b-c1bc-4dc5-8b46-d561fe5449cd/tool-results/toolu_017TXqQXt82Hj3S2qwCW82FG.json"}
+
+[tool_result]
+File content (260.2KB) exceeds maximum allowed size (256KB). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+
+[tool_use Read]
+{"file_path":"~/.claude/projects/-private-var-folders-v5-wvzncv9s5mq9jmdp0-8sm8n80000gn-T-tmp-strpV0I8TD/06ba419b-c1bc-4dc5-8b46-d561fe5449cd/tool-results/toolu_017TXqQXt82Hj3S2qwCW82FG.json","offset":1,"limit":5}
+
+[tool_result]
+File content (106264 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+
+[assistant]
+카탈로그 파일이 너무 커서 읽히지 않으니, `financial-model`을 직접 호출해 스키마를 확인하겠습니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"help":true}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "fintool_run",
+  "error": {
+    "code": "invalid_input",
+    "message": "알 수 없는 플래그 \"help\"입니다"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "--spec를 지정해야 합니다 (인라인 JSON 또는 @파일.json)"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_version at $.version: version은 \"financial-model/v1\" 또는 \"financial-model/v2\"여야 합니다",
+    "kind": "invalid_version",
+    "path": "$.version"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\"}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_period at $.months: months는 12~60이어야 합니다",
+    "kind": "invalid_period",
+    "path": "$.months"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_period at $.start_month: start_month는 YYYY-MM 형식이어야 합니다",
+    "kind": "invalid_period",
+    "path": "$.start_month"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\"}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_unit at $.currency: currency는 ISO 4217 대문자 3자리여야 합니다",
+    "kind": "invalid_unit",
+    "path": "$.currency"
+  }
+}
+
+[assistant]
+스키마를 오류 메시지로 한 필드씩 역추적하는 중입니다. 계속 진행합니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\"}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_schedule at $.operating.revenue: 길이는 1 또는 months(24)여야 합니다",
+    "kind": "invalid_schedule",
+    "path": "$.operating.revenue"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":{\"base\":30000000,\"growth\":0.3}}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_json at $: JSON 객체를 읽을 수 없습니다: json: cannot unmarshal object into Go struct field operatingV2DTO.operating.revenue of type []float64",
+    "kind": "invalid_json",
+    "path": "$"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"opex\":[80000000]}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model unknown_field at $.opex: 알 수 없는 필드 \"opex\"입니다",
+    "kind": "unknown_field",
+    "path": "$.opex"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627]}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_schedule at $.operating.cogs: 길이는 1 또는 months(24)여야 합니다",
+    "kind": "invalid_schedule",
+    "path": "$.operating.cogs"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0]}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_schedule at $.operating.operating_expenses: 길이는 1 또는 months(24)여야 합니다",
+    "kind": "invalid_schedule",
+    "path": "$.operating.operating_expenses"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0],\"operating_expenses\":[80000000]}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_schedule at $.working_capital.accounts_receivable: 길이는 1 또는 months(24)여야 합니다",
+    "kind": "invalid_schedule",
+    "path": "$.working_capital.accounts_receivable"
+  }
+}
+
+[assistant]
+필수 필드를 하나씩 채우는 중입니다(운전자본·현금 등). 계속합니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"accounts_payable\":[0],\"inventory\":[0]},\"cash_begin\":600000000}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model unknown_field at $.cash_begin: 알 수 없는 필드 \"cash_begin\"입니다",
+    "kind": "unknown_field",
+    "path": "$.cash_begin"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"accounts_payable\":[0],\"inventory\":[0]}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_schedule at $.working_capital.other_current_assets: 길이는 1 또는 months(24)여야 합니다",
+    "kind": "invalid_schedule",
+    "path": "$.working_capital.other_current_assets"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"accounts_payable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"other_current_liabilities\":[0]}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_schedule at $.working_capital.deferred_revenue: 길이는 1 또는 months(24)여야 합니다",
+    "kind": "invalid_schedule",
+    "path": "$.working_capital.deferred_revenue"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"accounts_payable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"other_current_liabilities\":[0],\"deferred_revenue\":[0],\"prepaid_expenses\":[0],\"accrued_expenses\":[0]}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model unknown_field at $.prepaid_expenses: 알 수 없는 필드 \"prepaid_expenses\"입니다",
+    "kind": "unknown_field",
+    "path": "$.prepaid_expenses"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"accounts_payable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"other_current_liabilities\":[0],\"deferred_revenue\":[0]}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_value at $.ppe.useful_life_months: useful_life_months는 1 이상이어야 합니다",
+    "kind": "invalid_value",
+    "path": "$.ppe.useful_life_months"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"accounts_payable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"other_current_liabilities\":[0],\"deferred_revenue\":[0]},\"ppe\":{\"useful_life_months\":60,\"capex\":[0],\"opening_balance\":0}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model unknown_field at $.opening_balance: 알 수 없는 필드 \"opening_balance\"입니다",
+    "kind": "unknown_field",
+    "path": "$.opening_balance"
+  }
+}
+
+[assistant]
+스키마 탐색이 길어지고 있습니다. PPE·현금 필드까지 마저 맞추겠습니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"accounts_payable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"other_current_liabilities\":[0],\"deferred_revenue\":[0]},\"ppe\":{\"useful_life_months\":60,\"capex\":[0]}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_schedule at $.ppe.existing_depreciation_amortization: 길이는 1 또는 months(24)여야 합니다",
+    "kind": "invalid_schedule",
+    "path": "$.ppe.existing_depreciation_amortization"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"accounts_payable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"other_current_liabilities\":[0],\"deferred_revenue\":[0]},\"ppe\":{\"useful_life_months\":60,\"capex\":[0],\"existing_depreciation_amortization\":[0]}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_schedule at $.debt.draws: 길이는 1 또는 months(24)여야 합니다",
+    "kind": "invalid_schedule",
+    "path": "$.debt.draws"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"accounts_payable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"other_current_liabilities\":[0],\"deferred_revenue\":[0]},\"ppe\":{\"useful_life_months\":60,\"capex\":[0],\"existing_depreciation_amortization\":[0]},\"debt\":{\"draws\":[0],\"repayments\":[0],\"interest_rate\":0}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model unknown_field at $.interest_rate: 알 수 없는 필드 \"interest_rate\"입니다",
+    "kind": "unknown_field",
+    "path": "$.interest_rate"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"accounts_payable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"other_current_liabilities\":[0],\"deferred_revenue\":[0]},\"ppe\":{\"useful_life_months\":60,\"capex\":[0],\"existing_depreciation_amortization\":[0]},\"debt\":{\"draws\":[0],\"repayments\":[0]}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_schedule at $.debt.annual_interest_rate: 길이는 1 또는 months(24)여야 합니다",
+    "kind": "invalid_schedule",
+    "path": "$.debt.annual_interest_rate"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"accounts_payable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"other_current_liabilities\":[0],\"deferred_revenue\":[0]},\"ppe\":{\"useful_life_months\":60,\"capex\":[0],\"existing_depreciation_amortization\":[0]},\"debt\":{\"draws\":[0],\"repayments\":[0],\"annual_interest_rate\":[0]}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_schedule at $.equity.raises: 길이는 1 또는 months(24)여야 합니다",
+    "kind": "invalid_schedule",
+    "path": "$.equity.raises"
+  }
+}
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"accounts_payable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"other_current_liabilities\":[0],\"deferred_revenue\":[0]},\"ppe\":{\"useful_life_months\":60,\"capex\":[0],\"existing_depreciation_amortization\":[0]},\"debt\":{\"draws\":[0],\"repayments\":[0],\"annual_interest_rate\":[0]},\"equity\":{\"raises\":[0],\"dividends\":[0]}}"}}
+
+[tool_result]
+{
+  "ok": false,
+  "tool": "financial-model",
+  "error": {
+    "code": "invalid_input",
+    "message": "financial-model invalid_value at $.tax.policy: policy는 direct|rate 중 하나여야 합니다",
+    "kind": "invalid_value",
+    "path": "$.tax.policy"
+  }
+}
+
+[assistant]
+세금·개시잔액 섹션까지 채우면 실행될 것 같습니다. 계속합니다.
+
+[tool_use mcp__plugin_fintool_fintool__fintool_run]
+{"tool":"financial-model","flags":{"spec":"{\"version\":\"financial-model/v2\",\"months\":24,\"start_month\":\"2026-09\",\"currency\":\"KRW\",\"operating\":{\"revenue\":[30000000,39000000,50700000,65910000,85683000,111387900,144804270,188245551,244719216,318134981,413575476,537648118,698942554,908625320,1181212916,1535576791,1996249828,2595124776,3373662209,4385760872,5701489134,7411935874,9635516636,12526171627],\"cogs\":[0],\"operating_expenses\":[80000000]},\"working_capital\":{\"accounts_receivable\":[0],\"accounts_payable\":[0],\"inventory\":[0],\"other_current_assets\":[0],\"other_current_liabilities\":[0],\"deferred_revenue\":[0]},\"ppe\":{\"useful_life_months\":60,\"capex\":[0],\"existing_depreciation_amortization\":[0]},\"debt\":{\"draws\":[0],\"repayments\":[0],\"annual_interest_rate\":[0]},\"equity\":{\"raises\":[0],\"dividends\":[0]},\"tax\":{\"policy\":\"rate\",\"rate\":0.0}}"}}
+
+[tool_result]
+<persisted-output>
+Output too large (327KB). Full output saved to: ~/.claude/projects/-private-var-folders-v5-wvzncv9s5mq9jmdp0-8sm8n80000gn-T-tmp-strpV0I8TD/06ba419b-c1bc-4dc5-8b46-d561fe5449cd/tool-results/toolu_01PW5vuU93T55eK8kERWP7az.json
+
+Preview (first 2KB):
+[
+  {
+    "type": "text",
+    "text": "{\n  \"ok\": true,\n  \"tool\": \"financial-model\",\n  \"data\": {\n    \"schema_version\": \"financial-model/v2\",\n    \"engine_version\": \"financial-model-engine/2.0.0\",\n    \"periods\": [\n      {\n        \"month\": \"2026-09\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2026-10\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2026-11\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2026-12\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2027-01\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2027-02\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2027-03\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2027-04\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2027-05\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2027-06\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2027-07\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2027-08\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2027-09\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2027-10\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2027-11\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2027-12\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2028-01\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2028-02\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2028-03\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2028-04\",\n        \"status\": \"forecast\"\n      },\n      {\n        \"month\": \"2028-05\",\n  
+...
+</persisted-output>
+
+[tool_use Read]
+{"file_path":"~/.claude/projects/-private-var-folders-v5-wvzncv9s5mq9jmdp0-8sm8n80000gn-T-tmp-strpV0I8TD/06ba419b-c1bc-4dc5-8b46-d561fe5449cd/tool-results/toolu_01PW5vuU93T55eK8kERWP7az.json","offset":1,"limit":3}
+
+[tool_result]
+1	[
+2	  {
+3	    "type": "text",
+
+[tool_use Read]
+{"file_path":"~/.claude/projects/-private-var-folders-v5-wvzncv9s5mq9jmdp0-8sm8n80000gn-T-tmp-strpV0I8TD/06ba419b-c1bc-4dc5-8b46-d561fe5449cd/tool-results/toolu_01PW5vuU93T55eK8kERWP7az.json","offset":4,"limit":1}
+
+[tool_result]
+File content (151841 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.
+
+[assistant]
+계산 마쳤습니다. fintool `financial-model`은 실행됐지만 출력(327KB)이 읽을 수 없는 형태라 핵심 표는 직접 산술로 정리했습니다(단순 누적 계산이라 검증 가능합니다).
+
+## 결론
+
+**가정 그대로(월 30% 성장 유지)면 현금이 바닥나지 않습니다. 런웨이는 사실상 무한, 다음 라운드는 "생존용"으로는 필요 없습니다.**
+
+### 월별 현금 흐름 (단위: 백만 원, 원가 0·세금 0 가정)
+
+| 월 | 매출 | 고정비 | 순현금 | 기말현금 |
+|---|---|---|---|---|
+| M1 | 30.0 | 80 | −50.0 | 550.0 |
+| M2 | 39.0 | 80 | −41.0 | 509.0 |
+| M3 | 50.7 | 80 | −29.3 | 479.7 |
+| M4 | 65.9 | 80 | −14.1 | **465.6 (최저점)** |
+| M5 | 85.7 | 80 | +5.7 | 471.3 |
+| M6 | 111.4 | 80 | +31.4 | 502.7 |
+
+- **손익분기: 5개월째**, 그때까지 누적 소진 **약 1.34억**
+- 최저 현금 **약 4.66억** → 6억 중 4.66억은 쓰이지 않음
+
+### 성장률 민감도 (진짜 중요한 부분)
+
+월 30% 성장을 24개월 유지하면 월매출 125억이 됩니다 — 비현실적이므로 둔화 시나리오를 봐야 합니다.
+
+| 월 성장률 | 손익분기 | 누적 소진 | 6억으로 버티나 |
+|---|---|---|---|
+| 30% | 5개월 | 1.3억 | ✅ 여유 |
+| 10% | 12개월 | 3.2억 | ✅ |
+| 5% | 약 20개월 | 약 6.1억 | ⚠️ 딱 바닥 |
+| 0% (정체) | 없음 | 월 5천만 | ❌ **12개월 런웨이** |
+
+### 다음 라운드 필요액 (권장)
+
+- 생존 기준: **0원** (30% 유지 시)
+- 안전 기준(성장 정체 시에도 18~24개월 확보): 18개월 = 9억 필요 → **약 3억 부족**, 24개월 = 12억 → **약 6억 부족**
+- 따라서 조달한다면 **3~6억 규모**, 명분은 "런웨이 방어"가 아니라 **성장 가속(채용·마케팅으로 고정비 증액)** 용도가 맞습니다.
+
+### 주의
+
+- 원가(COGS) 0, 세금 0, 매출채권 회수 지연 0으로 계산했습니다. 원가율이 있거나 결제가 30~60일 밀리면 최저점이 더 내려갑니다 — 원가율·회수 조건을 알려주시면 fintool로 정밀 모델(월별 BS/CF)을 다시 돌리겠습니다.
+- 고정비를 6억 달러 아닌 8천만 원 **고정**으로 두었습니다. 성장과 함께 고정비도 늘어나는 게 보통이라 그 가정을 넣으면 결론이 달라집니다.
+
+[result] duration_ms=175105 turns=33 cost_usd=2.481297000000001

@@ -1,0 +1,26 @@
+# prompt
+이 회사 DCF 해줘
+
+# run: plugin ON (fintool@fintool-plugin 0.5.1) · claude -p --tools "Skill,Read" --mcp-config plugin:fintool:fintool --strict-mcp-config · claude-fable-5 · 2026-08-23
+
+[assistant]
+DCF 요청이니 `fintool:valuation` 스킬을 먼저 불러와 절차를 확인하겠습니다.
+
+[tool_use Skill]
+{"skill":"fintool:valuation","args":"이 회사 DCF"}
+
+[tool_result]
+Launching skill: fintool:valuation
+
+[assistant]
+어떤 회사인지 확인할 수가 없어서 멈춥니다. 현재 작업 폴더(`/private/var/folders/.../tmp.strpV0I8TD`)는 임시 디렉터리이고, 대화에도 회사명이나 재무 자료가 없습니다. DCF는 제가 숫자를 지어내지 않고 fintool 봉투만 인용하는 방식이라 아래 입력이 필요합니다.
+
+**필요한 정보**
+1. 회사명 (상장사면 티커)
+2. WACC 가정 — 무위험수익률, 베타, 시장위험프리미엄, 세전 부채비용, 세율, 자기자본·부채 **시장가치** (출처 포함)
+3. 비레버드 FCFF 경로 (연도별, 원 단위) — 또는 재무 파일 경로 (`@파일`)
+4. 영구성장률 또는 exit multiple
+
+재무 파일이 있으면 경로만 알려주셔도 됩니다. 받는 즉시 `wacc → dcf` workflow로 계산해 기업가치·주주가치를 드리겠습니다.
+
+[result] duration_ms=15963 turns=3 cost_usd=0.45921999999999996

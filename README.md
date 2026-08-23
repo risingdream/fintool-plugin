@@ -1,5 +1,7 @@
 # fintool-plugin
 
+**랜딩 페이지(플러그인 유무 Before/After 대조): https://risingdream.github.io/fintool-plugin/**
+
 스타트업 재무 계산 도구(원격 MCP)와 재무·IR 스킬 8종을 묶은 에이전트 플러그인 마켓플레이스다.
 Claude Desktop·Claude Code·Codex가 이 주소 하나로 같은 플러그인을 설치하고 갱신한다.
 

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>브릿지온(가상) — 시드 IR 재무 리포트</title>
+
+
+<style>
+  :root{--paper:#F5F7F6;--card:#FFFFFF;--ink:#132420;--muted:#5C6B66;--green:#0C6B52;--green-soft:#E3EFEA;--bear:#BC4A2E;--bear-soft:#F6E7E1;--line:#D8DFDC;--line-strong:#132420;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans KR',sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .page{max-width:860px;margin:0 auto;padding:56px 32px 80px;}
+  .mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}
+  .doc-tag{display:inline-block;font-size:12px;letter-spacing:.14em;color:var(--green);border:1px solid var(--green);padding:3px 10px;border-radius:2px;margin-bottom:20px;}
+  h1{font-size:34px;font-weight:700;letter-spacing:-.02em;line-height:1.25;}
+  .head-meta{display:flex;flex-wrap:wrap;gap:6px 28px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);}
+  .head-meta b{color:var(--ink);font-weight:500;}
+  section{margin-top:56px;}
+  .sec-label{font-size:12px;letter-spacing:.16em;color:var(--muted);margin-bottom:6px;}
+  h2{font-size:21px;font-weight:700;letter-spacing:-.01em;margin-bottom:18px;padding-bottom:10px;border-bottom:2px solid var(--line-strong);}
+  p.note{font-size:13px;color:var(--muted);margin-top:10px;}
+  .cite{color:var(--muted);}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px 18px;}
+  .kpi .k{font-size:12.5px;color:var(--muted);}
+  .kpi .v{font-size:26px;font-weight:700;letter-spacing:-.01em;margin-top:2px;}
+  .kpi .s{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .kpi.good .v{color:var(--green);}
+  .runway{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:24px 24px 20px;margin-top:14px;}
+  .runway h3{font-size:15px;font-weight:700;margin-bottom:16px;}
+  .track-row{display:grid;grid-template-columns:118px 1fr 92px;align-items:center;gap:14px;margin-bottom:14px;}
+  .track-row .lab{font-size:13px;color:var(--muted);}
+  .track-row .lab b{display:block;color:var(--ink);font-weight:500;}
+  .track{position:relative;height:18px;background:var(--paper);border:1px solid var(--line);border-radius:9px;overflow:hidden;}
+  .fill{position:absolute;inset:0 auto 0 0;border-radius:9px;}
+  .track-row .val{font-size:14px;font-weight:500;text-align:right;}
+  .track-row .val.bear{color:var(--bear);}
+  .track-row .val.base{color:var(--green);}
+  .runway .axis{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin:2px 106px 0 132px;}
+  .runway p{font-size:13.5px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden;font-size:13.5px;}
+  th,td{padding:9px 14px;text-align:right;border-bottom:1px solid var(--line);}
+  th:first-child,td:first-child{text-align:left;}
+  thead th{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:500;border-bottom:2px solid var(--line-strong);background:var(--card);}
+  td.num{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}
+  tr.total td{border-top:2px solid var(--line-strong);border-bottom:none;font-weight:700;}
+  td.neg{color:var(--bear);} td.pos{color:var(--green);}
+  tr:last-child td{border-bottom:none;}
+  .tbl-note{font-size:12.5px;color:var(--muted);margin-top:8px;}
+  .badge{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:2px;margin-left:8px;vertical-align:1px;}
+  .badge.bear{background:var(--bear-soft);color:var(--bear);}
+  .badge.base{background:var(--green-soft);color:var(--green);}
+  .badge.kind{margin-left:6px;background:var(--paper);color:var(--muted);font-size:11px;padding:0 6px;}
+  .badge.tier{display:inline-block;font-size:10.5px;background:var(--paper);color:var(--muted);border:1px solid var(--line);padding:0 5px;border-radius:2px;margin-left:4px;}
+  .badge.missing{background:var(--bear-soft);color:var(--bear);}
+  .warnbox{background:var(--card);border:1px solid var(--bear);border-radius:6px;padding:14px 18px;font-size:13px;color:var(--bear);}
+  .warnbox ul{list-style:none;margin-top:6px;}
+  .warnbox li{padding:2px 0;}
+  .ask{background:var(--ink);color:#EDF3F0;border-radius:6px;padding:26px 28px;}
+  .ask .row{display:flex;flex-wrap:wrap;gap:8px 0;align-items:baseline;}
+  .ask .item{flex:1 1 180px;}
+  .ask .k{font-size:12.5px;color:#9DB3AB;}
+  .ask .v{font-size:27px;font-weight:700;}
+  .ask .op{font-size:22px;color:#9DB3AB;padding:0 18px;align-self:center;}
+  .ask p{font-size:13.5px;color:#C6D5CF;margin-top:16px;padding-top:14px;border-top:1px solid #2C4038;}
+  .capbar{display:flex;height:26px;border-radius:6px;overflow:hidden;border:1px solid var(--line);margin-bottom:10px;}
+  .capbar div{height:100%;}
+  .caplegend{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:12.5px;color:var(--muted);margin-bottom:18px;}
+  .caplegend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;}
+  .verify{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;}
+  .verify span{font-size:12.5px;background:var(--green-soft);color:var(--green);padding:4px 12px;border-radius:2px;}
+  .comment{margin-top:14px;padding:14px 16px;background:#fff;border-left:3px solid var(--green);border-radius:0 6px 6px 0;font-size:14px;line-height:1.75;}
+  .comment .who{display:block;font-size:11.5px;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;}
+  .src{margin-top:12px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.65;}
+  .src li{margin-left:16px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;}
+  .prose{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px 18px;white-space:pre-wrap;}
+  .eli5{display:flex;flex-wrap:wrap;gap:12px;}
+  .eli5 .item{flex:1 1 160px;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px;}
+  .eli5 .k{font-size:12.5px;color:var(--muted);}
+  .eli5 .v{font-size:30px;font-weight:700;letter-spacing:-.01em;margin-top:4px;}
+  td.base-cell{background:var(--green-soft);font-weight:700;color:var(--green);}
+  footer{margin-top:64px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);line-height:1.8;}
+  @media print{body{background:#fff;} .page{padding:0;} section{break-inside:avoid;}}
+  @media (max-width:560px){.track-row{grid-template-columns:90px 1fr 78px;} .runway .axis{margin:2px 92px 0 104px;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="doc-tag">재무분석 보고서</span>
+  <h1>브릿지온(가상) — 시드 IR 재무 리포트</h1>
+  <div class="head-meta">
+    <span>기준일 <b>2026년 8월 22일</b></span>
+    <span>대상 <b>B2B SaaS · 재고·발주 자동화 (스타트업 시드)</b></span>
+    <span>계산 엔진 <b>fintool</b></span>
+    <span>계획 기간 <b>3개년</b></span>
+  </div>
+</header>
+
+
+
+
+
+
+
+<section>
+  <div class="sec-label">01 · 요약</div>
+  <h2>핵심 지표</h2>
+  
+  <div class="kpis">
+    <div class="kpi"><div class="k">최종연 매출 (Base)</div><div class="v mono">10.1억</div><div class="s">CAGR 67.3%</div></div>
+    <div class="kpi good"><div class="k">흑자전환 (EBITDA)</div><div class="v">기간 내 없음</div><div class="s">-0.5억</div></div>
+    <div class="kpi good"><div class="k">LTV / CAC</div><div class="v mono">5.9배</div><div class="s">회수 6.8개월</div></div>
+    
+    <div class="kpi"><div class="k">조달 필요액</div><div class="v mono">10.0억</div><div class="s">소요 2.8억 + 버퍼</div></div>
+  </div>
+  <ul class="src"><li>base.rows[3].revenue → 10.1억 (1,008,000,000원)</li><li>base.summary.revenue_cagr → 67.3% (0.673320)</li><li>unit_econ.ltv_cac → 5.9배 (5.850000) · ltv / cac</li><li>unfunded.summary.peak_funding_need → 2.8억 (279,020,000원) · max(0, −min_cash)</li><li>meta.raise → 10.0억 (1,000,000,000원)</li></ul>
+  
+  
+  <div class="runway">
+    <h3>런웨이 — 이번 라운드가 필요한 이유</h3>
+    <div class="track-row">
+      <div class="lab"><b>미조달 시</b>성장 100.0% 가정</div>
+      <div class="track"><div class="fill" style="width:30.6%;background:var(--bear);"></div></div>
+      <div class="val bear mono">11.0개월</div>
+    </div>
+    <div class="track-row">
+      <div class="lab"><b>10.0억 조달 시</b>Base 가정</div>
+      <div class="track"><div class="fill" style="width:100%;background:var(--green);"></div></div>
+      <div class="val base mono">36개월 이상</div>
+    </div>
+    <div class="axis"><span>0</span><span>12개월</span><span>24개월</span><span>36개월</span></div>
+    <p>조달 없이 런웨이는 <span class="mono">11.0개월</span>, 누적 자금소요는 <span class="mono">2.8억</span>이다. 조달 시 최저 현금은 3년차 <span class="mono">0.2억</span>이다.</p>
+    <ul class="src"><li>unfunded.summary.runway_months → 11.0개월 (11.013216) · 현금 소진 시점은 해당 연도의 순현금흐름이 연중 균등하게 발생한다고 보고 선형 보간했다. 계획 기간 안에 소진되지 않으면 외삽하지 않고 null로 둔다</li><li>unfunded.summary.peak_funding_need → 2.8억 (279,020,000원)</li><li>base.summary.min_cash → 0.2억 (20,980,000원) · min_cash_year=3</li></ul>
+  </div>
+  
+  
+  <div class="comment"><span class="who">해설</span>미조달 시 runway 11.0개월은 현금 2.5억을 판관비 증가 경위 그대로 소진할 때의 값. peak_funding_need 2.79억이 A라운드 최소 규모의 근거다.</div>
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<section>
+  <div class="sec-label">02 · Base 케이스</div>
+  <h2>손익 및 현금흐름</h2>
+  <table>
+    <thead><tr><th>구분 (억 원)</th><th>1년차</th><th>2년차</th><th>3년차</th></tr></thead>
+    <tbody>
+    <tr><td>매출</td><td class="num ">3.6</td><td class="num ">6.3</td><td class="num ">10.1</td></tr><tr><td>매출원가</td><td class="num ">0.9</td><td class="num ">1.5</td><td class="num ">2.4</td></tr><tr><td>매출총이익</td><td class="num ">2.7</td><td class="num ">4.8</td><td class="num ">7.7</td></tr><tr><td>판관비</td><td class="num ">5.5</td><td class="num ">6.8</td><td class="num ">8.2</td></tr><tr><td>EBITDA</td><td class="num neg">-2.7</td><td class="num neg">-2.0</td><td class="num neg">-0.5</td></tr><tr><td>순이익</td><td class="num neg">-2.7</td><td class="num neg">-2.0</td><td class="num neg">-0.5</td></tr><tr><td>영업현금흐름</td><td class="num neg">-2.7</td><td class="num neg">-2.0</td><td class="num neg">-0.5</td></tr><tr class="total"><td>기말 현금</td><td class="num ">2.8</td><td class="num ">0.7</td><td class="num ">0.2</td></tr>
+    </tbody>
+  </table>
+  <p class="tbl-note">기초 현금 2.5억. 조달액은 cash-begin에 합산했으며 별도 조달 행은 없다.</p>
+  <ul class="src"><li>base.rows[].revenue → 10.1억 (1,008,000,000원) · inputs.revenue</li><li>base.rows[].ebitda → -0.5억 (-52,920,000원) · gross_profit − opex</li><li>base.inputs.cash_begin → 2.5억 (250,000,000원) · 현재현금&#43;조달액</li><li>base.assumptions.cash_flow · operating_cash_flow = net_income &#43; depreciation − Δnwc, free_cash_flow = operating_cash_flow − capex. 이자비용을 차감한 뒤의 레버드 FCF이므로 dcf의 비레버드 FCF와 다르다</li></ul>
+  <div class="comment"><span class="who">해설</span>조달액(SAFE 3억)은 1년차 cash_begin에 합산돼 있다. base 3년차 최소 현금 2,098만 원은 흑자 전환 없이 버텨낸 값이라 여유 폭이 매우 얇다.</div>
+</section>
+
+
+
+<section>
+  <div class="sec-label">03 · 계산 과정</div>
+  <h2>숫자가 나온 과정</h2>
+  
+  <h3 style="font-size:15px;margin:18px 0 8px;">매출</h3>
+  <table>
+    <thead><tr><th>연도</th><th>산식</th><th>결과</th></tr></thead>
+    <tbody>
+    <tr><td>1년차</td><td class="cite">전기 180,000,000원 × (1 &#43; 100.0%)</td><td class="num">360,000,000원</td></tr><tr><td>2년차</td><td class="cite">360,000,000원 × (1 &#43; 75.0%)</td><td class="num">630,000,000원</td></tr><tr><td>3년차</td><td class="cite">630,000,000원 × (1 &#43; 60.0%)</td><td class="num">1,008,000,000원</td></tr>
+    </tbody>
+  </table>
+  
+  <h3 style="font-size:15px;margin:18px 0 8px;">매출원가</h3>
+  <table>
+    <thead><tr><th>연도</th><th>산식</th><th>결과</th></tr></thead>
+    <tbody>
+    <tr><td>1년차</td><td class="cite">360,000,000원 × 24.0%</td><td class="num">86,400,000원</td></tr><tr><td>2년차</td><td class="cite">630,000,000원 × 24.0%</td><td class="num">151,200,000원</td></tr><tr><td>3년차</td><td class="cite">1,008,000,000원 × 24.0%</td><td class="num">241,920,000원</td></tr>
+    </tbody>
+  </table>
+  
+  <h3 style="font-size:15px;margin:18px 0 8px;">매출총이익</h3>
+  <table>
+    <thead><tr><th>연도</th><th>산식</th><th>결과</th></tr></thead>
+    <tbody>
+    <tr><td>1년차</td><td class="cite">360,000,000원 − 86,400,000원</td><td class="num">273,600,000원</td></tr><tr><td>2년차</td><td class="cite">630,000,000원 − 151,200,000원</td><td class="num">478,800,000원</td></tr><tr><td>3년차</td><td class="cite">1,008,000,000원 − 241,920,000원</td><td class="num">766,080,000원</td></tr>
+    </tbody>
+  </table>
+  
+  <h3 style="font-size:15px;margin:18px 0 8px;">EBITDA</h3>
+  <table>
+    <thead><tr><th>연도</th><th>산식</th><th>결과</th></tr></thead>
+    <tbody>
+    <tr><td>1년차</td><td class="cite">273,600,000원 − 546,000,000원</td><td class="num">-272,400,000원</td></tr><tr><td>2년차</td><td class="cite">478,800,000원 − 682,500,000원</td><td class="num">-203,700,000원</td></tr><tr><td>3년차</td><td class="cite">766,080,000원 − 819,000,000원</td><td class="num">-52,920,000원</td></tr>
+    </tbody>
+  </table>
+  
+  <p class="tbl-note">1년차 매출의 전기는 결과 ÷ (1+성장률)로 역산했다. 그 다음 해는 직전 연 매출 × (1+성장률)이다. 검산이 안 맞으면 봉투 값을 유지한다.</p>
+  <div class="comment"><span class="who">해설</span>매출은 전년 수금액 1.8억에서 성장률 100/75/60%로 전개됐다. 각 단계 식은 봉투의 rows 값과 대조해 통과했다.</div>
+</section>
+
+
+
+<section>
+  <div class="sec-label">04 · 운전자본</div>
+  <h2>순운전자본</h2>
+  <table>
+    <thead><tr><th>구분 (억 원)</th><th>1년차</th><th>2년차</th><th>3년차</th></tr></thead>
+    <tbody>
+    <tr><td>매출채권</td><td class="num ">0.0</td><td class="num ">0.0</td><td class="num ">0.0</td></tr><tr><td>재고</td><td class="num ">0.0</td><td class="num ">0.0</td><td class="num ">0.0</td></tr><tr><td>매입채무</td><td class="num ">0.0</td><td class="num ">0.0</td><td class="num ">0.0</td></tr><tr class="total"><td>순운전자본</td><td class="num ">0.0</td><td class="num ">0.0</td><td class="num ">0.0</td></tr><tr><td>ΔNWC</td><td class="num ">0.0</td><td class="num ">0.0</td><td class="num ">0.0</td></tr>
+    </tbody>
+  </table>
+  <ul class="src"><li>base.rows[].net_working_capital → 0.0억 (0원) · AR = revenue × dso / days_per_year, inventory = cogs × dio / days_per_year, AP = cogs × dpo / days_per_year. NWC = AR &#43; inventory − AP</li></ul>
+</section>
+
+
+
+<section>
+  <div class="sec-label">05 · 현금 브리지</div>
+  <h2>현금 증감</h2>
+  <table>
+    <thead><tr><th>구분 (억 원)</th><th>1년차</th><th>2년차</th><th>3년차</th></tr></thead>
+    <tbody>
+    <tr><td>기초 현금</td><td class="num ">2.5</td><td class="num ">2.8</td><td class="num ">0.7</td></tr><tr><td>영업현금흐름</td><td class="num neg">-2.7</td><td class="num neg">-2.0</td><td class="num neg">-0.5</td></tr><tr><td>설비투자</td><td class="num ">0.0</td><td class="num ">0.0</td><td class="num ">0.0</td></tr><tr><td>잉여현금흐름</td><td class="num neg">-2.7</td><td class="num neg">-2.0</td><td class="num neg">-0.5</td></tr><tr class="total"><td>기말 현금</td><td class="num ">2.8</td><td class="num ">0.7</td><td class="num ">0.2</td></tr>
+    </tbody>
+  </table>
+  <p class="tbl-note">조달액은 기초 현금에 이미 포함되어 있다. 별도 조달 행은 없다.</p>
+  <ul class="src"><li>base.rows[1].cash_begin → 2.5억 (250,000,000원) · inputs.cash_begin</li><li>base.rows[].operating_cash_flow → -0.5억 (-52,920,000원) · operating_cash_flow = net_income &#43; depreciation − Δnwc, free_cash_flow = operating_cash_flow − capex. 이자비용을 차감한 뒤의 레버드 FCF이므로 dcf의 비레버드 FCF와 다르다</li><li>base.rows[].cash_end → 0.2억 (20,980,000원)</li></ul>
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<section>
+  <div class="sec-label">06 · 유닛 이코노믹스</div>
+  <h2>구독 지표</h2>
+  <table><thead><tr><th>지표</th><th>값</th><th>산식</th></tr></thead><tbody>
+  <tr><td>ARPA (월)</td><td class="num">45만 원</td><td class="cite">unit_econ.inputs.arpa = 450,000원</td></tr><tr><td>월 이탈률</td><td class="num">2.5%</td><td class="cite">unit_econ.inputs.churn_rate</td></tr><tr><td>LTV</td><td class="num">1,404만 원</td><td class="cite">arpa * gross_margin / churn_rate = 14,040,000원</td></tr><tr><td>LTV / CAC</td><td class="num">5.9배</td><td class="cite">ltv / cac</td></tr><tr><td>CAC 회수기간</td><td class="num">6.8개월</td><td class="cite">cac / (arpa * gross_margin)</td></tr>
+  </tbody></table>
+  <ul class="src"><li>unit_econ.ltv → 1,404만 원 (14,040,000원) · arpa * gross_margin / churn_rate</li><li>unit_econ.ltv_cac → 5.9배 (5.850000) · ltv / cac</li><li>unit_econ.cac_payback_periods → 6.8개월 (6.837607) · cac / (arpa * gross_margin)</li></ul>
+  <div class="comment"><span class="who">해설</span>LTV/CAC 5.9배·회수 6.8개월은 &#39;12개월 회수 방침&#39;의 검증값. churn이 3.5%로 오르면 LTV는 1,003만 원으로 줄어 회수기간이 8.6개월로 늘어난다.</div>
+</section>
+
+
+
+<section>
+  <div class="sec-label">07 · 시나리오</div>
+  <h2>Bear · Base · Bull 비교</h2>
+  <table>
+    <thead><tr><th>구분</th><th>Bear </th><th>Base <span class="badge base">조달</span></th><th>Bull</th></tr></thead>
+    <tbody>
+    <tr><td>연 성장률</td><td class="num ">35.0%→30.0%→25.0%</td><td class="num ">100.0%→75.0%→60.0%</td><td class="num ">140.0%→110.0%→80.0%</td></tr><tr><td>최종연 매출</td><td class="num ">3.9억</td><td class="num ">10.1억</td><td class="num ">16.3억</td></tr><tr><td>EBITDA 흑자전환</td><td class="num ">기간 내 없음</td><td class="num ">기간 내 없음</td><td class="num ">2년차</td></tr><tr><td>최종연 EBITDA</td><td class="num neg">-9.0억</td><td class="num neg">-0.5억</td><td class="num pos">&#43;5.2억</td></tr><tr><td>현금 소진</td><td class="num ">10.5개월</td><td class="num ">없음</td><td class="num ">없음</td></tr>
+    </tbody>
+  </table>
+  <div class="comment"><span class="who">해설</span>Bull은 성장률 140/110/80%·판관비 증가율 완화 가정으로 2년차 EBITDA 흑자. Bear(unfunded)는 3년차 -2.79억까지 바닥을 친다.</div>
+</section>
+
+
+
+<section>
+  <div class="sec-label">08 · 몬테카를로</div>
+  <h2>배치 시뮬레이션 분포 <span style="font-size:13px;font-weight:400;color:var(--muted);">(500건 중 500건 성공)</span></h2>
+  <table>
+    <thead><tr><th>지표</th><th>평균</th><th>p10</th><th>p50</th><th>p90</th><th>≥0 비율</th></tr></thead>
+    <tbody>
+    <tr><td class="cite mono" style="font-size:11.5px;">params.opex_growth</td><td class="num">24.9%</td><td class="num">16.5%</td><td class="num">24.7%</td><td class="num">33.1%</td><td class="num">100.0%</td></tr><tr><td class="cite mono" style="font-size:11.5px;">params.revenue_growth</td><td class="num">100.2%</td><td class="num">78.7%</td><td class="num">99.8%</td><td class="num">120.4%</td><td class="num">100.0%</td></tr><tr><td class="cite mono" style="font-size:11.5px;">summary.cumulative_free_cash_flow</td><td class="num">-0.9억</td><td class="num">-6.2억</td><td class="num">-0.8억</td><td class="num">&#43;4.1억</td><td class="num">42.0%</td></tr><tr><td class="cite mono" style="font-size:11.5px;">summary.cumulative_net_income</td><td class="num">-0.9억</td><td class="num">-6.2억</td><td class="num">-0.8억</td><td class="num">&#43;4.1억</td><td class="num">42.0%</td></tr><tr><td class="cite mono" style="font-size:11.5px;">summary.cumulative_revenue</td><td class="num">&#43;25.6억</td><td class="num">&#43;19.2억</td><td class="num">&#43;25.2억</td><td class="num">&#43;32.0억</td><td class="num">100.0%</td></tr><tr><td class="cite mono" style="font-size:11.5px;">summary.ending_cash</td><td class="num">&#43;1.6억</td><td class="num">-3.7억</td><td class="num">&#43;1.7억</td><td class="num">&#43;6.6억</td><td class="num">64.4%</td></tr><tr><td class="cite mono" style="font-size:11.5px;">summary.ending_debt</td><td class="num">0.0억</td><td class="num">0.0억</td><td class="num">0.0억</td><td class="num">0.0억</td><td class="num">100.0%</td></tr><tr><td class="cite mono" style="font-size:11.5px;">summary.loss_carryforward</td><td class="num">0.0억</td><td class="num">0.0억</td><td class="num">0.0억</td><td class="num">0.0억</td><td class="num">100.0%</td></tr><tr><td class="cite mono" style="font-size:11.5px;">summary.min_cash</td><td class="num">-1.4억</td><td class="num">-3.7억</td><td class="num">-1.0억</td><td class="num">&#43;0.4억</td><td class="num">24.2%</td></tr><tr><td class="cite mono" style="font-size:11.5px;">summary.peak_funding_need</td><td class="num">&#43;1.4억</td><td class="num">0.0억</td><td class="num">&#43;1.0억</td><td class="num">&#43;3.7억</td><td class="num">100.0%</td></tr><tr><td class="cite mono" style="font-size:11.5px;">summary.revenue_cagr</td><td class="num">100.2%</td><td class="num">78.7%</td><td class="num">99.8%</td><td class="num">120.4%</td><td class="num">100.0%</td></tr><tr><td class="cite mono" style="font-size:11.5px;">summary.runway_months</td><td class="num">12.3</td><td class="num">10.0</td><td class="num">11.5</td><td class="num">15.9</td><td class="num">100.0%</td></tr><tr><td class="cite mono" style="font-size:11.5px;">summary.runway_years</td><td class="num">1.0</td><td class="num">0.8</td><td class="num">1.0</td><td class="num">1.3</td><td class="num">100.0%</td></tr><tr><td class="cite mono" style="font-size:11.5px;">years</td><td class="num">3.0</td><td class="num">3.0</td><td class="num">3.0</td><td class="num">3.0</td><td class="num">100.0%</td></tr>
+    </tbody>
+  </table>
+  <ul class="src"><li>batch.aggregate.metrics[].quantiles → inputs.cash_begin 등 14개 지표 · p10/p50/p90 분위수</li><li>batch.aggregate.metrics[].p_nonnegative → ≥0 샘플 비율</li></ul>
+  <div class="comment"><span class="who">해설</span>OAT 500샘플: 매출성장률 p10 79%~p90 120% 변동 시 기말현금 p50 &#43;1.7억. 다만 현금 바닥(min_cash)이 음수인 샘플이 75.8%로, 성장 둔화 하위 꼬리에서는 추가 조달이 필요하다 — peak_funding_need p90 3.70억이 Ask 10억의 스트레스 상한 근거.</div>
+</section>
+
+
+
+
+
+<section>
+  <div class="sec-label">09 · 조달 근거</div>
+  <h2>Ask — 10.0억</h2>
+  <div class="ask"><div class="row">
+    <div class="item"><div class="k">스트레스 케이스 누적 자금소요</div><div class="v mono">2.8억</div></div>
+    <div class="op">+</div>
+    <div class="item"><div class="k">운영 버퍼</div><div class="v mono">7.2억</div></div>
+    <div class="op">=</div>
+    <div class="item"><div class="k">조달 요청액</div><div class="v mono">10.0억</div></div>
+  </div>
+  
+  <ul class="src" style="background:#1a2e28;border-color:#2C4038;color:#C6D5CF;"><li>unfunded.summary.peak_funding_need → 2.8억 (279,020,000원) · 현금이 모자라도 자동으로 차입하지 않는다. 현금 잔액이 음수로 남고 summary.peak_funding_need로 필요한 자금을 보고한다</li><li>meta.raise − peak_funding_need → 7.2억 (720,980,000원) · 표시용. 원값 차감 후 한 번만 억 반올림</li><li>meta.raise → 10.0억 (1,000,000,000원)</li></ul>
+  </div>
+  <div class="comment"><span class="who">해설</span>peak_funding_need 2.79억에 채용·채널 선지출 버퍼를 더해 10억 조달안을 제시한다. 10억은 cap 전환 경로 스트레스 재현용 가정치다.</div>
+</section>
+
+
+
+
+
+<section>
+  <div class="sec-label">10 · 캡테이블</div>
+  <h2>라운드 이후 완전희석 지분</h2>
+  <div class="capbar"><div style="width:54.5%;background:#0C6B52;"></div><div style="width:27.3%;background:#3E8E76;"></div><div style="width:10%;background:#8FB8AA;"></div><div style="width:4.8%;background:#C9A227;"></div><div style="width:3.4%;background:#132420;"></div></div>
+  <div class="caplegend"><span><i style="background:#0C6B52;"></i>founder-kim-dohyun 54.5%</span><span><i style="background:#3E8E76;"></i>cto-baek-jihoon 27.3%</span><span><i style="background:#8FB8AA;"></i>option-pool 10.0%</span><span><i style="background:#C9A227;"></i>SAFE-seed-friend 4.8%</span><span><i style="background:#132420;"></i>round-investor 3.4%</span></div>
+  <table>
+    <thead><tr><th>항목</th><th>값</th><th>비고</th></tr></thead>
+    <tbody>
+    <tr><td>프리머니</td><td class="num">283.5억</td><td class="cite">주당 2000원</td></tr>
+    <tr><td>포스트머니</td><td class="num">293.5억</td><td class="cite">프리머니 + 조달액</td></tr>
+    </tbody>
+  </table>
+  <ul class="src"><li>cap_table.round.pre_money_valuation → 283.5억 (28,352,941,176원)</li><li>cap_table.round.post_money_valuation → 293.5억 (29,352,941,176원)</li><li>cap_table.round.price_per_share → 2000원</li></ul>
+  <div class="comment"><span class="who">해설</span>SAFE는 60억 cap 경로로 전환해 창업자 지분 54.5%, CTO 27.3%, 옵션풀 10%, SAFE 4.8%, 신규 투자자 3.4%. 완전희석 합계 1.0 불변식 통과.</div>
+</section>
+
+
+
+<section>
+  <div class="sec-label">11 · 전환</div>
+  <h2>SAFE·전환증권</h2>
+  <table><thead><tr><th>이름</th><th>유형</th><th>투자금</th><th>전환가</th><th>지분</th></tr></thead><tbody>
+  <tr><td>SAFE-seed-friend</td><td>pre_safe</td><td class="num">3.0억</td><td class="num">423원</td><td class="num">4.8%</td></tr>
+  </tbody></table>
+</section>
+
+
+
+<section>
+  <div class="sec-label">12 · 가정 및 검증</div>
+  <h2>가정 원장</h2>
+  
+  <table><thead><tr><th>가정</th><th>값</th><th>범위</th><th>출처</th></tr></thead><tbody>
+  <tr><td>직전 연매출(수금 기준)</td><td class="num">1.8억</td><td>—</td><td class="cite">창업자 발언(합성): interview Q2</td></tr><tr><td>ARPA(월)</td><td class="num">45만</td><td>—</td><td class="cite">창업자 발언(합성): 라이트/스탠다드 7:3 가중평균</td></tr><tr><td>총이익률</td><td class="num">78%</td><td>22~24% 원가율 상단</td><td class="cite">창업자 발언(합성): AWS&#43;CS 원가, product.md</td></tr><tr><td>월 이탈률</td><td class="num">2.5%</td><td>2.0~3.5%</td><td class="cite">업계 벤치마크: Recurly B2B 구간의 보수 하단 적용</td></tr><tr><td>CAC</td><td class="num">240만</td><td>—</td><td class="cite">창업자 발언(합성): 최근 6개월 신규 24건 비용 합산</td></tr><tr><td>연 판관비 증가율</td><td class="num">30→20%</td><td>15~35%</td><td class="cite">기본값 제안: 채용 로드맵 지연·가속 불확실성</td></tr><tr><td>법인세율</td><td class="num">9%</td><td>—</td><td class="cite">중소기업 과세표준 2억원 이하 구간 &#43; 결손금 이월</td></tr><tr><td>SAFE cap / discount</td><td class="num">60억 / 15%</td><td>—</td><td class="cite">창업자 발언(합성): interview Q6</td></tr><tr><td>A라운드 조달액(스트레스 가정)</td><td class="num">10억</td><td>—</td><td class="cite">기본값 제안: cap을 크게 상회하는 프리머니에서 SAFE cap 전환 경로 재현용</td></tr>
+  </tbody></table>
+  
+  <div class="verify"><span>캡테이블 불변식 6/6 통과</span></div>
+  <p class="note mono">calculation_hash: sha256:7c286951501b29630ab846c17367146c1235e1b88bbc6636457b67cac9ebdadc</p>
+</section>
+
+
+<footer>본 보고서의 모든 수치는 fintool 결정론적 계산 엔진의 출력(JSON)에서 인용되었으며, 언어모델이 별도로 생성·추정한 숫자는 없습니다.</footer>
+</div>
+</body>
+</html>
