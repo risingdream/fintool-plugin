@@ -1,980 +1,501 @@
-<!doctype html>
-<html lang="ko">
-<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>fintool — 다섯 번째 수정에서도 무너지지 않는 재무 모델</title>
+<title>fintool 쇼케이스</title>
+<meta name="description" content="같은 재무 문제를 Opus·Sonnet·Haiku에서 플러그인 없이/있이 실제로 돌린 대화 기록. Claude Desktop처럼 재생한다.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230C6B52%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-size=%2718%27 text-anchor=%27middle%27 fill=%27white%27 font-family=%27monospace%27%3Ef%3C/text%3E%3C/svg%3E">
-<meta name="description" content="수정이 다섯 번 이어져도 spec 한 줄만 바꿔 엔진을 다시 돌린다. 같은 프롬프트를 플러그인 없이/있이 실제로 돌린 기록.">
 <style>
-  :root{--paper:#F5F7F6;--card:#FFFFFF;--ink:#132420;--muted:#5C6B66;--green:#0C6B52;--green-soft:#E3EFEA;--bear:#BC4A2E;--bear-soft:#F6E7E1;--line:#D8DFDC;--line-strong:#132420;--before-bg:#F0F1F0;--before-ink:#4A5450;--code:#EEF2F0;}
-  :root[data-theme="dark"]{--paper:#0F1715;--card:#162220;--ink:#E6EFEB;--muted:#93A39D;--green:#5FC9A5;--green-soft:#17342B;--bear:#E88A6E;--bear-soft:#3A221B;--line:#273632;--line-strong:#E6EFEB;--before-bg:#141A19;--before-ink:#A8B1AD;--code:#1E2B28;}
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){--paper:#0F1715;--card:#162220;--ink:#E6EFEB;--muted:#93A39D;--green:#5FC9A5;--green-soft:#17342B;--bear:#E88A6E;--bear-soft:#3A221B;--line:#273632;--line-strong:#E6EFEB;--before-bg:#141A19;--before-ink:#A8B1AD;--code:#1E2B28;}
+  :root{
+    --paper:#F5F7F6;--card:#FFFFFF;--ink:#132420;--muted:#5C6B66;--green:#0C6B52;--green-soft:#E3EFEA;
+    --bear:#BC4A2E;--bear-soft:#F6E7E1;--line:#D8DFDC;--line-strong:#132420;--code:#EEF2F0;--side:#EFF2F1;--user-bg:#E9EEEC;
+    --shadow:0 18px 60px rgba(19,36,32,.12);color-scheme:light;
   }
+  :root[data-theme="dark"]{
+    --paper:#0F1715;--card:#162220;--ink:#E6EFEB;--muted:#93A39D;--green:#5FC9A5;--green-soft:#17342B;
+    --bear:#E88A6E;--bear-soft:#3A221B;--line:#273632;--line-strong:#E6EFEB;--code:#1E2B28;--side:#121C1A;--user-bg:#1C2926;
+    --shadow:0 18px 60px rgba(0,0,0,.38);color-scheme:dark;
+  }
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+    --paper:#0F1715;--card:#162220;--ink:#E6EFEB;--muted:#93A39D;--green:#5FC9A5;--green-soft:#17342B;
+    --bear:#E88A6E;--bear-soft:#3A221B;--line:#273632;--line-strong:#E6EFEB;--code:#1E2B28;--side:#121C1A;--user-bg:#1C2926;
+  }}
   *{box-sizing:border-box;margin:0;padding:0;}
-  html{scroll-behavior:smooth;}
-  body{background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans KR','Pretendard','Apple SD Gothic Neo','Noto Sans KR',system-ui,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;}
-  .mono,code,pre{font-family:'IBM Plex Mono','SF Mono',Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;}
-  code{background:var(--code);padding:1px 5px;border-radius:3px;font-size:.92em;}
+  html,body{height:100%;overflow:hidden;}
+  body{background:var(--paper);color:var(--ink);font-family:'Avenir Next','Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;}
+  code,pre,.mono{font-family:'IBM Plex Mono','SF Mono',Menlo,monospace;font-variant-numeric:tabular-nums;}
+  code{background:var(--code);padding:1px 5px;border-radius:3px;font-size:.92em;word-break:break-all;}
   a{color:var(--green);}
-  .wrap{max-width:1040px;margin:0 auto;padding:0 24px;}
-  .top{display:flex;justify-content:space-between;align-items:center;padding:18px 0;font-size:13px;color:var(--muted);}
-  .top .brand{font-weight:700;color:var(--ink);letter-spacing:-.01em;}
-  .top nav a{color:var(--muted);text-decoration:none;margin-left:18px;}
-  .top nav a:hover{color:var(--ink);}
-  .theme{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:4px;padding:4px 10px;cursor:pointer;font-size:12px;margin-left:18px;}
-  /* hero */
-  .hero{padding:64px 0 48px;border-bottom:1px solid var(--line);}
-  .doc-tag{display:inline-block;font-size:12px;letter-spacing:.14em;color:var(--green);border:1px solid var(--green);padding:3px 10px;border-radius:2px;margin-bottom:20px;}
-  h1{font-size:clamp(28px,4.6vw,42px);font-weight:700;letter-spacing:-.02em;line-height:1.25;max-width:760px;}
-  .hero p.lead{font-size:17px;color:var(--muted);margin-top:18px;max-width:680px;}
-  .cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:28px;}
-  .copy{display:flex;align-items:stretch;border:1px solid var(--line-strong);border-radius:6px;overflow:hidden;background:var(--card);}
-  .copy code{background:transparent;padding:10px 16px;font-size:15px;display:flex;align-items:center;}
-  .copy button{border:0;border-left:1px solid var(--line-strong);background:var(--ink);color:var(--paper);padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit;}
-  .copy button.ok{background:var(--green);}
-  .ghost{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:10px 16px;text-decoration:none;font-size:14px;}
-  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;}
-  .badge{font-size:12px;background:var(--green-soft);color:var(--green);padding:3px 10px;border-radius:2px;}
-  /* sections */
-  section{padding:56px 0;border-bottom:1px solid var(--line);}
-  .sec-label{font-size:12px;letter-spacing:.16em;color:var(--muted);margin-bottom:6px;}
-  h2{font-size:24px;font-weight:700;letter-spacing:-.01em;margin-bottom:10px;}
-  .sec-intro{color:var(--muted);max-width:720px;margin-bottom:28px;}
-  /* case */
-  .ties{margin-top:34px;}
-  .group-title{font-size:17px;font-weight:700;margin:34px 0 4px;}
-  .group-sub{font-size:13.5px;color:var(--muted);max-width:720px;margin-bottom:18px;}
-  .case{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:22px 22px 18px;margin-bottom:28px;}
-  .case-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
-  .case-idx{font-size:12px;letter-spacing:.1em;color:var(--green);border:1px solid var(--green);padding:0 7px;border-radius:2px;}
-  .case h3{font-size:18px;font-weight:700;}
-  .essence{font-size:12.5px;color:var(--muted);margin-left:auto;}
-  .prompt{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:12px 16px;font-size:15px;margin-bottom:16px;}
-  .prompt .who{display:block;font-size:11px;letter-spacing:.12em;color:var(--muted);margin-bottom:4px;}
-  .tabs{display:none;gap:6px;margin-bottom:12px;}
-  .tab{flex:1;border:1px solid var(--line);background:var(--paper);color:var(--muted);padding:8px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;}
-  .tab.active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
-  .col{border-radius:6px;padding:14px 16px;min-width:0;}
-  .col.before{background:var(--before-bg);color:var(--before-ink);}
-  .col.after{background:var(--card);border:1px solid var(--green);}
-  .col-head{font-size:12px;letter-spacing:.1em;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;}
-  .col.after .col-head{color:var(--green);}
-  .col-head .meta{font-weight:400;letter-spacing:0;color:var(--muted);font-family:'IBM Plex Mono',Menlo,monospace;font-size:11px;}
-  .turns-wrap{overflow-x:auto;margin-bottom:14px;}
-  .turns{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--paper);border:1px solid var(--line);border-radius:6px;}
-  .turns th,.turns td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;}
-  .turns thead th{font-size:11px;letter-spacing:.08em;color:var(--muted);font-weight:500;border-bottom:2px solid var(--line-strong);}
-  .turns td.tn{font-family:'IBM Plex Mono',Menlo,monospace;color:var(--muted);width:24px;}
-  .turns td.tp{min-width:220px;}
-  .turns td.tm{font-family:'IBM Plex Mono',Menlo,monospace;font-size:11.5px;color:var(--muted);white-space:nowrap;}
-  .turns td.on{color:var(--green);}
-  .turns .dim{color:var(--muted);font-family:inherit;}
-  .turns .hashmark{display:inline-block;margin-top:3px;font-size:10.5px;background:var(--green-soft);color:var(--green);padding:0 6px;border-radius:2px;}
-  .turns tfoot td{border-top:2px solid var(--line-strong);border-bottom:none;font-family:'IBM Plex Mono',Menlo,monospace;font-size:11.5px;}
-  .meta-strip{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--muted);font-family:'IBM Plex Mono',Menlo,monospace;margin:-4px 0 10px;padding-bottom:8px;border-bottom:1px dashed var(--line);}
-  .meta-strip b{color:var(--ink);font-weight:500;}
-  .col.after .meta-strip b{color:var(--green);}
-  .chat{font-size:13.5px;line-height:1.65;}
-  .chat h3,.chat h4,.chat h5{font-size:14px;font-weight:700;margin:14px 0 6px;}
-  .chat p{margin:8px 0;}
-  .chat ul,.chat ol{margin:6px 0 6px 18px;}
-  .chat li{margin:2px 0;}
-  .chat code{word-break:break-all;}
-  .chat pre{background:var(--code);padding:8px 10px;border-radius:4px;font-size:12px;white-space:pre-wrap;word-break:break-all;margin:8px 0;}
-  .chat hr{border:0;border-top:1px solid var(--line);margin:12px 0;}
-  .chat table{width:100%;border-collapse:collapse;font-size:12.5px;margin:8px 0;display:block;overflow-x:auto;}
-  .chat th,.chat td{padding:5px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;}
-  .chat th:first-child,.chat td:first-child{text-align:left;}
-  .chat thead th{font-weight:500;color:var(--muted);border-bottom:2px solid var(--line-strong);}
-  .chat td{font-variant-numeric:tabular-nums;}
-  .col.before .chat thead th{border-bottom-color:var(--before-ink);}
-  .chain{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
-  .pill{font-size:11px;font-family:'IBM Plex Mono',Menlo,monospace;background:var(--paper);border:1px solid var(--line);padding:2px 8px;border-radius:10px;color:var(--muted);}
-  .pill-mcp{background:var(--green-soft);color:var(--green);border-color:transparent;}
-  .envelope{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--green);border-radius:0 6px 6px 0;padding:10px 12px;margin-bottom:12px;}
-  .env-head{font-size:11px;letter-spacing:.1em;color:var(--muted);margin-bottom:6px;}
-  .envelope pre{font-size:11.5px;line-height:1.5;white-space:pre-wrap;word-break:break-all;color:var(--ink);}
-  .env-note{font-size:12.5px;color:var(--muted);margin:8px 0 10px;}
-  .src{display:inline-block;margin-top:10px;font-size:11.5px;font-family:'IBM Plex Mono',Menlo,monospace;}
-  /* trust */
-  .trust{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
-  .tcard{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px;}
-  .tcard b{display:block;font-size:15px;margin-bottom:6px;}
-  .tcard p{font-size:13.5px;color:var(--muted);}
-  .tcard pre{margin-top:10px;background:var(--code);padding:10px 12px;border-radius:4px;font-size:11.5px;white-space:pre-wrap;word-break:break-all;color:var(--ink);}
-  /* skills */
-  .skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
-  .skill{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px;}
-  .skill .kind{font-size:10.5px;letter-spacing:.1em;padding:1px 6px;border-radius:2px;margin-right:8px;}
-  .skill .kind.fin{background:var(--green-soft);color:var(--green);}
-  .skill .kind.chk{background:var(--bear-soft);color:var(--bear);}
-  .skill b{font-size:14px;}
-  .skill p{font-size:13px;color:var(--muted);margin-top:6px;}
-  /* sample */
-  .sample{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:start;}
-  .frame{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#F5F7F6;}
-  .frame iframe{width:100%;height:520px;border:0;display:block;}
-  .sample ul{margin-left:18px;font-size:14px;color:var(--muted);}
-  .sample li{margin:6px 0;}
-  /* install */
-  .install{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;}
-  .icard{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px;}
-  .icard b{display:block;margin-bottom:8px;}
-  .icard ol{margin-left:18px;font-size:13.5px;}
-  .icard li{margin:4px 0;}
-  .oauth{margin-top:20px;font-size:13.5px;color:var(--muted);border-left:3px solid var(--green);padding-left:12px;}
-  /* faq */
-  details{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px 18px;margin-bottom:10px;}
-  summary{cursor:pointer;font-weight:500;}
-  details p{margin-top:8px;font-size:14px;color:var(--muted);}
-  footer{padding:32px 0 56px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 24px;}
-  @media (max-width:760px){
-    .tabs{display:flex;}
-    .cols{grid-template-columns:1fr;}
-    .col[data-pane]{display:none;}
-    .case.show-before .col[data-pane="before"],.case.show-after .col[data-pane="after"]{display:block;}
-    .case:not(.show-after) .col[data-pane="before"]{display:block;}
-    .sample{grid-template-columns:1fr;}
-    .frame iframe{height:380px;}
-    .top nav a:not(.theme){display:none;}
-    .chat th,.chat td{white-space:normal;padding:5px 6px;font-size:12px;}
+  button{font-family:inherit;cursor:pointer;}
+  button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid color-mix(in srgb,var(--green) 38%,transparent);outline-offset:2px;}
+  button:disabled{cursor:default;}
+  .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+  .app{display:grid;grid-template-columns:270px 1fr;height:100vh;}
+  /* 사이드바 */
+  .side{background:var(--side);border-right:1px solid var(--line);overflow-y:auto;padding:14px 0 40px;z-index:20;}
+  .brand{font-weight:700;padding:6px 18px 14px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;}
+  .brand small{font-weight:400;color:var(--muted);font-size:11.5px;}
+  .side .home{display:block;width:calc(100% - 24px);margin:0 12px 14px;padding:8px 12px;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;font-size:13px;}
+  .side .home.active{border-color:var(--green);color:var(--green);}
+  .grp{font-size:11px;letter-spacing:.12em;color:var(--muted);padding:12px 18px 5px;}
+  .conv{width:100%;text-align:left;background:none;border:0;color:var(--ink);padding:7px 18px;font-size:13.5px;display:flex;align-items:center;gap:8px;}
+  .conv:hover{background:var(--card);}
+  .conv.active{background:var(--card);box-shadow:inset 3px 0 0 var(--green);font-weight:500;}
+  .conv .dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:transparent;border:1px solid var(--muted);}
+  .conv .dot.ok{background:var(--green);} .conv .dot.no{background:var(--bear);}
+  .conv .n{margin-left:auto;font-size:11px;color:var(--muted);}
+
+  /* 본문 */
+  .main{display:flex;flex-direction:column;overflow:hidden;}
+  .bar{display:flex;align-items:center;gap:10px;padding:11px 22px;border-bottom:1px solid var(--line);background:var(--card);flex-wrap:wrap;}
+  .bar .title{font-weight:700;font-size:14.5px;}
+  .bar .sub{font-size:12px;color:var(--muted);}
+  .spacer{margin-left:auto;}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;padding:0;min-inline-size:0;}
+  .seg button{border:0;background:var(--card);color:var(--muted);padding:5px 11px;font-size:12.5px;}
+  .seg button+button{border-left:1px solid var(--line);}
+  .seg button.on{background:var(--ink);color:var(--paper);}
+  .toggle{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:6px;padding:4px 10px;background:var(--card);font-size:12.5px;color:var(--muted);}
+  .toggle .sw{width:34px;height:18px;border-radius:9px;background:var(--line);position:relative;transition:background .15s;}
+  .toggle .sw i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--card);transition:left .15s;}
+  .toggle.on{color:var(--green);border-color:var(--green);}
+  .toggle.on .sw{background:var(--green);} .toggle.on .sw i{left:18px;}
+  .theme{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:5px 10px;font-size:12px;}
+
+  .scroll{flex:1;overflow-y:auto;scrollbar-gutter:stable;}
+  .thread{max-width:760px;margin:0 auto;padding:26px 24px 40px;}
+  .runmeta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11.5px;color:var(--muted);font-family:'IBM Plex Mono',Menlo,monospace;padding-bottom:14px;margin-bottom:20px;border-bottom:1px dashed var(--line);}
+  .runmeta b{color:var(--ink);font-weight:500;}
+  .runmeta .ok{color:var(--green);} .runmeta .no{color:var(--bear);}
+
+  .umsg{background:var(--user-bg);border-radius:12px;padding:13px 16px;margin:26px 0 18px;white-space:pre-wrap;font-size:14.5px;}
+  .amsg{font-size:14.5px;}
+  .amsg h1,.amsg h2,.amsg h3,.amsg h4,.amsg h5{font-size:15.5px;font-weight:700;margin:18px 0 7px;}
+  .amsg p{margin:10px 0;}
+  .amsg ul,.amsg ol{margin:8px 0 8px 20px;} .amsg li{margin:3px 0;}
+  .amsg blockquote{border-left:3px solid var(--green);margin:12px 0;padding:2px 0 2px 14px;color:var(--muted);}
+  .amsg hr{border:0;border-top:1px solid var(--line);margin:16px 0;}
+  .amsg table{width:100%;border-collapse:collapse;font-size:13px;margin:11px 0;display:block;overflow-x:auto;}
+  .amsg th,.amsg td{padding:6px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;}
+  .amsg th:first-child,.amsg td:first-child{text-align:left;}
+  .amsg thead th{font-weight:500;color:var(--muted);border-bottom:2px solid var(--line-strong);}
+  .amsg pre{background:var(--code);padding:10px 12px;border-radius:6px;font-size:12px;white-space:pre-wrap;word-break:break-all;margin:10px 0;}
+  .math{font-family:'Iowan Old Style','Palatino Linotype',serif;font-style:italic;white-space:nowrap;}
+  .math-block{display:block;overflow-x:auto;background:var(--code);padding:10px 12px;border-radius:6px;margin:10px 0;text-align:center;}
+
+  .think{font-size:12.5px;color:var(--muted);margin:12px 0;}
+  .skill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;background:var(--green-soft);color:var(--green);padding:3px 10px;border-radius:5px;margin:12px 0;font-family:'IBM Plex Mono',Menlo,monospace;}
+
+  .tool{border:1px solid var(--line);border-radius:8px;margin:12px 0;background:var(--card);overflow:hidden;}
+  .tool.bad{border-color:var(--bear);}
+  .tool>summary{list-style:none;cursor:pointer;padding:9px 13px;display:flex;align-items:center;gap:9px;font-size:12.5px;font-family:'IBM Plex Mono',Menlo,monospace;}
+  .tool>summary::-webkit-details-marker{display:none;}
+  .tool .nm{font-weight:500;}
+  .tool .st{margin-left:auto;color:var(--green);}
+  .tool.bad .st{color:var(--bear);}
+  .tool .sz{color:var(--muted);font-size:11px;}
+  .tbody{border-top:1px solid var(--line);padding:11px 13px;}
+  .lbl{font-size:11px;letter-spacing:.1em;color:var(--muted);margin:8px 0 4px;}
+  .lbl:first-child{margin-top:0;}
+  .tbody pre{background:var(--code);padding:9px 11px;border-radius:5px;font-size:11.5px;white-space:pre-wrap;word-break:break-all;max-height:260px;overflow:auto;}
+  .tbody table{width:100%;border-collapse:collapse;font-size:12px;}
+  .tbody th,.tbody td{padding:4px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;}
+  .tbody th:first-child,.tbody td:first-child{text-align:left;}
+  .hash{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:11px;font-family:'IBM Plex Mono',Menlo,monospace;color:var(--muted);word-break:break-all;}
+  .hash button{border:1px solid var(--line);background:var(--paper);color:var(--muted);border-radius:4px;padding:2px 7px;font-size:10.5px;flex:0 0 auto;}
+  .err{color:var(--bear);font-size:12.5px;}
+
+  .artifact{border:1px solid var(--line);border-radius:10px;margin:14px 0;background:var(--card);overflow:hidden;box-shadow:0 8px 28px rgba(19,36,32,.06);}
+  .artifact-head{display:flex;align-items:center;gap:10px;padding:10px 13px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted);}
+  .artifact-head strong{color:var(--ink);font-weight:600;}
+  .artifact-head .ok{margin-left:auto;color:var(--green);}
+  .artifact-preview{display:grid;grid-template-columns:88px minmax(0,1fr);gap:16px;align-items:center;padding:16px;}
+  .artifact-sheet{height:108px;border:1px solid var(--line);border-radius:4px;background:linear-gradient(var(--green) 0 10px,transparent 10px),repeating-linear-gradient(180deg,transparent 0 14px,var(--line) 14px 15px);box-shadow:0 8px 20px rgba(19,36,32,.1);}
+  .artifact-title{font-family:'Iowan Old Style','Noto Serif KR',serif;font-size:18px;line-height:1.35;margin-bottom:5px;}
+  .artifact-meta{font-size:12px;color:var(--muted);}
+  .artifact-open{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:6px;padding:6px 10px;font-size:12px;margin-top:10px;}
+
+  dialog{width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 48px);border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);box-shadow:var(--shadow);padding:0;}
+  dialog::backdrop{background:rgba(7,16,13,.55);backdrop-filter:blur(2px);}
+  .dialog-head{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line);background:var(--card);}
+  .dialog-head strong{font-family:'Iowan Old Style','Noto Serif KR',serif;font-size:18px;}
+  .dialog-close{margin-left:auto;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:6px;padding:5px 9px;}
+  .dialog-body{padding:18px;overflow:auto;}
+  .dialog-body pre{white-space:pre-wrap;word-break:break-all;background:var(--code);padding:12px;border-radius:6px;font-size:11.5px;max-height:52vh;overflow:auto;}
+
+  .pager[hidden]{display:none!important;}
+  .pager{display:flex;align-items:center;justify-content:center;gap:14px;padding:14px;border-top:1px solid var(--line);background:var(--card);font-size:13px;}
+  .pager button{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:6px;padding:6px 14px;font-size:13px;}
+  .pager button:disabled{opacity:.4;cursor:default;}
+  .pager .pos{font-family:'IBM Plex Mono',Menlo,monospace;color:var(--muted);}
+
+  /* 홈(카탈로그) */
+  .home-view{max-width:1000px;margin:0 auto;padding:30px 24px 60px;}
+  .home-view h1{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.3;}
+  .home-view .lead{color:var(--muted);margin-top:12px;max-width:700px;}
+  .matrix{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:8px;margin-top:22px;}
+  .matrix th,.matrix td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top;}
+  .matrix thead th{font-size:11px;letter-spacing:.08em;color:var(--muted);font-weight:500;border-bottom:2px solid var(--line-strong);}
+  .matrix td.on{background:var(--green-soft);}
+  :root[data-theme="dark"] .matrix td.on{background:rgba(95,201,165,.07);}
+  .matrix .cellbtn{border:0;background:none;color:inherit;text-align:left;padding:0;font-size:13px;width:100%;border-radius:4px;}
+  .matrix .cellbtn:hover b,.matrix .cellbtn:focus-visible b{color:var(--green);text-decoration:underline;text-underline-offset:3px;}
+  .matrix .mini{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',Menlo,monospace;display:block;margin-top:3px;}
+  .notes{margin:24px 0 0 18px;color:var(--ink);font-size:14px;}
+  .notes li{margin:8px 0;}
+  .tblwrap{overflow-x:auto;}
+
+  .menu{display:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:5px 10px;font-size:12px;}
+  .backdrop{display:none;}
+  @media (max-width:820px){
+    .app{grid-template-columns:1fr;}
+    .side{position:fixed;inset:0 auto 0 0;width:270px;z-index:20;transform:translateX(-100%);transition:transform .18s;box-shadow:0 0 0 100vw rgba(0,0,0,0);}
+    .side.open{transform:none;box-shadow:var(--shadow);}
+    .backdrop{position:fixed;inset:0;z-index:19;border:0;background:rgba(0,0,0,.36);}
+    .backdrop.on{display:block;}
+    .menu{display:inline-block;}
+    .thread{padding:20px 16px 32px;}
+    .bar{padding:10px 14px;gap:8px;}
+    .bar .sub{display:none;}
   }
+  @media (max-width:520px){
+    .bar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;}
+    .bar .title{grid-column:2;grid-row:1;max-width:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .bar .spacer{display:none;}
+    .menu{grid-column:1;grid-row:1;}
+    .theme{grid-column:3;grid-row:1;}
+    .seg{grid-column:1 / 3;grid-row:2;width:100%;}
+    .seg button{flex:1;padding:6px 5px;white-space:nowrap;}
+    .toggle{grid-column:3;grid-row:2;}
+    .toggle{padding:5px 8px;}
+    .theme{width:34px;overflow:hidden;white-space:nowrap;padding:5px 8px;}
+    .home-view{padding:24px 16px 44px;}
+    .home-view h1{font-size:23px;}
+    .matrix{min-width:520px;}
+    .artifact-preview{grid-template-columns:70px minmax(0,1fr);padding:13px;gap:12px;}
+    .artifact-sheet{height:92px;}
+  }
+  @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important;}}
 </style>
-</head>
-<body>
-<div class="wrap">
-  <div class="top">
-    <span class="brand">fintool</span>
-    <nav>
-      <a href="#before-after">Before / After</a>
-      <a href="#why">왜 다른가</a>
-      <a href="#skills">스킬</a>
-      <a href="#sample">리포트</a>
-      <a href="#install">설치</a>
-      <a href="catalog.html">카탈로그</a>
-      <a href="#faq">FAQ</a>
-      <button class="theme" id="theme" aria-label="테마 전환">다크/라이트</button>
-    </nav>
+
+<div class="app">
+  <nav class="side" id="side" aria-label="대화 목록">
+    <div class="brand">fintool <small>쇼케이스</small></div>
+    <button type="button" class="home active" id="homeBtn">← 전체 성적표</button>
+    <div id="convList"></div>
+  </nav>
+
+  <div class="main">
+    <div class="bar">
+      <button type="button" class="menu" id="menuBtn" aria-label="대화 목록 열기" aria-expanded="false">☰</button>
+      <span class="title" id="barTitle">전체 성적표</span>
+      <span class="sub" id="barSub"></span>
+      <span class="spacer"></span>
+      <fieldset class="seg" id="modelSeg"><legend class="sr">모델 선택</legend></fieldset>
+      <button type="button" class="toggle on" id="pluginBtn" aria-pressed="true"><span class="sw" aria-hidden="true"><i></i></span><span id="pluginLbl">플러그인 ON</span></button>
+      <button type="button" class="theme" id="themeBtn" aria-label="색상 테마 전환">◐ <span>테마</span></button>
+    </div>
+    <div class="scroll" id="scroll"><div id="view"></div></div>
+    <div class="pager" id="pager" hidden>
+      <button type="button" id="prevBtn">◀ 이전</button>
+      <span class="pos" id="pos"></span>
+      <button type="button" id="nextBtn">다음 ▶</button>
+    </div>
   </div>
-
-  <header class="hero" id="top">
-    <span class="doc-tag">CLAUDE PLUGIN · FINTOOL</span>
-    <h1>다섯 번째 수정에서도 무너지지 않는 재무 모델</h1>
-    <p class="lead">"성장률 낮춰봐", "채용 넣어봐", "원가율도" — 실제 재무 작업은 수정이 이어지는 일이다. 표를 매번 다시 쓰는 대신 spec 한 줄만 바꿔 검증된 Go 엔진을 다시 돌린다. 같은 입력·같은 엔진 버전이면 같은 해시.</p>
-    <div class="cta">
-      <div class="copy"><code id="market">risingdream/fintool-plugin</code><button id="copy" type="button">마켓 주소 복사</button></div>
-      <a class="ghost" href="#case-d">5턴 시퀀스 보기 ↓</a>
-      <a class="ghost" href="catalog.html">전체 테스트 카탈로그</a>
-      <a class="ghost" href="sample-report.html">샘플 리포트</a>
-    </div>
-    <div class="badges"><span class="badge">Claude Desktop</span><span class="badge">Claude Code</span><span class="badge">Codex</span><span class="badge">MIT</span></div>
-  </header>
-
-  <section id="before-after">
-    <div class="sec-label">01 · BEFORE / AFTER</div>
-    <h2>같은 작업, 플러그인 없이 / 있이</h2>
-    <p class="sec-intro">2026-08-23 Claude Code(claude-opus-5)에서 같은 모델·같은 입력을 플러그인 off/on으로 실제 실행한 기록이다. 먼저 수정이 다섯 번 이어지는 실제 작업(D), 그다음 한 방 계산 셋(B·C·A). 두 열 모두 응답을 고치지 않았다. "없음" 열은 셸·파일 도구도 사용자 지시문(CLAUDE.md)도 없이, 계산 도구를 <b>한 번도 호출하지 않고</b> 모델 혼자 답한 기록이다. 각 열 머리의 소요 시간·턴·토큰·비용은 그 실행의 실측값이다. 각 열 아래 원문 링크로 도구 호출·반환까지 전부 볼 수 있다.</p>
-    
-    <article class="case" id="case-d">
-      <header class="case-head">
-        <span class="case-idx">D</span>
-        <h3>수정이 다섯 번 들어올 때</h3>
-        <span class="essence">본질 · 누적 수정</span>
-      </header>
-      <p class="sec-intro" style="margin-bottom:16px">창업자가 재무모델을 잡는 실제 과정을 그대로 옮겼다. 첫 모델을 만들고, 성장률을 현실적으로 낮추고, 채용 계획을 넣고, 원가율을 반영하고, 마지막에 IR 요약을 뽑는다.
-      같은 세션에서 같은 순서로 다섯 번 물었다(<span class="mono">claude -p --resume</span>).</p>
-      <div class="turns-wrap">
-      <table class="turns">
-        <thead><tr><th>#</th><th>수정 요청</th><th>플러그인 없음</th><th>fintool</th></tr></thead>
-        <tbody><tr><td class="tn">1</td><td class="tp">월 매출 3천만 원, 월 30% 성장, 고정비 8천만 원, 현금 6억. 12개월 런웨이와 월별 현금을 정리해줘.</td><td class="tm">35s · 2,651 tok · $0.08<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">35s · 2,727 tok · $0.29<br><span class="pill pill-mcp">Skill · fintool:startup-finance</span><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">2</td><td class="tp">성장률이 30%는 무리야. 월 12%로 낮춰서 다시.</td><td class="tm">37s · 2,845 tok · $0.51<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">47s · 3,332 tok · $0.16<br><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">3</td><td class="tp">개발자 3명을 3개월 뒤부터 채용해. 1인당 월 700만 원이야. 다시 계산해줘.</td><td class="tm">58s · 4,202 tok · $0.80<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">56s · 3,979 tok · $0.18<br><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">4</td><td class="tp">원가율 25%도 반영해줘.</td><td class="tm">57s · 4,297 tok · $0.18<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">56s · 4,255 tok · $0.20<br><span class="pill pill-mcp">fintool_run · financial-model</span><br><span class="hashmark">해시 1</span></td></tr><tr><td class="tn">5</td><td class="tp">지금까지 결과로 IR용 요약을 만들어줘. 런웨이, 현금 저점, 필요 조달액, 손익분기 시점.</td><td class="tm">43s · 2,914 tok · $0.15<br><span class="dim">본문에서 표를 다시 작성</span></td><td class="tm on">115s · 7,770 tok · $0.39<br><span class="pill pill-mcp">fintool_run · financial-model ×2</span><br><span class="hashmark">해시 3</span></td></tr></tbody>
-        <tfoot><tr><td></td><td>합계</td><td>230s · 16,909 tok · <b>$1.72</b></td>
-        <td class="on">309s · 22,063 tok · <b>$1.22</b></td></tr></tfoot>
-      </table>
-      </div>
-      <p class="env-note">다섯 번을 거치는 동안 <b>양쪽 다 월별 표가 어긋나지 않았다.</b> 원가율을 넣는 순간 런웨이가 11개월로 뒤집히는 결론도 같다.
-      갈린 것은 마지막 산출물이다 — <b>권장 조달액이 1억(왼쪽) vs 5억(오른쪽)</b>. 오른쪽은 5억을 넣은 모델을 한 번 더 돌려
-      런웨이 24개월 초과·손익분기 도달을 확인하고 그 실행의 해시 3개를 함께 실었고, 왼쪽은 손익분기까지 필요한 최소액에서 눈대중으로 잡았다.
-      과정도 다르다. 왼쪽은 매 턴 12줄 표를 손으로 다시 쓰고, 오른쪽은 spec의 바뀐 필드만 교체해 엔진을 다시 돌린다 —
-      3턴에서 고정비가 12개월 배열로, 4턴에서 원가가 월별 배열로, 5턴에서 손익분기를 찾으려 24개월로 늘었다.
-      여섯 번째 수정도, 석 달 뒤의 재현도 같은 방식이다. 이번 시퀀스에서는 비용도 오른쪽이 낮았다($1.22 vs $1.72).</p>
-      <div class="tabs" role="tablist">
-        <button class="tab active" data-target="before" role="tab">플러그인 없음</button>
-        <button class="tab" data-target="after" role="tab">fintool</button>
-      </div>
-      <div class="cols">
-        <div class="col before" data-pane="before">
-          <div class="col-head">플러그인 없음 · 5턴 IR 요약</div>
-          <div class="chat"><h3>IR 요약 — 12개월 현금 계획</h3>
-<p><b>기준 가정:</b> 월 매출 3,000만 원 시작 · 월 성장률 12% · 매출총이익률 75%(원가율 25%) · 고정비 8,000만 원 · 개발자 3명 4개월차 채용(월 2,100만 원) · 시작 현금 6.0억</p>
-<hr>
-<h4>핵심 지표</h4>
-<table><thead><tr><th>항목</th><th>수치</th></tr></thead><tbody>
-<tr><td><b>런웨이</b></td><td><b>11.7개월</b> (12개월차 중순 소진)</td></tr>
-<tr><td><b>현금 저점</b></td><td><b>-2,220만 원 / 14개월차</b> (무조달 기준)</td></tr>
-<tr><td><b>필요 조달액</b></td><td><b>최소 2,200만 원 · 권장 1억 원</b></td></tr>
-<tr><td><b>손익분기(BEP)</b></td><td><b>14.3개월차</b> (흑자 전환 15개월차)</td></tr>
-<tr><td>현금흐름 자력 회복</td><td>16개월차</td></tr>
-</tbody></table>
-<hr>
-<h4>1. 런웨이 — 11.7개월</h4>
-<p>시작 현금 6.0억으로 11개월차 말 잔고 1,670만 원, 12개월차 약 22일 시점에 소진됩니다.</p>
-<p>12개월 누적: 매출 7.24억 · 매출총이익 5.43억 · 고정비 11.49억 → <b>순소진 5.06억</b></p>
-<h4>2. 현금 저점 — 14개월차</h4>
-<table><thead><tr><th>구분</th><th>저점 시점</th><th>저점 잔고</th></tr></thead><tbody>
-<tr><td>무조달</td><td>14개월차</td><td><b>-2,220만 원</b></td></tr>
-<tr><td>1억 조달 시</td><td>14개월차</td><td><b>+7,780만 원</b></td></tr>
-</tbody></table>
-<p>12→14개월차 구간이 최대 압박 구간이며, 15개월차부터 월 현금흐름이 플러스로 전환되어 저점을 지납니다.</p>
-<h4>3. 필요 조달액 — 권장 1억 원</h4>
-<ul>
-<li><b>최소 필요액 2,220만 원</b> — BEP까지의 누적 부족분</li>
-<li><b>권장 1억 원</b> — 12~16개월 구간을 잔고 0 근처로 운영하는 리스크를 제거하고, 성장률 둔화 시나리오까지 흡수</li>
-<li><b>조달 완료 목표 시점: 11개월차 이전</b></li>
-</ul>
-<p>조달 규모가 작다는 점이 이 계획의 강점입니다. 1억으로 BEP를 넘겨 자력 성장 구간에 진입합니다.</p>
-<h4>4. 손익분기 — 14.3개월차</h4>
-<p>매출총이익이 고정비 1억 100만 원을 넘어서는 시점입니다. 해당 월 매출은 약 1.35억 원.</p>
-<table><thead><tr><th>단계</th><th>시점</th></tr></thead><tbody>
-<tr><td>월 흑자 전환</td><td>15개월차</td></tr>
-<tr><td>누적 현금 플러스 복귀</td><td>16개월차</td></tr>
-</tbody></table>
-<hr>
-<h4>민감도</h4>
-<table><thead><tr><th>월 성장률</th><th>현금 소진</th><th>BEP</th></tr></thead><tbody>
-<tr><td>15%</td><td>13개월차</td><td>12.0개월차</td></tr>
-<tr><td><b>12% (기준)</b></td><td><b>12개월차</b></td><td><b>14.3개월차</b></td></tr>
-<tr><td>8%</td><td>10개월차</td><td>19.9개월차</td></tr>
-<tr><td>5%</td><td>8개월차</td><td>후반</td></tr>
-</tbody></table>
-<p><b>12개월 자력 생존 임계 성장률은 월 12.2%</b>입니다. 기준 시나리오가 이 경계에 근접해 있어, 조달은 선택이 아니라 전제입니다.</p>
-<hr>
-<h4>리스크 및 대응</h4>
-<table><thead><tr><th>리스크</th><th>영향</th><th>대응</th></tr></thead><tbody>
-<tr><td>성장률 8%로 둔화</td><td>소진 2개월 조기화</td><td>8개월차 실적을 트리거로 채용 속도 조절</td></tr>
-<tr><td>4대보험·퇴직충당 미반영</td><td>소진 1개월 조기화</td><td>1인당 실질 800만 원으로 재산정 필요</td></tr>
-<tr><td>고정비 8,000만 원 고정 가정</td><td>BEP 지연</td><td>매출 3.5배 성장 구간의 인프라·인건비 증가 별도 검토</td></tr>
-<tr><td>매출 회수 지연 미반영</td><td>저점 심화</td><td>실제 입금 주기 반영 시 재계산</td></tr>
-</tbody></table>
-<p><b>모니터링 트리거:</b> 8개월차 실제 성장률 10% 미만 → 추가 채용 중단 및 조달 착수 (해당 시점 잔고 8,650만 원)</p>
-<hr>
-<h4>두 가지 짚어둘 점</h4>
-<p><b>1. 이 모델은 개발자 3명의 매출 기여를 0으로 잡았습니다.</b> 채용 목적이 성장률 제고라면 실제 결과는 이보다 낫습니다. 보수적 하한선으로 보시면 됩니다. IR에서는 이 점을 명시하는 편이 신뢰도에 유리합니다.</p>
-<p><b>2. 고정비 불변 가정이 가장 낙관적인 부분입니다.</b> 투자자가 가장 먼저 지적할 지점이므로, 12개월차 인건비·인프라 계획을 별도 슬라이드로 준비하시길 권합니다.</p>
-<hr>
-<p>필요하시면 ① 4대보험·퇴직충당 반영 버전, ② 채용 2명 축소안, ③ 원가율 20% 개선안을 나란히 놓은 비교표로도 만들어 드리겠습니다. Slack 캔버스나 채널 공유가 필요하시면 말씀해 주세요 — 지금은 여기에만 작성해 두었습니다.</p></div>
-          <a class="src" href="assets/transcripts/case-d-off.txt">원문 case-d-off.txt (5턴 전체)</a>
-        </div>
-        <div class="col after" data-pane="after">
-          <div class="col-head">fintool · 5턴 IR 요약</div>
-          <div class="chat"><h3>IR 요약 — 재무 하이라이트</h3>
-<p><b>작성 기준일 2026-08-23 · 모델 시작 2026-09 · 통화 KRW</b></p>
-<hr>
-<h4>핵심 4지표 (현재 계획 = 미조달 기준)</h4>
-<table><thead><tr><th>지표</th><th>값</th></tr></thead><tbody>
-<tr><td><b>런웨이</b></td><td><b>11개월</b> — 현금 소진 <b>2027-08</b></td></tr>
-<tr><td><b>현금 저점</b></td><td><b>−22,166,448원</b> (2027-10, 최대 누적 부족액)</td></tr>
-<tr><td><b>필요 조달액</b></td><td><b>5억 원</b> (권장 Ask) / 최소 브리지 2,300만 원</td></tr>
-<tr><td><b>손익분기</b></td><td><b>2027-11</b> (영업 15개월 차, 월 매출 1.47억 시점)</td></tr>
-</tbody></table>
-<hr>
-<h4>1. 런웨이</h4>
-<p>기초 현금 6억 원으로 <b>11개월</b>을 버틴다. 2027-08에 현금이 마이너스로 전환된다(엔진 경고: <code>runway_exhausted</code>).</p>
-<table><thead><tr><th>시점</th><th>기말 현금</th></tr></thead><tbody>
-<tr><td>2026-09 (시작)</td><td>542,500,000</td></tr>
-<tr><td>2027-01</td><td>300,939,066</td></tr>
-<tr><td>2027-04</td><td>131,743,095</td></tr>
-<tr><td>2027-07</td><td>16,728,122</td></tr>
-<tr><td><b>2027-08</b></td><td><b>−6,004,503</b> ← 소진</td></tr>
-</tbody></table>
-<h4>2. 현금 저점</h4>
-<p>저점은 소진 시점이 아니라 <b>손익분기 직전인 2027-10</b>에 온다. 최대 누적 부족액 <b>22,166,448원</b>. 이후 흑자 전환으로 자력 회복한다.</p>
-<table><thead><tr><th>월</th><th>기말 현금</th><th>EBITDA</th></tr></thead><tbody>
-<tr><td>2027-08</td><td>−6,004,503</td><td>−22,732,625</td></tr>
-<tr><td>2027-09</td><td>−19,345,043</td><td>−13,340,540</td></tr>
-<tr><td><b>2027-10</b></td><td><b>−22,166,448</b></td><td>−2,821,405</td></tr>
-<tr><td>2027-11</td><td>−13,206,421</td><td>+8,960,027 ← 흑자 전환</td></tr>
-<tr><td>2027-12</td><td>+8,948,809</td><td>+22,155,230</td></tr>
-</tbody></table>
-<h4>3. 필요 조달액</h4>
-<p><b>Ask: 5억 원 (2027-01 클로징 목표)</b></p>
-<table><thead><tr><th>항목</th><th>금액</th><th>근거</th></tr></thead><tbody>
-<tr><td>최소 브리지</td><td>22,166,448</td><td>최대 누적 부족액. 생존 최소선, 버퍼 0</td></tr>
-<tr><td><b>권장 Ask</b></td><td><b>500,000,000</b></td><td>아래 조달 케이스 검증치</td></tr>
-</tbody></table>
-<p>5억 조달 시 검증 결과:</p>
-<ul>
-<li>런웨이: <b>24개월 초과</b> (<code>exhaustion_month: null</code>)</li>
-<li>조달 후 현금 저점: <b>477,833,552원</b> (2027-10) — 음수 구간 완전 제거</li>
-<li>24개월 기말 현금: <b>1,397,492,924원</b></li>
-<li>손익분기: 2027-11 (조달과 무관, 영업 구조로 결정)</li>
-</ul>
-<p>&gt; 최소 브리지 2,200만 원은 산술적 생존선일 뿐 IR Ask로 쓸 수 없다. 성장률이 12%에서 조금만 흔들려도 즉시 붕괴하기 때문이다. 5억은 손익분기(2027-11) 통과 후에도 4.8억이 남아, <b>가정이 틀려도 재협상 없이 한 사이클을 더 돌릴 수 있는 최소 규모</b>다.</p>
-<p><b>타이밍</b>: 현금 3억이 남는 <b>2027-01이 클로징 데드라인</b>이다. 실무상 라운드에 4~6개월이 걸리므로 <b>2026년 9~10월 착수</b>해야 한다.</p>
-<h4>4. 손익분기</h4>
-<p><b>2027-11, 영업 15개월 차.</b></p>
-<ul>
-<li>손익분기 요구 매출: <b>월 134,666,667원</b> (= 고정비 1.01억 ÷ 매출총이익률 75%)</li>
-<li>도달 시점 매출: 146,613,369원 → EBITDA +8,960,027원</li>
-<li>이후 24개월 차(2028-08) EBITDA <b>203,927,813원</b>, EBITDA 마진 50%</li>
-</ul>
-<h4>재무 가정</h4>
-<table><thead><tr><th>항목</th><th>값</th><th>비고</th></tr></thead><tbody>
-<tr><td>시작 월 매출</td><td>30,000,000원</td><td>2026-09</td></tr>
-<tr><td>월 성장률</td><td>12%</td><td>30%에서 보수적으로 하향</td></tr>
-<tr><td>원가율</td><td>25%</td><td>매출총이익률 75%, 전 기간 고정</td></tr>
-<tr><td>고정비</td><td>80,000,000원 → 101,000,000원</td><td>2026-12부터 개발자 3명(1인 700만) 반영</td></tr>
-<tr><td>기초 현금</td><td>600,000,000원</td><td></td></tr>
-<tr><td>법인세</td><td>0</td><td>누적 결손 구간</td></tr>
-</tbody></table>
-<p>출처: 창업자 인터뷰 2026-08-23.</p>
-<h4>감도 — 투자자가 물어볼 지점</h4>
-<table><thead><tr><th>변수</th><th>영향</th></tr></thead><tbody>
-<tr><td>성장률 12% → 30%</td><td>손익분기 2027-01로 10개월 단축, 조달 불필요</td></tr>
-<tr><td>원가율 25% → 15%</td><td>요구 매출 1.19억으로 하락, 손익분기 약 2개월 단축</td></tr>
-<tr><td>인건비 700만 → 850만(4대보험 포함)</td><td>소진 약 1개월 조기화</td></tr>
-<tr><td>채용 2027-03 연기</td><td>6,300만 절감, 소진 2~3개월 지연 (근본 해결 아님)</td></tr>
-</tbody></table>
-<p><b>이 모델의 방어선은 하나다: 월 12% 성장이 15개월간 유지되는지.</b> 원가율과 인건비는 관리 가능한 변수지만, 성장률이 10% 아래로 내려가면 손익분기가 24개월 밖으로 밀리고 5억으로도 부족해진다.</p>
-<hr>
-<h5>검증 해시</h5>
-<table><thead><tr><th>케이스</th><th>calculation_hash</th></tr></thead><tbody>
-<tr><td>미조달 24개월 (기준선)</td><td><code>sha256:b2970f96854ef5c144e414df88611e6104eb6493fc82f06313111e615799996d</code></td></tr>
-<tr><td>5억 조달 24개월</td><td><code>sha256:af5adc45393ffb492e5ed3c9c688c54005ad3afc3b633a40632116a124bbeb52</code></td></tr>
-<tr><td>12개월 원안</td><td><code>sha256:68d3da702a9a8bf060c3381d2d15da43b58696578524bffd360dee09e583968f</code></td></tr>
-</tbody></table>
-<hr>
-<p><b>참고</b>: 원 질문 범위가 12개월이었으나, 12개월 horizon 안에서는 손익분기에 도달하지 않아 필요 조달액을 산출할 수 없었다. 24개월로 확장해 최대 부족액과 실제 손익분기 월을 뽑았고, 조달 케이스를 별도 검증했다.</p>
-<p>이 내용을 <code>pitch-deck</code> 또는 <code>investor-update</code> 레시피로 HTML IR 문서화할 수 있다. 필요하면 캡테이블(희석률 포함)까지 붙여서 만들겠다.</p></div>
-          <a class="src" href="assets/transcripts/case-d-on.txt">원문 case-d-on.txt (5턴 전체)</a>
-        </div>
-      </div>
-    </article>
-
-    <article class="case" id="case-e">
-      <header class="case-head">
-        <span class="case-idx">E</span>
-        <h3>은퇴자산 고갈 확률</h3>
-        <span class="essence">본질 · 시뮬레이션</span>
-      </header>
-      <div class="prompt"><span class="who">프롬프트</span>은퇴 자산 25억 원. 매년 초 1.2억 원을 인출하고 인출액은 매년 2.5%씩 늘린다. 포트폴리오 기대수익률 연 5.5%, 변동성 12%, 물가상승률 2%, 기간 30년. 실질 기준으로 자산 고갈 확률과 고갈 시점 분포를 구하고, 고갈된 경로와 살아남은 경로의 초기 5년 수익률이 어떻게 달랐는지(수익률 순서 위험) 알려줘.</div>
-      <div class="tabs" role="tablist">
-        <button class="tab active" data-target="before" role="tab">플러그인 없음</button>
-        <button class="tab" data-target="after" role="tab">fintool</button>
-      </div>
-      <div class="cols">
-        <div class="col before" data-pane="before">
-          <div class="col-head">플러그인 없음</div><div class="meta-strip"><span><b>243s</b> 소요</span><span><b>1</b> turns</span><span>입력 <b>12,716</b> tok</span><span>출력 <b>21,001</b> tok</span><span><b>$0.65</b></span></div>
-          <div class="chat"><h4>먼저 한 가지 밝혀둘 점</h4>
-<p>이 세션에는 코드 실행 도구가 없습니다(캘린더 도구만 연결되어 있음). 그래서 실제 Monte Carlo를 돌리는 대신 <b>닫힌 형태(closed-form) 해석</b>으로 계산했습니다. 다행히 이 문제는 정확한 항등식이 존재해서 근사가 마지막 한 단계에만 들어갑니다. 방법과 오차 범위는 아래에 명시했고, 맨 끝에 직접 돌려서 검증할 수 있는 스크립트를 붙였습니다.</p>
-<hr>
-<h4>1. 실질 기준 파라미터 변환</h4>
-<table><thead><tr><th>항목</th><th>명목</th><th>실질</th></tr></thead><tbody>
-<tr><td>기대수익률(산술)</td><td>5.5%</td><td>(1.055/1.02)−1 = <b>3.431%</b></td></tr>
-<tr><td>변동성</td><td>12%</td><td><b>12%</b> (물가 결정론적 가정)</td></tr>
-<tr><td>인출 증가율</td><td>2.5%</td><td>(1.025/1.02)−1 = <b>0.490%</b></td></tr>
-<tr><td>로그 기준</td><td>—</td><td>μ = 0.02705, σ = 0.11563</td></tr>
-<tr><td>기하평균(중앙값) 수익률</td><td>—</td><td><b>약 2.71%</b> (변동성 드래그 −0.72%p)</td></tr>
-</tbody></table>
-<p>초기 인출률 = 1.2 / 25 = <b>4.8%</b>. 이게 이 문제의 핵심입니다.</p>
-<h4>2. 핵심 항등식 (근사 없음)</h4>
-<p>연초 인출 구조 $A_{t+1} = (A_t - C_t)(1+R_t)$ 를 누적수익 <code>G_t = \prod_{s&lt;t}(1+R_s)</code> 로 디플레이트하면 정확히</p>
-<p><code>A_n / G_n = A_0 - \sum_{t=0}^{n-1} \frac{C_t}{G_t}</code></p>
-<p>즉 <b>n년 시점 고갈 ⟺ <code>S_n \equiv \sum_{t&lt;n} C_t/G_t \geq 25</code></b>. $S_n$은 단조증가라 최초통과시점이 곧 고갈 시점입니다. 30년 전체:</p>
-<ul>
-<li>$E[S_{30}] = 29.02$억, <code>\mathrm{SD}(S_{30}) = 10.18</code>억 (적률은 정확히 계산 가능)</li>
-<li>$E[S] = 29.0 &gt; 25$ — 인출 스트림의 실효 현가가 이미 원금을 넘습니다</li>
-</ul>
-<h4>3. 고갈 확률</h4>
-<p>$S_{30}$을 적률정합 로그정규(Fenton–Wilkinson)로 근사:</p>
-<p>&gt; ### <b>30년 내 실질 고갈 확률 ≈ 60%</b> (추정 오차 ±3~4%p)</p>
-<p>직관적 대조군:</p>
-<ul>
-<li><b>산술평균 3.431% 결정론적 경로</b>: 30년을 겨우 버티고 <b>1.5억(실질) 남김</b> — 칼날 위</li>
-<li><b>기하평균 2.71% 결정론적 경로</b>: <b>26~27년차에 고갈</b></li>
-</ul>
-<p>즉 이 플랜은 "평균수익률로는 간신히 성공"하지만, 변동성 드래그만 얹어도 실패합니다. 변동성이 실패를 만든 것이지 기대수익률이 부족한 게 아닙니다.</p>
-<h4>4. 고갈 시점 분포</h4>
-<p><code>P(S_n \ge 25)</code> 를 n별로 계산한 누적분포:</p>
-<table><thead><tr><th>연차 n</th><th>10</th><th>15</th><th>18</th><th>20</th><th>22</th><th>25</th><th>27</th><th>30</th></tr></thead><tbody>
-<tr><td>누적 고갈확률</td><td>~0%</td><td>2.7%</td><td>12.1%</td><td>21.2%</td><td>30.9%</td><td>44.2%</td><td>51.6%</td><td><b>60.6%</b></td></tr>
-</tbody></table>
-<p>구간별 분포:</p>
-<table><thead><tr><th>구간</th><th>전체 대비</th><th>고갈 경로 중</th></tr></thead><tbody>
-<tr><td>1–10년</td><td>~0.0%</td><td>—</td></tr>
-<tr><td>11–15년</td><td>2.7%</td><td>4.5%</td></tr>
-<tr><td>16–20년</td><td>18.5%</td><td>30.5%</td></tr>
-<tr><td>21–25년</td><td>22.0%</td><td>36.3%</td></tr>
-<tr><td>26–30년</td><td>16.4%</td><td>27.1%</td></tr>
-<tr><td><b>30년 생존</b></td><td><b>39.4%</b></td><td>—</td></tr>
-</tbody></table>
-<ul>
-<li><b>10년 이전 고갈은 사실상 0</b> (아무리 나빠도 4.8% 인출로 10년 안에 털리진 않음)</li>
-<li>고갈 조건부 <b>중앙값 = 22년차</b>, 사분위 범위 <b>19~26년차</b></li>
-<li>위험이 15년차부터 급상승해 18~25년 구간에 연 4~5%씩 균일하게 깔림 → <b>60대 후반~70대 중반에 위기가 집중</b></li>
-</ul>
-<h4>5. 수익률 순서 위험 (핵심)</h4>
-<p><code>(\ln S,\ Y)</code> 이변량 정규 근사로 조건부 기댓값을 구했습니다. $Y$ = 초기 5년 누적 로그수익률.</p>
-<p><b>초기 5년 실질 수익률 (연율):</b></p>
-<table><thead><tr><th></th><th>연율 실질</th><th>5년 누적 실질</th><th>참고: 명목</th></tr></thead><tbody>
-<tr><td><b>고갈 경로</b></td><td><b>+0.51%</b></td><td>+2.6%</td><td>약 +2.5%</td></tr>
-<tr><td><b>생존 경로</b></td><td><b>+6.27%</b></td><td>+35.5%</td><td>약 +8.4%</td></tr>
-<tr><td>격차</td><td><b>5.75%p/년</b></td><td><b>32.9%p</b></td><td>—</td></tr>
-</tbody></table>
-<p>30년 중 5년, 즉 <b>기간의 17%에 불과한 초기 5년이 최종 결과 분산의 약 45%를 설명</b>합니다 (<code>\rho(\ln S, Y) = -0.67</code>). 이게 수익률 순서 위험의 정량적 크기입니다.</p>
-<p><b>초기 5년 실적별 조건부 고갈 확률:</b></p>
-<table><thead><tr><th>초기 5년 연율 실질수익률</th><th>30년 고갈 확률</th></tr></thead><tbody>
-<tr><td>−3%</td><td><b>91%</b></td></tr>
-<tr><td>0%</td><td><b>80%</b></td></tr>
-<tr><td>+5%</td><td>49%</td></tr>
-<tr><td>+8%</td><td>31%</td></tr>
-<tr><td>+12%</td><td><b>13%</b></td></tr>
-</tbody></table>
-<p>첫 5년만 보고도 최종 운명이 거의 결정됩니다. 남은 25년이 아무리 평균으로 회귀해도, 초반에 깎인 원금에서 이미 나간 인출은 복구되지 않기 때문입니다.</p>
-<h4>6. 실무적 함의</h4>
-<p>인출액은 전 구간에 선형으로 작용하므로 초기 인출률만 바꿔 다시 풀면:</p>
-<table><thead><tr><th>초기 인출액</th><th>초기 인출률</th><th>30년 고갈 확률</th></tr></thead><tbody>
-<tr><td>1.2억</td><td>4.8%</td><td>60%</td></tr>
-<tr><td>1.1억</td><td>4.4%</td><td>50%</td></tr>
-<tr><td>1.0억</td><td>4.0%</td><td>39%</td></tr>
-<tr><td>0.875억</td><td>3.5%</td><td>25%</td></tr>
-<tr><td><b>0.82억</b></td><td><b>3.3%</b></td><td><b>20%</b></td></tr>
-<tr><td>0.75억</td><td>3.0%</td><td>13%</td></tr>
-<tr><td>0.71억</td><td>2.8%</td><td>10%</td></tr>
-</tbody></table>
-<p>고갈 확률 10~20%대를 목표로 한다면 <b>초기 인출률 2.8~3.3%(연 0.71~0.82억)</b> 구간입니다. 1.2억을 유지하려면 인출 고정이 아니라 <b>초기 5~10년에 한해 조건부 감액 룰</b>(예: 전년 실질 손실 시 인출 동결, 자산이 기준선 −15% 이탈 시 10% 삭감)이 필요합니다 — 위 표가 보여주듯 이 플랜의 위험은 거의 전부 초반부에 몰려 있어서, 초반에만 유연성을 주어도 효과가 큽니다.</p>
-<h4>7. 가정과 한계</h4>
-<ul>
-<li>수익률 iid 로그정규, 물가 2% 결정론적, 연초 인출, 세금·수수료·사망률·연금소득 없음</li>
-<li>항등식(§2)과 $S_n$의 1·2차 적률은 <b>정확</b>. 근사는 (a) $S_n$의 로그정규 근사, (b) <code>\ln S</code>–$Y$ 이변량 정규 근사 두 곳뿐이며, 임계값 25가 $S$의 중앙값 근처라 근사가 잘 듣는 영역입니다. 다만 <b>시점 분포의 양 끝(12년 이전, 29~30년차)은 오차가 상대적으로 큽니다.</b></li>
-<li>iid 가정은 평균회귀를 무시하므로 실제 시장 대비 고갈 확률을 다소 <b>과대</b> 추정하는 경향이 있습니다.</li>
-</ul>
-<h4>검증용 스크립트</h4>
-<pre>import numpy as np
-rng = np.random.default_rng(0)
-N, T = 200_000, 30
-mu_r, sig = 1.055/1.02 - 1, 0.12          # 실질 산술평균, 변동성
-s = np.sqrt(np.log(1 + sig**2/(1+mu_r)**2))
-m = np.log(1+mu_r) - s**2/2
-R = np.exp(rng.normal(m, s, (N, T)))       # 실질 총수익 팩터
-C = 1.2 * (1.025/1.02)**np.arange(T)       # 실질 인출액
-
-A = np.full(N, 25.0); ruin_yr = np.full(N, -1)
-for t in range(T):
-    dead = (ruin_yr &gt;= 0) | (A &lt; C[t])
-    ruin_yr[dead &amp; (ruin_yr &lt; 0)] = t
-    A = np.where(ruin_yr &gt;= 0, 0.0, (A - C[t]) * R[:, t])
-
-failed = ruin_yr &gt;= 0
-g5 = R[:, :5].prod(1)**(1/5) - 1
-print(f&quot;고갈확률 {failed.mean():.1%}  중앙 고갈연차 {np.median(ruin_yr[failed]):.0f}&quot;)
-print(f&quot;초기5년 실질(연율)  고갈 {g5[failed].mean():.2%} / 생존 {g5[~failed].mean():.2%}&quot;)</pre>
-<p>돌려보시고 결과가 위 수치와 벌어지면 알려주세요 — 어느 근사에서 갈라졌는지 짚어드리겠습니다.</p></div>
-          <a class="src" href="assets/transcripts/case-e-off.txt">원문 case-e-off.txt</a>
-        </div>
-        <div class="col after" data-pane="after">
-          <div class="col-head">fintool</div><div class="meta-strip"><span><b>325s</b> 소요</span><span><b>19</b> turns</span><span>입력 <b>952,579</b> tok</span><span>출력 <b>21,100</b> tok</span><span><b>$1.75</b></span></div>
-          <div class="chain"><span class="pill pill-mcp">fintool_catalog ×2</span><span class="pill pill-mcp">fintool_run · montecarlo ×16</span></div>
-          <p class="env-note">여기서만 답이 갈리는 게 아니라 <b>할 수 있는 일 자체가 다르다.</b> 왼쪽은 도구가 없어 경로를 못 돌리고, 대신 닫힌 형태 근사(Fenton–Wilkinson)로 <b>60.6%(±3~4%p 자인)</b>를 냈다 — 4분, 21,000토큰짜리 수학이다.
-      오른쪽은 <span class="mono">montecarlo</span>로 20,000경로를 실제로 돌려 <b>60.8%</b>와 고갈 시점 분위수를 냈고, 덤으로 "인출을 연초에 하느냐 연말에 하느냐"가 고갈확률 <b>5.5%p</b>를 좌우한다는 것을 두 번 돌려 분리했다.
-      대신 비용은 오른쪽이 2.7배다($1.75 vs $0.65). 근사로 충분한 자리인지, 분포가 필요한 자리인지의 문제다.</p>
-          <div class="chat"><h4>전제</h4>
-<table><thead><tr><th>항목</th><th>값</th></tr></thead><tbody>
-<tr><td>초기자산</td><td>25억 (매년 <b>초</b> 인출 → t=0에 1.2억 차감, 23.8억부터 운용)</td></tr>
-<tr><td>인출</td><td>1.2억, 연 2.5% 증액, 30회</td></tr>
-<tr><td>수익률</td><td>산술 기대 5.5%, 변동성 12%, GBM 로그정규</td></tr>
-<tr><td>물가</td><td>연 2% 확정, 모든 결과는 <b>오늘 가치(실질)</b></td></tr>
-<tr><td>시뮬레이션</td><td>20,000 경로, 연 1스텝, seed 42</td></tr>
-</tbody></table>
-<p>실질 기준으로 보면 <b>초기 인출률 4.8%, 인출액 실질 +0.49%/yr 증가, 기대 실질수익률 3.43%</b> 입니다. 인출이 기대수익을 구조적으로 초과하는 설계라 결과가 나쁠 수밖에 없습니다.</p>
-<hr>
-<h4>1. 고갈 확률 — 60.8%</h4>
-<table><thead><tr><th>지표</th><th>값</th></tr></thead><tbody>
-<tr><td><b>고갈 확률 (30년)</b></td><td><b>60.8%</b> (12,167 / 20,000)</td></tr>
-<tr><td>생존 확률</td><td>39.2%</td></tr>
-<tr><td>30년 후 실질 잔액 p50</td><td><b>0원</b></td></tr>
-<tr><td>p75 / p90 / p95</td><td>9.5억 / 31.0억 / 49.3억</td></tr>
-<tr><td>평균</td><td>9.4억 (평균은 상위 꼬리가 끌어올린 값, 대표성 없음)</td></tr>
-</tbody></table>
-<p>중앙값 경로조차 25년차에 6.2억까지 줄고 26년차에 0이 됩니다. p10 경로는 17년차에 이미 소진됩니다.</p>
-<p>참고로 <b>인출을 기말로 가정하면 55.3%</b> 로 5.5%p 낮아집니다. "매년 초 인출"이라는 조건 하나가 고갈확률 5%p 이상을 좌우합니다.</p>
-<h4>2. 고갈 시점 분포</h4>
-<p>누적 고갈 확률 (각 시계 별도 시뮬레이션):</p>
-<table><thead><tr><th>경과</th><th>10년</th><th>15년</th><th>20년</th><th>25년</th><th>30년</th></tr></thead><tbody>
-<tr><td>누적 고갈률</td><td>0.0%</td><td>3.7%</td><td>22.0%</td><td>44.0%</td><td>60.8%</td></tr>
-<tr><td>구간 신규</td><td>–</td><td>3.7%p</td><td>18.3%p</td><td>22.0%p</td><td>16.8%p</td></tr>
-</tbody></table>
-<p>고갈된 경로만 놓고 본 시점 분포 — <b>최단 11년차, p10 16년차, 중앙값 22년차, p90 28년차</b>.</p>
-<p>위험은 20~25년차에 가장 집중됩니다. 10년 안에 망하는 경로는 사실상 없지만, 그때는 이미 결과가 결정되어 있습니다. 아래가 그 이야기입니다.</p>
-<h4>3. 수익률 순서 위험 — 초기 5년이 전부</h4>
-<p>고갈 경로 vs 생존 경로의 연환산 수익률 (실질 기준):</p>
-<table><thead><tr><th>구간</th><th>고갈 경로</th><th>생존 경로</th><th>격차</th></tr></thead><tbody>
-<tr><td>초기 1년</td><td>+0.48%</td><td>+7.74%</td><td>7.3%p</td></tr>
-<tr><td>초기 3년</td><td>+0.21%</td><td>+6.87%</td><td>6.7%p</td></tr>
-<tr><td><b>초기 5년</b></td><td><b>+0.32%</b></td><td><b>+6.63%</b></td><td><b>6.3%p</b></td></tr>
-<tr><td>6~29년 (역산)</td><td>+0.77%</td><td>+4.19%</td><td>3.4%p</td></tr>
-<tr><td>전체 29년</td><td>+0.69%</td><td>+4.60%</td><td>3.9%p</td></tr>
-</tbody></table>
-<p>핵심은 <b>초기 5년 격차(6.3%p)가 이후 24년 격차(3.4%p)의 약 1.9배</b>라는 점입니다. 더 결정적인 건 각 그룹 내부의 시간 패턴입니다.</p>
-<ul>
-<li>고갈 경로는 초기 5년(+0.32%)이 이후 24년(+0.77%)보다 <b>더 나빴습니다</b> — 손실이 앞쪽에 몰렸습니다.</li>
-<li>생존 경로는 초기 5년(+6.63%)이 이후 24년(+4.19%)보다 <b>더 좋았습니다</b> — 이익이 앞쪽에 몰렸습니다.</li>
-</ul>
-<p>같은 30년 평균 수익률이라도 순서가 반대면 결과가 갈린다는 뜻입니다.</p>
-<p><b>조건부 검증</b> — GBM은 수익률이 독립이라 5년차 잔액이 충분통계량입니다. 5년차 잔액별로 이후 24년을 다시 20,000회 돌린 결과:</p>
-<table><thead><tr><th>5년차 실질 잔액</th><th>초기 5년 실질수익률(등가)</th><th>이후 24년 고갈확률</th></tr></thead><tbody>
-<tr><td>13.6억 (하위 10%)</td><td>약 <b>−4.2%/yr</b></td><td><b>95.4%</b></td></tr>
-<tr><td>20.6억 (중앙)</td><td>약 +2.6%/yr</td><td>64.1%</td></tr>
-<tr><td>30.9억 (상위 10%)</td><td>약 +10.0%/yr</td><td>19.6%</td></tr>
-</tbody></table>
-<p>초기 5년 성적만으로 최종 운명이 19.6%~95.4%로 갈립니다. 뒤에서 아무리 잘해도 앞에서 자산을 깎아먹으면 회복 불가능한데, 인출이 계속 원금을 갉아 복리 기반 자체가 사라지기 때문입니다. (등가 수익률은 결정론적 인출 점화식에서 제가 역산한 근사치입니다.)</p>
-<h4>4. 민감도</h4>
-<table><thead><tr><th>시나리오</th><th>30년 고갈확률</th><th>비고</th></tr></thead><tbody>
-<tr><td>기준안 (1.2억, 4.8%)</td><td>60.8%</td><td>최단 고갈 11년차</td></tr>
-<tr><td>팻테일 student-t(df=4)</td><td>61.0%</td><td><b>최단 고갈 6년차</b> — 수준은 같고 조기 파국 위험이 커짐</td></tr>
-<tr><td>인출 9,000만 (3.6%)</td><td>28.6%</td><td>중앙 고갈시점 25년차</td></tr>
-<tr><td>인출 7,500만 (3.0%)</td><td>14.4%</td><td>30년 후 실질 잔액 p50 16.6억</td></tr>
-</tbody></table>
-<h4>유의사항</h4>
-<ul>
-<li>세금·수수료·연금소득 등 유입은 반영하지 않았습니다. 국민연금 등 고정 유입이 있으면 실질 인출액이 줄어 결과가 크게 개선됩니다.</li>
-<li>툴이 <code>mean-return</code>을 로그 드리프트로 처리하므로 산술 기대수익률이 정확히 5.5%가 되도록 ln(1.055)=0.053541을 입력했습니다. 0.055를 그대로 넣으면 실효 산술수익률이 5.65%가 되어 고갈확률이 약 2%p 낮게 나옵니다.</li>
-<li>GBM은 자기상관·평균회귀·변동성 군집을 반영하지 않습니다. 실제 시장의 평균회귀가 있다면 고갈확률은 다소 낮아지고, 변동성 군집이 있다면 초기 5년 위험은 더 커집니다.</li>
-</ul></div>
-          <a class="src" href="assets/transcripts/case-e-on.txt">원문 case-e-on.txt</a>
-        </div>
-      </div>
-    </article>
-<h3 class="group-title">한 방 계산도 물론</h3>
-<p class="group-sub">아래 셋은 입력을 한 번 주고 답을 받는 질문이다. 이 난이도에서는 플러그인 없이도 정답 근처에 간다 — 그 사실을 그대로 실었다. 차이는 답이 아니라 근거·속도·출력량에 있다.</p>
-
-    <article class="case" id="case-b">
-      <header class="case-head">
-        <span class="case-idx">B</span>
-        <h3>전환사채 가치평가</h3>
-        <span class="essence">본질 · 검증 가능성</span>
-      </header>
-      <div class="prompt"><span class="who">프롬프트</span>액면 100억 원, 표면금리 연 1%(연 1회 이표), 만기 3년(2026-08-23 발행, 2029-08-23 만기), 전환가 20,000원, 현재 주가 18,000원, 주가 변동성 35%, 무위험금리 3.2%, 이 회사 일반채 신용스프레드 4%. 이 전환사채 가치는?</div>
-      <div class="tabs" role="tablist">
-        <button class="tab active" data-target="before" role="tab">플러그인 없음</button>
-        <button class="tab" data-target="after" role="tab">fintool</button>
-      </div>
-      <div class="cols">
-        <div class="col before" data-pane="before">
-          <div class="col-head">플러그인 없음</div><div class="meta-strip"><span><b>63s</b> 소요</span><span><b>1</b> turns</span><span>입력 <b>12,658</b> tok</span><span>출력 <b>4,826</b> tok</span><span><b>$0.16</b></span></div>
-          <div class="chat"><h4>전환사채 가치: 약 <b>104.9억원</b> (액면 대비 104.9%)</h4>
-<h5>전제</h5>
-<p>표준 분해법(straight bond + 주식 콜옵션), 배당 0, 리픽싱·풋·콜 조항 없음, 만기 전환(European) 가정입니다.</p>
-<ul>
-<li>전환주수 = 100억 ÷ 20,000 = <b>500,000주</b></li>
-<li>패리티(전환가치) = 500,000 × 18,000 = <b>90.0억</b> (액면의 90%)</li>
-<li>위험조정 할인율 = 3.2% + 4.0% = <b>7.2%</b></li>
-</ul>
-<h5>1) 채권가치 (bond floor)</h5>
-<p>연 이표 1억원 × 3회 + 만기 원금 100억, 7.2% 할인:</p>
-<table><thead><tr><th>시점</th><th>현금흐름</th><th>DF(7.2%)</th><th>현가</th></tr></thead><tbody>
-<tr><td>1년</td><td>1.0억</td><td>0.93284</td><td>0.93억</td></tr>
-<tr><td>2년</td><td>1.0억</td><td>0.87018</td><td>0.87억</td></tr>
-<tr><td>3년</td><td>101.0억</td><td>0.81174</td><td>81.99억</td></tr>
-<tr><td><b>계</b></td><td></td><td></td><td><b>83.79억</b></td></tr>
-</tbody></table>
-<h5>2) 콜옵션 가치 (Black-Scholes, 무위험금리 3.2%로 할인)</h5>
-<p>S=18,000, K=20,000, T=3, σ=35%</p>
-<ul>
-<li>d1 = 0.2877, d2 = −0.3185</li>
-<li>N(d1) = 0.6132, N(d2) = 0.3750</li>
-<li>주당 옵션가치 = 18,000×0.6132 − 18,169×0.3750 = <b>4,223원</b></li>
-<li>총 옵션가치 = 500,000주 × 4,223 = <b>21.12억</b></li>
-</ul>
-<h5>3) 합계</h5>
-<p><b>83.79 + 21.12 = 104.91억원</b> (액면 100억 대비 +4.9%)</p>
-<p>옵션 부분을 무위험금리로 할인한 것은 전환 시 신용위험이 아닌 주식을 수취하기 때문입니다. 참고로 무배당 주식에 대한 콜은 조기행사가 최적이 아니고 여기에 이표까지 붙으므로, American 전환권을 가정해도 값은 사실상 동일합니다.</p>
-<h5>민감도</h5>
-<table><thead><tr><th>변수</th><th>시나리오</th><th>CB 가치</th></tr></thead><tbody>
-<tr><td>변동성</td><td>25% / 35% / 45%</td><td>98.9억 / <b>104.9억</b> / 110.8억</td></tr>
-<tr><td>신용스프레드</td><td>3% / 4% / 5%</td><td>107.3억 / <b>104.9억</b> / 102.6억</td></tr>
-</tbody></table>
-<h5>실무상 주의점</h5>
-<ol>
-<li><b>리픽싱 조항</b>이 있으면(국내 사모 CB는 대부분 존재) 하방에서 전환가가 조정되어 옵션가치가 크게 올라갑니다 — 최저 조정한도 70% 기준이면 옵션가치가 수억~십수억 추가될 수 있습니다.</li>
-<li><b>투자자 풋(조기상환청구권, 통상 1.5~2년차)</b> 과 <b>발행사 콜</b>이 있으면 각각 가치를 올리고/내립니다. 특히 표면금리 1%에 만기보장수익률(YTM)이 별도로 있는 구조라면 채권가치가 83.79억보다 훨씬 높아집니다.</li>
-<li>순수 분해법은 전환 부분에도 암묵적으로 신용위험이 없다고 보므로 약간 고평가 경향이 있습니다. Tsiveriotis-Fernandes 모형(주식성분/채권성분 분리 할인)이나 신용조정 이항트리를 쓰면 통상 1~3억 낮게 나옵니다.</li>
-<li>배당수익률이 0이 아니면 옵션가치가 하락합니다(배당 2% 가정 시 약 2억 감소).</li>
-</ol>
-<p>위 조항들의 실제 조건을 알려주시면 이항트리로 다시 계산해 드리겠습니다.</p></div>
-          <a class="src" href="assets/transcripts/case-b-off.txt">원문 case-b-off.txt</a>
-        </div>
-        <div class="col after" data-pane="after">
-          <div class="col-head">fintool</div><div class="meta-strip"><span><b>35s</b> 소요</span><span><b>5</b> turns</span><span>입력 <b>82,286</b> tok</span><span>출력 <b>2,211</b> tok</span><span><b>$0.26</b></span></div>
-          <div class="chain"><span class="pill pill-mcp">Skill · fintool:fixed-income</span><span class="pill pill-mcp">fintool_run · convertible ×2</span></div>
-          <p class="env-note">왼쪽은 "채권 + 블랙-숄즈 콜" 분해법으로 104.9억. 오른쪽은 <span class="mono">convertible</span>(Tsiveriotis-Fernandes 이항 트리)로 107.65억 — 신용스프레드를 전환권에 반영하고 조기전환을 판정한 값이며, 봉투 안의 <span class="mono">component_method_value</span>(104.29억)가 왼쪽 방식에 해당한다. 리픽싱 시나리오까지 한 번 더 돌려 범위를 냈다.</p>
-          <div class="chat"><h3>전환사채 평가 결과</h3>
-<p><b>Tsiveriotis-Fernandes 이항 트리(500스텝)</b> 기준.</p>
-<h4>기본 시나리오 (전환가 20,000원)</h4>
-<table><thead><tr><th>항목</th><th>값</th></tr></thead><tbody>
-<tr><td><b>CB 가치</b></td><td><b>10,764,990,731원 (액면의 107.65%)</b></td></tr>
-<tr><td>주식 성분(equity component)</td><td>5,346,924,333원</td></tr>
-<tr><td>현금 성분(debt component)</td><td>5,418,066,398원</td></tr>
-<tr><td>Bond floor (순수 채권가치)</td><td>8,317,567,484원 (83.18%)</td></tr>
-<tr><td>Parity (전환가치)</td><td>9,000,000,000원 (90.00%)</td></tr>
-<tr><td>패리티 대비 프리미엄</td><td>19.61%</td></tr>
-<tr><td>본드플로어 대비 프리미엄</td><td>29.42%</td></tr>
-<tr><td>Delta</td><td>338,803.39주 상당</td></tr>
-<tr><td>전환주식수(conversion ratio)</td><td>500,000주</td></tr>
-<tr><td>분해법 참고값</td><td>10,429,314,832원</td></tr>
-</tbody></table>
-<p><b>해석</b></p>
-<ul>
-<li>현재 주가 18,000원 &lt; 전환가 20,000원이라 <b>out-of-the-money</b>지만, 잔존 3년 × 변동성 35%의 시간가치가 커서 전환권 가치가 액면의 약 53%를 차지합니다. 채권 부분(83.18%) 단독보다 24.5%p 높은 값이 옵션 프리미엄입니다.</li>
-<li>"채권 + 무위험 콜" 단순 분해법 값(104.29%)보다 TF 모형 값(107.65%)이 <b>3.36%p 높습니다</b>. 분해법은 콜옵션까지 신용스프레드 7.2%로 할인해 옵션가치를 과소평가하는데, TF 모형은 전환 시 실제로 주식을 받으므로 주식 성분을 무위험금리 3.2%로만 할인합니다. 이 차이가 신용위험 반영 방식의 차이입니다.</li>
-<li>표면금리 1%는 무위험금리+스프레드 = 7.2% 대비 크게 낮은데, 그 이자 손실을 전환권으로 보상하는 구조입니다. 결과적으로 <b>액면가 발행 시 투자자에게 약 7.65% 유리한 조건</b>이고, 발행사 입장에서는 조건을 조이거나(전환가 상향, 콜옵션 부가) 만기보장수익률 없이 발행하는 근거가 됩니다.</li>
-</ul>
-<h4>참고: 리픽싱 하한 시나리오 (전환가 14,000원 = 70%)</h4>
-<p>모형에 리픽싱 조항이 없어 전환가를 최저한도까지 조정한 케이스를 별도로 돌렸습니다.</p>
-<table><thead><tr><th>항목</th><th>값</th></tr></thead><tbody>
-<tr><td>CB 가치</td><td>13,787,321,585원 (137.87%)</td></tr>
-<tr><td>Parity</td><td>12,857,142,857원</td></tr>
-<tr><td>패리티 대비 프리미엄</td><td>7.23%</td></tr>
-<tr><td>Delta</td><td>611,617.61주 상당</td></tr>
-</tbody></table>
-<p>→ 국내 사모 CB 표준인 70% 리픽싱 조항이 붙어 있다면 <b>가치는 107.65% ~ 137.87% 구간</b>이며, 실제 값은 주가 경로에 따라 결정됩니다. 리픽싱 조항 유무를 확인하시면 조건을 반영한 재평가를 드릴 수 있습니다.</p>
-<h4>모형 가정 (봉투 기재)</h4>
-<ul>
-<li>주가는 변동성이 일정한 기하브라운운동을 따름. 점프·변동성 스마일 없음</li>
-<li>무위험금리와 신용스프레드는 만기까지 상수. 스프레드가 주가와 함께 움직이는 효과 없음</li>
-<li>부도 시 회수율은 모형에 없음. 신용위험은 현금 성분의 할인율로만 반영</li>
-<li>전환 시 희석 효과(주식 수 증가에 따른 주가 하락) 미반영</li>
-<li>리픽싱(전환가 조정) 조항 미반영 — 위 별도 시나리오 참조</li>
-<li>발행사 콜·투자자 풋·만기보장수익률(YTM 프리미엄)은 입력하지 않아 <b>redemption = 100%</b> 로 계산했습니다. 조항이 있으면 알려주세요.</li>
-</ul>
-<p><code>calculation_hash</code>: <code>sha256:217dee53…</code> (기본), <code>sha256:e61517cf…</code> (리픽싱)</p></div>
-          <a class="src" href="assets/transcripts/case-b-on.txt">원문 case-b-on.txt</a>
-        </div>
-      </div>
-    </article>
-
-    <article class="case" id="case-c">
-      <header class="case-head">
-        <span class="case-idx">C</span>
-        <h3>DCF 가치평가</h3>
-        <span class="essence">본질 · 가정의 투명성</span>
-      </header>
-      <div class="prompt"><span class="who">프롬프트</span>내년부터 5년 FCF 10억, 12억, 14억, 16억, 18억, 순부채 20억, 발행주식 100만 주. DCF로 주당가치는?</div>
-      <div class="tabs" role="tablist">
-        <button class="tab active" data-target="before" role="tab">플러그인 없음</button>
-        <button class="tab" data-target="after" role="tab">fintool</button>
-      </div>
-      <div class="cols">
-        <div class="col before" data-pane="before">
-          <div class="col-head">플러그인 없음</div><div class="meta-strip"><span><b>32s</b> 소요</span><span><b>1</b> turns</span><span>입력 <b>12,587</b> tok</span><span>출력 <b>2,736</b> tok</span><span><b>$0.08</b></span></div>
-          <div class="chat"><h4>전제</h4>
-<p>할인율(WACC)과 영구성장률(g)이 주어지지 않아 <b>WACC 10%, g 2%, 기말 할인(year-end convention)</b> 을 기준으로 계산했습니다. 이 두 값이 결과를 좌우하므로 아래에 민감도표를 함께 붙였습니다.</p>
-<h4>기준 시나리오 (WACC 10%, g 2%)</h4>
-<table><thead><tr><th>연도</th><th>FCF(억)</th><th>할인계수</th><th>현재가치(억)</th></tr></thead><tbody>
-<tr><td>1</td><td>10</td><td>0.9091</td><td>9.09</td></tr>
-<tr><td>2</td><td>12</td><td>0.8264</td><td>9.92</td></tr>
-<tr><td>3</td><td>14</td><td>0.7513</td><td>10.52</td></tr>
-<tr><td>4</td><td>16</td><td>0.6830</td><td>10.93</td></tr>
-<tr><td>5</td><td>18</td><td>0.6209</td><td>11.18</td></tr>
-<tr><td><b>소계</b></td><td></td><td></td><td><b>51.63</b></td></tr>
-</tbody></table>
-<p>터미널 밸류 = 18 × 1.02 ÷ (0.10 − 0.02) = <b>229.5억</b><br>→ 현재가치 = 229.5 × 0.6209 = <b>142.50억</b></p>
-<ul>
-<li>기업가치(EV) = 51.63 + 142.50 = <b>194.13억</b></li>
-<li>자기자본가치 = 194.13 − 20 = <b>174.13억</b></li>
-<li><b>주당가치 = 174.13억 ÷ 100만 주 ≈ 17,410원</b></li>
-</ul>
-<h4>민감도 (원/주)</h4>
-<table><thead><tr><th>WACC \ g</th><th>0%</th><th>2%</th><th>3%</th></tr></thead><tbody>
-<tr><td><b>8%</b></td><td>18,780</td><td>24,290</td><td>28,700</td></tr>
-<tr><td><b>10%</b></td><td>14,340</td><td><b>17,410</b></td><td>19,610</td></tr>
-<tr><td><b>12%</b></td><td>11,400</td><td>13,300</td><td>14,570</td></tr>
-</tbody></table>
-<h4>짚어둘 점</h4>
-<ul>
-<li>기준 시나리오에서 <b>터미널 밸류가 EV의 73%</b> 를 차지합니다. 사실상 5년 추정치보다 g와 WACC 가정이 값을 결정하는 구조라, 위 표의 범위(1.1만~2.9만원)를 하나의 결론으로 받아들이는 게 안전합니다.</li>
-<li>FCF가 연중 고르게 발생한다고 보면 mid-year convention이 더 적절하고, 그 경우 값이 약 5% 상승합니다(기준 시나리오 ≈ 18,260원).</li>
-<li>순부채 20억은 시점 조정 없이 현재 기준으로 차감했습니다.</li>
-</ul>
-<p>실제 WACC와 g 가정치가 있으시면 그 값으로 다시 계산해 드리겠습니다.</p></div>
-          <a class="src" href="assets/transcripts/case-c-off.txt">원문 case-c-off.txt</a>
-        </div>
-        <div class="col after" data-pane="after">
-          <div class="col-head">fintool</div><div class="meta-strip"><span><b>31s</b> 소요</span><span><b>5</b> turns</span><span>입력 <b>89,906</b> tok</span><span>출력 <b>1,540</b> tok</span><span><b>$0.29</b></span></div>
-          <div class="chain"><span class="pill pill-mcp">Skill · fintool:valuation</span><span class="pill pill-mcp">fintool_catalog</span><span class="pill pill-mcp">fintool_run · dcf</span></div>
-          
-          <div class="chat"><p><b>가정: WACC 11%, 영구성장률 g 2% (제가 정한 값)</b></p>
-<ul>
-<li>WACC 11% — 할인율 미제공. 한국 비상장/중소 규모 기업 통상 범위 10~12%의 중앙값.</li>
-<li>g 2% — 장기 물가(약 2%) + 실질성장 0 수준의 보수적 영구성장 가정.</li>
-<li>FCF는 비레버드 FCFF, 각 연도 말 발생, 순부채 20억은 평가시점 기준으로 봤습니다.</li>
-</ul>
-<h4>결과 (base)</h4>
-<table><thead><tr><th>항목</th><th>값</th></tr></thead><tbody>
-<tr><td>예측기간 5년 PV</td><td>50.2억 원</td></tr>
-<tr><td>Terminal value (5년차 시점)</td><td>204.0억 원</td></tr>
-<tr><td>Terminal PV</td><td>121.1억 원</td></tr>
-<tr><td><b>기업가치(EV)</b></td><td><b>171.3억 원</b></td></tr>
-<tr><td>− 순부채</td><td>20.0억 원</td></tr>
-<tr><td><b>주주가치</b></td><td><b>151.3억 원</b></td></tr>
-<tr><td><b>주당가치</b></td><td><b>약 15,127원</b></td></tr>
-</tbody></table>
-<h4>민감도 (주당가치, 원)</h4>
-<table><thead><tr><th>WACC \ g</th><th>1.0%</th><th>1.5%</th><th>2.0%</th><th>2.5%</th><th>3.0%</th></tr></thead><tbody>
-<tr><td>9%</td><td>18,082</td><td>19,144</td><td>20,359</td><td>21,760</td><td>23,395</td></tr>
-<tr><td>10%</td><td>15,706</td><td>16,509</td><td>17,413</td><td>18,438</td><td>19,609</td></tr>
-<tr><td><b>11%</b></td><td>13,810</td><td>14,434</td><td><b>15,127</b></td><td>15,902</td><td>16,774</td></tr>
-<tr><td>12%</td><td>12,262</td><td>12,757</td><td>13,302</td><td>13,904</td><td>14,573</td></tr>
-<tr><td>13%</td><td>10,976</td><td>11,376</td><td>11,812</td><td>12,290</td><td>12,816</td></tr>
-</tbody></table>
-<p>대략 <b>11,000~23,000원 밴드</b>, 중심값 1.5만 원 수준입니다.</p>
-<h4>유의점</h4>
-<ul>
-<li>Terminal value가 EV의 <b>70.7%</b>를 차지합니다. 즉 이 밸류에이션은 사실상 6년차 이후 영구가정에 좌우되며, 5년 FCF 숫자보다 WACC·g 선택이 결과를 지배합니다.</li>
-<li>5년간 FCF 연평균 +15.8% 성장 후 곧바로 2%로 떨어지는 구조입니다. 성장 감속 구간(6~10년차)을 명시적으로 넣으면 값이 달라질 수 있습니다.</li>
-<li>규모 프리미엄·비유동성 할인은 반영하지 않았습니다. 비상장이면 통상 20~30% 추가 할인을 검토합니다.</li>
-</ul>
-<p>실제 WACC(또는 무위험이자율·베타·자본구조)와 영구성장률 값을 주시면 그 수치로 다시 계산하겠습니다.</p></div>
-          <a class="src" href="assets/transcripts/case-c-on.txt">원문 case-c-on.txt</a>
-        </div>
-      </div>
-    </article>
-
-    <article class="case" id="case-a">
-      <header class="case-head">
-        <span class="case-idx">A</span>
-        <h3>런웨이 · 자금소요</h3>
-        <span class="essence">본질 · 재현성</span>
-      </header>
-      <div class="prompt"><span class="who">프롬프트</span>월 매출 3천만 원, 월 30% 성장, 고정비 8천만 원, 현금 6억. 런웨이와 다음 라운드 필요액은?</div>
-      <div class="tabs" role="tablist">
-        <button class="tab active" data-target="before" role="tab">플러그인 없음</button>
-        <button class="tab" data-target="after" role="tab">fintool</button>
-      </div>
-      <div class="cols">
-        <div class="col before" data-pane="before">
-          <div class="col-head">플러그인 없음</div><div class="meta-strip"><span><b>55s</b> 소요</span><span><b>1</b> turns</span><span>입력 <b>3,596</b> tok</span><span>출력 <b>3,730</b> tok</span><span><b>$0.13</b></span></div>
-          <div class="chat"><h4>결론 먼저</h4>
-<p>주신 숫자를 그대로 넣으면 <b>런웨이는 무한대(∞)이고, 생존 목적의 라운드는 필요 없습니다.</b> 5개월 차에 손익분기를 넘고, 그 전까지 까먹는 현금은 총 1.3억 정도라 6억 중 4.7억이 남습니다.</p>
-<table><thead><tr><th>개월</th><th>매출</th><th>고정비</th><th>순증감</th><th>기말 현금</th></tr></thead><tbody>
-<tr><td>1</td><td>0.30억</td><td>0.8억</td><td>-0.50억</td><td>5.50억</td></tr>
-<tr><td>2</td><td>0.39억</td><td>0.8억</td><td>-0.41억</td><td>5.09억</td></tr>
-<tr><td>3</td><td>0.51억</td><td>0.8억</td><td>-0.29억</td><td>4.80억</td></tr>
-<tr><td>4</td><td>0.66억</td><td>0.8억</td><td>-0.14억</td><td><b>4.66억 (최저점)</b></td></tr>
-<tr><td>5</td><td>0.86억</td><td>0.8억</td><td>+0.06억</td><td>4.71억</td></tr>
-<tr><td>6</td><td>1.11억</td><td>0.8억</td><td>+0.31억</td><td>5.03억</td></tr>
-</tbody></table>
-<p>누적 최대 소진(peak burn) = <b>1.34억</b>.</p>
-<h4>그래서 진짜 질문은 "얼마가 필요한가"가 아닙니다</h4>
-<p>이 계산의 결과가 "라운드 불필요"로 나온다는 건, 답이 <b>가정 하나에 전부 걸려 있다</b>는 뜻입니다. 검증해야 할 것 세 가지:</p>
-<p><b>1. 8천만 원이 정말 "고정"인가</b> — 이게 가장 위험합니다. 매출이 12개월간 23배(월 7억) 되는 동안 인건비·인프라가 8천만 원에 머무를 수는 없습니다. 고정비도 같이 자란다면 위 표는 무의미합니다.</p>
-<p><b>2. 3천만 원이 매출인가 공헌이익인가</b> — 매출총이익률 50%라면 손익분기는 5개월이 아니라 8개월로 밀리고, 누적 소진은 1.3억이 아니라 <b>3.0억</b>이 됩니다. 여전히 버티지만 여유는 절반입니다.</p>
-<p><b>3. 월 30%가 몇 개월짜리인가</b> — 초기 작은 숫자에서의 30%는 흔하지만 유지되는 경우는 드뭅니다.</p>
-<h4>시나리오별 실제 필요액</h4>
-<table><thead><tr><th>시나리오</th><th>손익분기</th><th>누적 소진</th><th>현금 6억으로</th></tr></thead><tbody>
-<tr><td>성장 30% 유지, 고정비 고정</td><td>5개월</td><td>1.3억</td><td>여유</td></tr>
-<tr><td>성장 10%로 둔화</td><td>12개월</td><td>3.2억</td><td>버팀</td></tr>
-<tr><td>성장률 50% 마진 반영</td><td>8개월</td><td>3.0억</td><td>버팀</td></tr>
-<tr><td><b>성장 0% (최악)</b></td><td>없음</td><td>월 0.5억</td><td><b>12개월</b></td></tr>
-</tbody></table>
-<p><b>하한선은 12개월입니다.</b> 성장이 완전히 멈춰도 1년은 갑니다. 즉 지금 급하게 조달할 이유가 없습니다.</p>
-<h4>권장: 라운드는 "생존"이 아니라 "가속"으로 사이징하세요</h4>
-<p>생존용 필요액은 0원이므로, 조달 여부는 <em>"돈을 넣으면 성장이 더 빨라지는가"</em> 로만 판단하면 됩니다. 가속 케이스 예시 — 채용해서 고정비를 월 1.5억으로 올리고 성장률 20%를 유지하는 계획이라면:</p>
-<ul>
-<li>손익분기 10개월 차, 누적 소진 <b>약 7.3억</b></li>
-<li>버퍼 및 계획 미달 대비 1.5~2배 → <b>조달 규모 10~15억</b></li>
-</ul>
-<p>지금 상태가 협상에서 강한 이유도 여기 있습니다. 현금 12개월, 흑자 전환 가시권이면 조달 시점을 고를 수 있습니다. 30% 성장을 3~4개월 더 실증해서 트랙션을 붙인 뒤 올리는 쪽이 밸류에이션 면에서 유리합니다.</p>
-<hr>
-<p>두 가지만 확인해 주시면 숫자를 더 정확히 잡아드릴 수 있습니다: <b>(1) 8천만 원에 인건비가 다 포함된 총 비용인지</b>, <b>(2) 3천만 원의 매출총이익률</b>. 그리고 향후 12개월 채용 계획이 있다면 고정비 증가를 반영한 버전으로 다시 계산해 드리겠습니다.</p></div>
-          <a class="src" href="assets/transcripts/case-a-off.txt">원문 case-a-off.txt</a>
-        </div>
-        <div class="col after" data-pane="after">
-          <div class="col-head">fintool</div><div class="meta-strip"><span><b>157s</b> 소요</span><span><b>7</b> turns</span><span>입력 <b>138,319</b> tok</span><span>출력 <b>10,885</b> tok</span><span><b>$0.68</b></span></div>
-          <div class="chain"><span class="pill pill-mcp">Skill · fintool:startup-finance</span><span class="pill pill-mcp">fintool_run · financial-model ×4</span></div>
-          
-          <div class="chat"><h4>결론 먼저</h4>
-<p><b>주신 숫자 그대로면 런웨이는 "소진 없음"입니다.</b> 월 30% 성장이면 5개월 차에 손익분기를 넘고 현금 저점이 4.66억이라 6억이 바닥나지 않습니다. 따라서 <b>생존 목적의 다음 라운드 필요액은 0원</b>이고, 라운드를 연다면 그건 성장 가속용입니다. 성장을 유지하려고 조직을 키우는 순간에만 자금이 필요해집니다 — 그 금액이 <b>약 3.5억(최소) / 6~7억(권장)</b> 입니다.</p>
-<p>가정 먼저 밝힙니다: 원가율(COGS)과 법인세는 주신 정보에 없어 <b>0으로 두었습니다</b>(매출총이익률 100%). 원가가 있으면 아래 숫자는 모두 나빠집니다.</p>
-<hr>
-<h4>1. Base — 월 30% 성장, 고정비 8천만 고정</h4>
-<table><thead><tr><th>월</th><th>매출</th><th>EBITDA</th><th>기말현금</th></tr></thead><tbody>
-<tr><td>2026-09</td><td>30,000,000</td><td>-50,000,000</td><td>550,000,000</td></tr>
-<tr><td>2026-10</td><td>39,000,000</td><td>-41,000,000</td><td>509,000,000</td></tr>
-<tr><td>2026-11</td><td>50,700,000</td><td>-29,300,000</td><td>479,700,000</td></tr>
-<tr><td><b>2026-12</b></td><td>65,910,000</td><td>-14,090,000</td><td><b>465,610,000</b> ← 현금 저점</td></tr>
-<tr><td><b>2027-01</b></td><td>85,683,000</td><td><b>+5,683,000</b></td><td>471,293,000 ← 손익분기</td></tr>
-<tr><td>2027-08</td><td>537,648,118</td><td>+457,648,118</td><td>1,869,808,512</td></tr>
-</tbody></table>
-<ul>
-<li>런웨이: <code>months: 12</code>, <code>exhaustion_month: null</code>, <code>exceeds_horizon: true</code> (12개월 horizon 내 소진 없음)</li>
-<li>손익분기: <b>2027-01</b> (5개월 차)</li>
-<li>누적 최대 자금소요: 6억 − 4.6561억 = <b>1.3439억</b></li>
-<li><code>calculation_hash</code>: <code>sha256:cc507f52611dbc0ed7f7700204a8c3ecb7da02ca5d2efa0ed5f268844c064a1e</code></li>
-</ul>
-<h4>2. Bear — 성장률 30% → 10%로 둔화 (고정비 동일)</h4>
-<p>성장률이 무너지는 게 가장 흔한 실패 경로라 별도로 돌렸습니다.</p>
-<ul>
-<li>현금 저점: <b>275,935,012원</b> (2027-07)</li>
-<li>손익분기: <b>2027-08</b> (12개월 차)</li>
-<li>런웨이: <code>months: 18</code>, <code>exhaustion_month: null</code> — 18개월 horizon 내 소진 없음</li>
-<li>누적 최대 자금소요: <b>3.2406억</b></li>
-<li><code>calculation_hash</code>: <code>sha256:7466ab549d7edb9165c493e9ee38a845b359db2033d73e003fc9e6d7266a96f5</code></li>
-</ul>
-<h4>3. 현실 보정 — 30% 성장 + 고정비 월 15% 증가</h4>
-<p>매출이 1년에 18배 느는데 고정비가 8천만에 고정된다는 건 성립하지 않습니다. 채용·마케팅이 따라 붙는 케이스입니다.</p>
-<ul>
-<li>현금 저점: <b>217,582,582원</b> (2027-05)</li>
-<li>손익분기: <b>2027-06</b> (10개월 차)</li>
-<li>런웨이: 12개월 horizon 내 소진 없음</li>
-<li>누적 최대 자금소요: <b>3.8242억</b></li>
-<li><code>calculation_hash</code>: <code>sha256:bb16fb5107c5bb8c11871f5093e32bf1a1e94adb707628485182be64eadb6055</code></li>
-</ul>
-<h4>4. 자금이 필요해지는 지점 — 30% 성장 + 고정비 월 20% 증가</h4>
-<table><thead><tr><th>월</th><th>매출</th><th>EBITDA</th><th>기말현금</th></tr></thead><tbody>
-<tr><td>2027-03</td><td>144,804,270</td><td>-94,074,450</td><td>94,212,850</td></tr>
-<tr><td><b>2027-04</b></td><td>188,245,551</td><td>-98,408,913</td><td><b>-4,196,063</b> ← 소진</td></tr>
-<tr><td><b>2027-09</b></td><td>698,942,554</td><td>-14,345,482</td><td><b>-350,977,150</b> ← 최대 부족분</td></tr>
-<tr><td>2027-10</td><td>908,625,320</td><td>+52,679,677</td><td>-298,297,473</td></tr>
-<tr><td>2028-02</td><td>2,595,124,777</td><td>+820,235,892</td><td>1,496,207,385</td></tr>
-</tbody></table>
-<ul>
-<li>런웨이: <b>7개월</b>, <code>exhaustion_month: 2027-04</code></li>
-<li>손익분기: <b>2027-10</b> (14개월 차)</li>
-<li>최대 자금 부족분: <b>350,977,150원</b></li>
-<li><code>calculation_hash</code>: <code>sha256:7a9361183d6ec390dcc252fd53363cc4e7fd17d38456acc0120a56daba304238</code></li>
-</ul>
-<hr>
-<h4>다음 라운드 필요액</h4>
-<table><thead><tr><th>목적</th><th>금액</th><th>근거</th></tr></thead><tbody>
-<tr><td>생존</td><td><b>0원</b></td><td>케이스 1~3 모두 현금 소진 없음</td></tr>
-<tr><td>최소 조달</td><td><b>약 3.5억</b></td><td>케이스 4 최대 부족분 350,977,150원</td></tr>
-<tr><td><b>권장 Ask</b></td><td><b>6~7억</b></td><td>부족분 3.5억 × 안전계수 1.8~2.0</td></tr>
-</tbody></table>
-<p>권장액의 안전계수 1.8~2.0은 fintool 산출이 아니라 제 판단입니다 — 부족분에 딱 맞춰 조달하면 첫 달 미달성에 바로 브릿지가 필요해집니다. 이 조달로 도달하는 지점은 <b>월매출 9억, EBITDA 흑자 전환(2027-10)</b> 이고, 시리즈 A/B 마일스톤으로 쓸 만한 서사입니다.</p>
-<h4>이 답을 확정하려면 필요한 값</h4>
-<ol>
-<li><b>원가율(COGS)</b> — 지금 0%로 잡혀 있습니다. SaaS 20%만 넣어도 손익분기가 2~3개월 밀립니다.</li>
-<li><b>CAC / ARPA / churn</b> — "성장에 얼마를 태워야 30%가 유지되는가"가 케이스 4의 고정비 증가율(월 20%)을 대체합니다. 지금은 제가 가정한 값입니다.</li>
-<li><b>프리머니 밸류</b> — 주시면 <code>cap-table-simulate</code>로 희석률까지 뽑아 IR 자료 형태로 정리하겠습니다.</li>
-</ol></div>
-          <a class="src" href="assets/transcripts/case-a-on.txt">원문 case-a-on.txt</a>
-        </div>
-      </div>
-    </article>
-
-    <div class="ties">
-      <h3 class="group-title">숫자가 같았던 L3 문제들</h3>
-      <p class="group-sub">CFA Level III 범위에서 더 시도한 것들이다. 결과를 숨기지 않는다 — 아래 셋은 양쪽이 같은 답에 도달했다.</p>
-      <div class="turns-wrap">
-      <table class="turns">
-        <thead><tr><th>문제</th><th>플러그인 없음</th><th>fintool</th><th>결과</th></tr></thead>
-        <tbody>
-        <tr><td class="tp"><b>Implementation shortfall</b><br><span class="dim">50만 주 매수, 부분 체결·미체결 취소. 지연·거래·기회·명시비용 분해</span></td><td class="tm">40s · 3,334 tok · $0.37</td><td class="tm on">48s · 3,058 tok · $0.34<br><span class="pill pill-mcp">fintool_catalog ×2</span><span class="pill pill-mcp">fintool_run · trade-cost</span></td><td class="tp"><b>완전 일치.</b> 251,000,000원 / 106.36bp, 4개 항목 모두 동일. 왼쪽은 지연·기회 귀속 관례가 둘로 갈린다는 점까지 스스로 짚었다.<br><span class="dim"><a href="assets/transcripts/case-f-off.txt">off</a> · <a href="assets/transcripts/case-f-on.txt">on</a></span></td></tr>
-        <tr><td class="tp"><b>Brinson-Fachler + Carino 연결</b><br><span class="dim">5섹터 2분기 배분·선택·상호작용, 로그 연결</span></td><td class="tm">91s · 9,248 tok · $0.25</td><td class="tm on">95s · 7,275 tok · $0.49<br><span class="pill pill-mcp">fintool_catalog ×2</span><span class="pill pill-mcp">fintool_run · attribution ×3</span></td><td class="tp"><b>결론 일치</b>(누적 액티브 −24.22bp). 다만 왼쪽이 손으로 구한 Carino 계수는 소수 넷째 자리에서 갈렸다(1.011645 vs 1.011678).<br><span class="dim"><a href="assets/transcripts/case-g-off.txt">off</a> · <a href="assets/transcripts/case-g-on.txt">on</a></span></td></tr>
-        <tr><td class="tp"><b>국채선물 듀레이션 오버레이</b><br><span class="dim">5,000억·D 4.2 → 7.5, 3년 국채선물로 계약수·50bp 손익</span></td><td class="tm">79s · 5,229 tok · $0.15</td><td class="tm on">94s · 6,005 tok · $0.44<br><span class="pill pill-mcp">fintool_catalog ×2</span><span class="pill pill-mcp">fintool_run · derivative</span></td><td class="tp"><b>완전 일치.</b> 1,705계약 매수, 50bp 하락 시 +187.5억. 양쪽 다 <b>주어진 선물 듀레이션 8.6이 3년물 값이 아니라는 점</b>(실제 2.7~2.9)을 스스로 지적했다.<br><span class="dim"><a href="assets/transcripts/case-h-off.txt">off</a> · <a href="assets/transcripts/case-h-on.txt">on</a></span></td></tr>
-        </tbody>
-      </table>
-      </div>
-    </div>
-  </section>
-
-  <section id="why">
-    <div class="sec-label">02 · 왜 다른가</div>
-    <h2>신뢰 모델</h2>
-    <div class="trust">
-      <div class="tcard"><b>봉투만 인용</b><p>모든 계산은 <code>ok / data / error</code> 봉투로 돌아온다. 스킬 원칙 1번: "LLM은 숫자를 만들지 않는다. 수치는 JSON 봉투만 인용한다."</p><pre>{"ok": true, "tool": "convertible",
- "data": {"model": "tsiveriotis-fernandes",
-   "value": 10764990730.9, "bond_floor": 8317567484.3,
-   "component_method_value": 10429314832.2, …}}</pre></div>
-      <div class="tcard"><b>계산 해시</b><p>월별 재무모델(<code>financial-model</code>)과 캡테이블은 정규화 입력·월별 결과·엔진 버전을 SHA-256으로 묶는다. 같은 입력·같은 엔진이면 같은 해시. 해시는 자르지 않는다.</p><pre>"calculation_hash":
-"sha256:cc507f52611dbc0ed7f7700204a8c3ecb7da02ca5d2efa0ed5f268844c064a1e"</pre></div>
-      <div class="tcard"><b>40개 계산 커맨드, 하나의 엔진</b><p>상환표·TVM·WACC·DCF·전환사채·몬테카를로·캡테이블까지 40개 커맨드가 단일 Go 바이너리에서 결정론적으로 실행된다. MCP는 <code>fintool_catalog</code>·<code>fintool_run</code> 두 도구만 노출한다.</p></div>
-    </div>
-  </section>
-
-  <section id="skills">
-    <div class="sec-label">03 · 무엇을 하나</div>
-    <h2>스킬 10종</h2>
-    <p class="sec-intro">재무 6 + 검증 4. 스킬은 "언제 어떤 커맨드를 어떤 순서로" 쓰는지 정한 절차서고, 숫자는 전부 엔진에서 온다.</p>
-    <div class="skills"><div class="skill"><span class="kind fin">재무</span><b class="mono">startup-finance</b><p>런웨이·자금소요·bear/base/bull·캡테이블·IR 리포트</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">valuation</b><p>WACC → DCF → 민감도. 입력 인터뷰 먼저</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">portfolio-risk</b><p>최적 비중·샤프·VaR/CVaR·고갈 확률</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">fixed-income</b><p>채권 가격·듀레이션·커브·전환사채(TF 모형)</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">financial-statements</b><p>재무비율·듀폰 분해·FCFF/FCFE·Merton 부도확률</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">fund-performance</b><p>Brinson 성과귀속·TWRR/MWRR·IRR/TVPI/DPI/PME</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-design</b><p>시장·경쟁·BM·제품 정의·검증 실험까지 설계</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-competitors</b><p>경쟁사 제품·가격·GTM 분석, 배틀카드</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-positioning</b><p>April Dunford 프레임 + JTBD 포지셔닝 문서</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-pitch</b><p>10분/5분/2분/1분 피치 스크립트와 Q&A</p></div></div>
-  </section>
-
-  <section id="sample">
-    <div class="sec-label">04 · 리포트 샘플</div>
-    <h2><code>fintool report</code>가 만드는 것</h2>
-    <p class="sec-intro">합성 케이스 c01(SaaS 시드, 가상 회사 "브릿지온")의 IR 재무 리포트. 페이지에서 보는 디자인 토큰이 그대로 리포트에 쓰인다.</p>
-    <div class="sample">
-      <div class="frame"><iframe src="sample-report.html" title="샘플 리포트" loading="lazy"></iframe></div>
-      <div>
-        <ul>
-          <li>KPI·런웨이 트랙·손익/현금 표·자금소요(Ask)·캡테이블이 부품(part) 단위로 배치된다.</li>
-          <li>부품마다 Claude의 코멘트가 붙지만, 코멘트는 새 숫자를 만들지 않는다.</li>
-          <li>표 아래 출처 블록에 커맨드·해시가 남는다. 숫자를 의심하면 같은 커맨드를 다시 돌리면 된다.</li>
-          <li>HTML 한 장. Claude가 HTML을 직접 쓰지 않고 <code>report</code> 커맨드가 번들을 렌더한다.</li>
-        </ul>
-        <p style="margin-top:16px"><a class="ghost" href="sample-report.html">전체 보기 →</a></p>
-      </div>
-    </div>
-  </section>
-
-  <section id="install">
-    <div class="sec-label">05 · 설치</div>
-    <h2>마켓 주소 하나로</h2>
-    <div class="install">
-      <div class="icard"><b>Claude Desktop</b><ol><li>설정 → 플러그인 → 추가 → <b>저장소에서 추가</b></li><li><code>risingdream/fintool-plugin</code> 입력</li><li>fintool 설치</li></ol></div>
-      <div class="icard"><b>Claude Code</b><ol><li><code>/plugin marketplace add risingdream/fintool-plugin</code></li><li><code>/plugin install fintool@fintool-plugin</code></li></ol></div>
-      <div class="icard"><b>Codex</b><ol><li><code>codex plugin marketplace add risingdream/fintool-plugin</code></li></ol></div>
-    </div>
-    <p class="oauth">첫 도구 호출 때 <code>fintool</code> 커넥터의 OAuth 동의 화면이 한 번 뜬다. 허용하면 그 뒤로는 묻지 않는다.</p>
-  </section>
-
-  <section id="faq">
-    <div class="sec-label">06 · FAQ</div>
-    <h2>의심스러운 것들</h2>
-    <details><summary>내 숫자는 어디로 가나?</summary><p>원격 MCP <code>fintool-mcp.risingdream.workers.dev</code>는 Cloudflare Worker가 요청을 받아 컨테이너 안의 <code>fintool</code> 바이너리가 계산한다. D1에 남는 것은 OAuth 클라이언트·토큰 상태뿐이고, 계산 입력과 결과는 저장하지 않는다. 로컬에서 돌리고 싶으면 같은 바이너리를 <code>fintool mcp</code>로 직접 띄울 수 있다.</p></details>
-    <details><summary>엔진이 갱신되면 다시 설치해야 하나?</summary><p>아니다. 계산 도구는 서버 재배포로 갱신되고 플러그인 재설치가 없다. 스킬 문서가 바뀔 때만 <code>plugin.json</code> 버전이 올라가고, 마켓플레이스 갱신으로 받는다.</p></details>
-    <details><summary>엑셀 함수와 같은 값이 나오나?</summary><p><code>amort</code>는 IPMT/PPMT/CUMIPMT/CUMPRINC/ISPMT, <code>bond</code>는 PRICE/YIELD/DURATION과 같은 규약을 쓴다. 예: 3억·연 4.5%·30년 원리금균등의 2년차 이자 <code>13,178,657</code>은 <code>CUMIPMT(0.045/12, 360, 300000000, 13, 24, 0)</code>과 같은 값이다.</p></details>
-    <details><summary>엔진 소스는 공개돼 있나?</summary><p>아니다. 이 저장소가 담는 스킬·MCP 설정은 MIT지만 계산 엔진 소스는 비공개다. 대신 결과 봉투에 <code>schema_version</code>·<code>engine_version</code>·<code>calculation_hash</code>가 실린다. 같은 입력을 같은 엔진 버전으로 다시 돌려 해시가 일치하는지 대조할 수 있고, 계산은 원격 MCP에서 제공한다.</p></details>
-    <details><summary>Before 쪽도 꽤 잘 답하던데?</summary><p>맞다. 과장하지 않았다. 이 모델은 전환사채도 손으로 맞춘다. 차이는 "틀린다"가 아니라 "검증할 수 없다"와 "비용"에 있다. 없음 열은 근거가 본문뿐이고 출력이 2~3배 길다. fintool 열은 호출 인자와 봉투가 남아 같은 입력으로 누구나 다시 돌릴 수 있고, 가정을 쓸 때는 첫 줄에 밝히고 민감도를 같이 낸다(사례 C).</p></details>
-  </section>
-
-  <footer>
-    <a href="https://github.com/risingdream/fintool-plugin">GitHub · fintool-plugin</a>
-    <a href="catalog.html">테스트 카탈로그 (3모델 × 48런)</a>
-    <a href="assets/transcripts/README.md">트랜스크립트 원문</a>
-    <span>MIT</span>
-  </footer>
 </div>
+<button type="button" class="backdrop" id="backdrop" aria-label="대화 목록 닫기"></button>
+<dialog id="artifactDialog" aria-labelledby="artifactTitle">
+  <div class="dialog-head"><strong id="artifactTitle">리포트</strong><button type="button" class="dialog-close" id="dialogClose">닫기</button></div>
+  <div class="dialog-body" id="artifactBody"></div>
+</dialog>
+
 <script>
 (function(){
-  var root=document.documentElement;
-  try{var t=localStorage.getItem('fintool-theme');if(t)root.setAttribute('data-theme',t);}catch(e){}
-  document.getElementById('theme').addEventListener('click',function(){
-    var dark=root.getAttribute('data-theme')==='dark'||(!root.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);
-    var next=dark?'light':'dark';root.setAttribute('data-theme',next);
-    try{localStorage.setItem('fintool-theme',next);}catch(e){}
-  });
-  var btn=document.getElementById('copy');
-  btn.addEventListener('click',function(){
-    var txt=document.getElementById('market').textContent;
-    function done(){btn.textContent='복사됨';btn.classList.add('ok');setTimeout(function(){btn.textContent='마켓 주소 복사';btn.classList.remove('ok');},1600);}
-    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,function(){fallback();});}else{fallback();}
-    function fallback(){var r=document.createRange();r.selectNodeContents(document.getElementById('market'));var s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done();}catch(e){}}
-  });
-  document.querySelectorAll('.case').forEach(function(c){
-    c.querySelectorAll('.tab').forEach(function(tab){
-      tab.addEventListener('click',function(){
-        c.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
-        tab.classList.add('active');
-        c.classList.remove('show-before','show-after');
-        c.classList.add('show-'+tab.dataset.target);
-      });
-    });
-  });
+  let DATA=null;
+  let artifactEvents=[];
+  let ignoreHashChange=false;
+  const state={case:null,model:'opus',plugin:'on',turn:1};
+  const MODELS=[['opus','Opus 5'],['sonnet','Sonnet 5'],['haiku','Haiku 4.5']];
+  const $=function(id){return document.getElementById(id);};
+  const esc=function(value){return String(value).replace(/[&<>]/g,function(char){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[char];});};
+
+  function inline(value){
+    let rendered=esc(value);
+    rendered=rendered.replace(/`([^`]+)`/g,'<code>$1</code>');
+    rendered=rendered.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+    rendered=rendered.replace(/(?<![\w*])\*([^*\n]+?)\*(?![\w*])/g,'<em>$1</em>');
+    rendered=rendered.replace(/\$(?=[^$\n]*[A-Za-z\\_^{}])([^$\n]+)\$/g,'<span class="math">$1</span>');
+    return rendered;
+  }
+
+  function md(text){
+    const lines=String(text||'').split('\n');
+    const out=[];
+    let i=0;
+    while(i<lines.length){
+      const line=lines[i];
+      if(/^\s*```/.test(line)){
+        const buffer=[];
+        i+=1;
+        while(i<lines.length&&!/^\s*```/.test(lines[i])){buffer.push(lines[i]);i+=1;}
+        if(i<lines.length)i+=1;
+        out.push('<pre>'+esc(buffer.join('\n'))+'</pre>');
+        continue;
+      }
+      if(/^\s*\$\$/.test(line)){
+        const math=[];
+        let first=line.replace(/^\s*\$\$/,'');
+        i+=1;
+        if(/\$\$\s*$/.test(first)){
+          math.push(first.replace(/\$\$\s*$/,''));
+        }else{
+          math.push(first);
+          while(i<lines.length&&!/\$\$\s*$/.test(lines[i])){math.push(lines[i]);i+=1;}
+          if(i<lines.length){math.push(lines[i].replace(/\$\$\s*$/,''));i+=1;}
+        }
+        out.push('<span class="math math-block">'+esc(math.join('\n'))+'</span>');
+        continue;
+      }
+      if(/^\s*-{3,}\s*$/.test(line)){out.push('<hr>');i+=1;continue;}
+      if(line.indexOf('|')===0&&i+1<lines.length&&/^\|[\s:|-]+\|/.test(lines[i+1])){
+        const headers=line.replace(/^\||\|$/g,'').split('|').map(function(cell){return cell.trim();});
+        const rows=[];
+        i+=2;
+        while(i<lines.length&&lines[i].indexOf('|')===0){rows.push(lines[i].replace(/^\||\|$/g,'').split('|').map(function(cell){return cell.trim();}));i+=1;}
+        out.push('<table><thead><tr>'+headers.map(function(header){return '<th>'+inline(header)+'</th>';}).join('')+'</tr></thead><tbody>'+rows.map(function(row){return '<tr>'+row.map(function(cell){return '<td>'+inline(cell)+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table>');
+        continue;
+      }
+      const heading=line.match(/^(#{1,6})\s+(.*)/);
+      if(heading){const level=Math.min(heading[1].length+1,5);out.push('<h'+level+'>'+inline(heading[2])+'</h'+level+'>');i+=1;continue;}
+      if(/^\s*>\s?/.test(line)){
+        const quote=[];
+        while(i<lines.length&&/^\s*>\s?/.test(lines[i])){quote.push(lines[i].replace(/^\s*>\s?/,''));i+=1;}
+        out.push('<blockquote>'+quote.map(inline).join('<br>')+'</blockquote>');
+        continue;
+      }
+      if(/^\s*[-*]\s+/.test(line)){
+        out.push('<ul>');
+        while(i<lines.length&&/^\s*[-*]\s+/.test(lines[i])){out.push('<li>'+inline(lines[i].replace(/^\s*[-*]\s+/,''))+'</li>');i+=1;}
+        out.push('</ul>');
+        continue;
+      }
+      if(/^\s*\d+\.\s+/.test(line)){
+        out.push('<ol>');
+        while(i<lines.length&&/^\s*\d+\.\s+/.test(lines[i])){out.push('<li>'+inline(lines[i].replace(/^\s*\d+\.\s+/,''))+'</li>');i+=1;}
+        out.push('</ol>');
+        continue;
+      }
+      if(!line.trim()){i+=1;continue;}
+      const paragraph=[line];
+      i+=1;
+      while(i<lines.length&&lines[i].trim()&&!/^[|#>\-*`$]/.test(lines[i])&&!/^\s*\d+\.\s/.test(lines[i])){paragraph.push(lines[i]);i+=1;}
+      out.push('<p>'+paragraph.map(inline).join('<br>')+'</p>');
+    }
+    return out.join('\n');
+  }
+
+  function fmt(value){
+    if(typeof value==='number')return Math.abs(value)>=1000?value.toLocaleString('ko-KR',{maximumFractionDigits:2}):String(Math.round(value*1e6)/1e6);
+    if(value===null)return '—';
+    if(typeof value==='object')return JSON.stringify(value);
+    return String(value);
+  }
+
+  function resultHTML(value){
+    if(value===null||value===undefined)return '<p class="think">반환된 본문이 없다.</p>';
+    if(typeof value!=='object')return '<pre>'+esc(String(value))+'</pre>';
+    if(Array.isArray(value)){
+      if(value.length&&value.every(function(row){return row&&typeof row==='object'&&!Array.isArray(row);})){
+        const keys=Array.from(new Set(value.flatMap(function(row){return Object.keys(row);}))).slice(0,10);
+        return '<table><thead><tr>'+keys.map(function(key){return '<th>'+esc(key)+'</th>';}).join('')+'</tr></thead><tbody>'+value.map(function(row){return '<tr>'+keys.map(function(key){return '<td>'+esc(fmt(row[key]))+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table>';
+      }
+      return '<pre>'+esc(JSON.stringify(value,null,2))+'</pre>';
+    }
+    const objectKeys=Object.keys(value);
+    const nestedRows=objectKeys.filter(function(key){return value[key]&&typeof value[key]==='object'&&!Array.isArray(value[key]);});
+    if(objectKeys.length>1&&nestedRows.length===objectKeys.length){
+      const columns=Array.from(new Set(nestedRows.flatMap(function(key){return Object.keys(value[key]).filter(function(child){return value[key][child]===null||typeof value[key][child]!=='object';});}))).slice(0,10);
+      if(columns.length){
+        return '<table><thead><tr><th>항목</th>'+columns.map(function(column){return '<th>'+esc(column)+'</th>';}).join('')+'</tr></thead><tbody>'+nestedRows.map(function(key){return '<tr><td>'+esc(key)+'</td>'+columns.map(function(column){return '<td>'+esc(fmt(value[key][column]))+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table>';
+      }
+    }
+    const flat=objectKeys.filter(function(key){return value[key]===null||typeof value[key]!=='object';});
+    if(flat.length>=2){
+      const rest=objectKeys.filter(function(key){return !flat.includes(key);});
+      let html='<table><tbody>'+flat.map(function(key){return '<tr><td>'+esc(key)+'</td><td>'+esc(fmt(value[key]))+'</td></tr>';}).join('')+'</tbody></table>';
+      if(rest.length){const remaining={};rest.forEach(function(key){remaining[key]=value[key];});html+='<pre>'+esc(JSON.stringify(remaining,null,2))+'</pre>';}
+      return html;
+    }
+    return '<pre>'+esc(JSON.stringify(value,null,2))+'</pre>';
+  }
+
+  function runKey(){return state.case+'|'+state.model+'|'+state.plugin;}
+  function currentRun(){return DATA.runs[runKey()]||null;}
+  function findCase(caseId){return DATA.cases.find(function(item){return item.id===caseId;})||null;}
+  function sizeLabel(bytes){if(!bytes)return '';return bytes>=1024?(bytes/1024).toFixed(1)+'KB':bytes+'B';}
+  function closeSide(){ $('side').classList.remove('open');$('backdrop').classList.remove('on');$('menuBtn').setAttribute('aria-expanded','false'); }
+
+  function renderSide(){
+    const groups=[];
+    const byGroup={};
+    DATA.cases.forEach(function(item){if(!byGroup[item.group]){byGroup[item.group]=[];groups.push(item.group);}byGroup[item.group].push(item);});
+    $('convList').innerHTML=groups.map(function(group){
+      return '<div class="grp">'+esc(group)+'</div>'+byGroup[group].map(function(item){
+        const run=DATA.runs[item.id+'|'+state.model+'|'+state.plugin];
+        const dot=run&&run.ok===true?'ok':run&&run.ok===false?'no':'';
+        const score=run&&run.ok===true?'채점 통과':run&&run.ok===false?'채점 실패':'채점 없음';
+        return '<button type="button" class="conv'+(state.case===item.id?' active':'')+'" data-case="'+item.id+'" aria-label="'+esc(item.title)+' · '+score+'"'+(run?'':' disabled style="opacity:.4"')+'><span class="dot '+dot+'" aria-hidden="true"></span><span>'+esc(item.title)+'</span>'+(item.turns>1?'<span class="n">'+item.turns+'턴</span>':'')+'</button>';
+      }).join('');
+    }).join('');
+    $('homeBtn').className='home'+(state.case?'':' active');
+    document.querySelectorAll('.conv').forEach(function(button){button.onclick=function(){state.case=button.dataset.case;state.turn=1;render();if(window.innerWidth<=820)closeSide();};});
+  }
+
+  function renderBar(){
+    $('modelSeg').innerHTML='<legend class="sr">모델 선택</legend>'+MODELS.map(function(model){return '<button type="button" data-m="'+model[0]+'" class="'+(state.model===model[0]?'on':'')+'" aria-pressed="'+(state.model===model[0])+'">'+model[1]+'</button>';}).join('');
+    $('modelSeg').querySelectorAll('button').forEach(function(button){button.onclick=function(){state.model=button.dataset.m;render();};});
+    $('pluginBtn').className='toggle'+(state.plugin==='on'?' on':'');
+    $('pluginBtn').setAttribute('aria-pressed',String(state.plugin==='on'));
+    $('pluginLbl').textContent=state.plugin==='on'?'플러그인 ON':'플러그인 OFF';
+    const selected=state.case?findCase(state.case):null;
+    $('barTitle').textContent=selected?selected.title:'전체 성적표';
+    $('barSub').textContent=selected?selected.summary:'';
+  }
+
+  function renderHome(){
+    const rows=MODELS.map(function(model){
+      const cells=['off','on'].map(function(condition){
+        let pass=0;
+        let total=0;
+        let cost=0;
+        let calls=0;
+        let hashes=0;
+        DATA.cases.forEach(function(item){const run=DATA.runs[item.id+'|'+model[0]+'|'+condition];if(!run)return;if(run.ok===true)pass+=1;if(run.ok!==null&&run.ok!==undefined)total+=1;cost+=run.usage.cost||0;calls+=run.calls||0;hashes+=run.hashes||0;});
+        return '<td class="'+(condition==='on'?'on':'')+'"><button type="button" class="cellbtn" data-model="'+model[0]+'" data-plugin="'+condition+'"><b>'+(total?pass+'/'+total:'—')+'</b><span class="mini">$'+cost.toFixed(2)+' · 도구 '+calls+' · 해시 '+hashes+'</span></button></td>';
+      }).join('');
+      return '<tr><td><b>'+model[1]+'</b></td>'+cells+'</tr>';
+    }).join('');
+    $('view').innerHTML='<div class="home-view"><h1>같은 문제를 모델별로, 플러그인 없이/있이 전부 돌린 기록</h1><p class="lead">'+esc(DATA.meta.note)+' 왼쪽에서 대화를 고르면 그 실행이 Claude Desktop처럼 재생된다. 위쪽 모델·플러그인 토글을 바꾸면 같은 질문에 대한 다른 실행으로 즉시 넘어간다.</p><div class="tblwrap"><table class="matrix"><thead><tr><th>모델</th><th>플러그인 없음</th><th class="on">fintool</th></tr></thead><tbody>'+rows+'</tbody></table></div><ul class="notes"><li>채점은 케이스마다 미리 정한 핵심 수치가 답변에 나오는지 기계적으로 확인한 결과다. 서술 품질은 채점하지 않는다.</li><li>응답 텍스트는 한 글자도 고치지 않았다. 표시되는 수치·해시는 전부 실행 결과에서 온 것이다.</li><li>수집 '+esc(DATA.meta.collected)+' · 플러그인 v'+esc(DATA.meta.plugin)+'</li></ul></div>';
+    document.querySelectorAll('.cellbtn').forEach(function(button){button.onclick=function(){state.model=button.dataset.model;state.plugin=button.dataset.plugin;const first=DATA.cases.find(function(item){return DATA.runs[item.id+'|'+state.model+'|'+state.plugin];});state.case=first?first.id:null;state.turn=1;render();};});
+    $('pager').hidden=true;
+  }
+
+  function reportMeta(event){
+    let spec={};
+    let compose={};
+    try{if(event.input&&typeof event.input.spec==='string')spec=JSON.parse(event.input.spec);}catch(error){spec={};}
+    try{if(event.input&&typeof event.input.compose==='string')compose=JSON.parse(event.input.compose);}catch(error){compose={};}
+    return {title:spec.meta&&spec.meta.title?spec.meta.title:'재무 리포트',recipe:event.input&&event.input.recipe?event.input.recipe:'finance-report',components:Array.isArray(compose.components)?compose.components:[]};
+  }
+
+  function artifactHTML(event){
+    const index=artifactEvents.push(event)-1;
+    const meta=reportMeta(event);
+    return '<section class="artifact" aria-label="report 아티팩트"><div class="artifact-head"><span>▤</span><strong>report 아티팩트</strong><span>'+esc(meta.recipe)+'</span><span class="ok">✓ 생성</span></div><div class="artifact-preview"><div class="artifact-sheet" aria-hidden="true"></div><div><div class="artifact-title">'+esc(meta.title)+'</div><div class="artifact-meta">HTML 리포트 · '+esc(sizeLabel(event.bytes))+(meta.components.length?' · '+meta.components.length+'개 섹션':'')+'</div><button type="button" class="artifact-open" data-artifact="'+index+'">전체 보기</button></div></div></section>';
+  }
+
+  function eventHTML(event){
+    if(event.t==='text')return '<div class="amsg">'+md(event.md)+'</div>';
+    if(event.t==='thinking')return '<div class="think">✳ 잠시 생각함'+(event.ms?' · '+(event.ms/1000).toFixed(1)+'초':'')+'</div>';
+    if(event.t==='skill')return '<div class="skill">✳ '+esc(event.name)+' 스킬 사용</div>';
+    if(event.t!=='tool')return '';
+    const bad=event.ok===false;
+    if(!bad&&(event.name==='report'||event.name==='fintool_report'))return artifactHTML(event);
+    const timing=event.ms?' · '+(event.ms/1000).toFixed(1)+'s':'';
+    const head='<summary><span aria-hidden="true">⚙</span><span class="nm">'+esc(event.name)+'</span><span class="sz">'+esc(timing+(event.bytes?' · '+sizeLabel(event.bytes):''))+'</span><span class="st">'+(bad?'✗ 실패':'✓')+'</span></summary>';
+    let body='<div class="tbody">';
+    if(event.input&&Object.keys(event.input).length)body+='<div class="lbl">요청</div><pre>'+esc(JSON.stringify(event.input,null,2))+'</pre>';
+    if(bad){body+='<div class="lbl">오류</div><div class="err">'+esc(event.error||'')+'</div>';if(event.contract)body+='<div class="lbl">엔진이 함께 준 입력 계약</div><pre>'+esc(JSON.stringify(event.contract,null,2))+'</pre>';}
+    else if(event.persisted){body+='<div class="lbl">결과</div><div class="think">결과가 커서 파일로 저장됐다. 모델은 이 응답에서 값을 직접 읽지 못했다.</div>';}
+    else if(event.result!==undefined){body+='<div class="lbl">결과</div>'+resultHTML(event.result);}
+    if(event.hash)body+='<div class="hash"><span>'+esc(event.hash)+'</span><button type="button" data-h="'+esc(event.hash)+'">복사</button></div>';
+    body+='</div>';
+    return '<details class="tool'+(bad?' bad':'')+'">'+head+body+'</details>';
+  }
+
+  function openArtifact(index){
+    const event=artifactEvents[index];
+    if(!event)return;
+    const meta=reportMeta(event);
+    $('artifactTitle').textContent=meta.title;
+    $('artifactBody').innerHTML='<p class="artifact-meta">'+esc(meta.recipe)+' · '+esc(sizeLabel(event.bytes))+'</p>'+(meta.components.length?'<p><strong>구성</strong><br>'+meta.components.map(esc).join(' · ')+'</p>':'')+'<p class="think">수집 원문에는 생성된 HTML 본문이 포함되지 않아 원문에 있는 아티팩트 메타데이터와 생성 요청만 표시한다.</p><details class="tool"><summary>생성 요청 원문</summary><div class="tbody"><pre>'+esc(JSON.stringify(event.input||{},null,2))+'</pre></div></details>';
+    $('artifactDialog').showModal();
+  }
+
+  function bindThreadActions(){
+    document.querySelectorAll('.hash button').forEach(function(button){button.onclick=function(){const original=button.textContent;if(!navigator.clipboard){button.textContent='복사 불가';return;}navigator.clipboard.writeText(button.dataset.h).then(function(){button.textContent='복사됨';setTimeout(function(){button.textContent=original;},1400);}).catch(function(){button.textContent='복사 실패';});};});
+    document.querySelectorAll('.artifact-open').forEach(function(button){button.onclick=function(){openArtifact(Number(button.dataset.artifact));};});
+  }
+
+  function renderThread(){
+    const run=currentRun();
+    artifactEvents=[];
+    if(!run){$('view').innerHTML='<div class="thread"><p class="think">이 조합의 실행 기록이 아직 없다.</p></div>';$('pager').hidden=true;return;}
+    const selected=findCase(state.case);
+    const multi=selected&&selected.turns>1;
+    state.turn=Math.max(1,Math.min(state.turn,run.turns.length));
+    const turns=multi?[run.turns[state.turn-1]]:run.turns;
+    const usage=run.usage;
+    const model=MODELS.find(function(item){return item[0]===state.model;});
+    const meta='<div class="runmeta"><span><b>'+esc(model?model[1]:state.model)+'</b></span><span>플러그인 <b>'+(state.plugin==='on'?'ON':'OFF')+'</b></span><span><b>'+usage.sec+'s</b></span><span>출력 <b>'+(usage.out||0).toLocaleString()+'</b> tok</span><span><b>$'+(usage.cost||0).toFixed(3)+'</b></span>'+(run.calls?'<span>도구 <b>'+run.calls+'</b>'+(run.errors?' · <span class="no">오류 '+run.errors+'</span>':'')+'</span>':'')+(run.hashes?'<span class="ok">해시 '+run.hashes+'</span>':'')+(run.ok===true?'<span class="ok">채점 통과</span>':run.ok===false?'<span class="no">채점 실패</span>':'')+'</div>';
+    $('view').innerHTML='<div class="thread">'+meta+turns.map(function(turn){return '<div class="umsg">'+esc(turn.user)+'</div>'+turn.events.map(eventHTML).join('');}).join('')+'</div>';
+    bindThreadActions();
+    $('pager').hidden=!multi;
+    if(multi){$('pos').textContent=state.turn+' / '+run.turns.length;$('prevBtn').disabled=state.turn<=1;$('nextBtn').disabled=state.turn>=run.turns.length;}
+  }
+
+  function hashString(){
+    const params=new URLSearchParams();
+    params.set('case',state.case||'');
+    params.set('model',state.model);
+    params.set('plugin',state.plugin);
+    if(state.case)params.set('turn',String(state.turn));
+    return params.toString();
+  }
+
+  function syncHash(){
+    const next=hashString();
+    if(location.hash.slice(1)===next)return;
+    ignoreHashChange=true;
+    history.replaceState(null,'','#'+next);
+    ignoreHashChange=false;
+  }
+
+  function readHash(){
+    const params=new URLSearchParams(location.hash.replace(/^#/,''));
+    const model=params.get('model');
+    const plugin=params.get('plugin');
+    const caseId=params.get('case');
+    const turn=Number.parseInt(params.get('turn')||'1',10);
+    state.model=MODELS.some(function(item){return item[0]===model;})?model:'opus';
+    state.plugin=plugin==='off'?'off':'on';
+    state.case=caseId&&findCase(caseId)?caseId:null;
+    state.turn=Number.isFinite(turn)&&turn>0?turn:1;
+  }
+
+  function render(options){
+    const settings=options||{};
+    renderBar();
+    renderSide();
+    if(state.case)renderThread();else renderHome();
+    if(!settings.keepScroll)$('scroll').scrollTop=0;
+    syncHash();
+  }
+
+  let savedTheme=null;
+  try{savedTheme=localStorage.getItem('fintool-theme');}catch(error){savedTheme=null;}
+  if(savedTheme==='light'||savedTheme==='dark')document.documentElement.setAttribute('data-theme',savedTheme);
+  $('themeBtn').onclick=function(){const root=document.documentElement;const dark=root.getAttribute('data-theme')==='dark'||(!root.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);const next=dark?'light':'dark';root.setAttribute('data-theme',next);try{localStorage.setItem('fintool-theme',next);}catch(error){return;}};
+  $('menuBtn').onclick=function(){const open=!$('side').classList.contains('open');$('side').classList.toggle('open',open);$('backdrop').classList.toggle('on',open);$('menuBtn').setAttribute('aria-expanded',String(open));};
+  $('backdrop').onclick=closeSide;
+  $('homeBtn').onclick=function(){state.case=null;state.turn=1;render();if(window.innerWidth<=820)closeSide();};
+  $('pluginBtn').onclick=function(){state.plugin=state.plugin==='on'?'off':'on';render();};
+  $('prevBtn').onclick=function(){if(state.turn>1){state.turn-=1;render();}};
+  $('nextBtn').onclick=function(){const run=currentRun();if(run&&state.turn<run.turns.length){state.turn+=1;render();}};
+  $('dialogClose').onclick=function(){$('artifactDialog').close();};
+  $('artifactDialog').addEventListener('click',function(event){if(event.target===$('artifactDialog'))$('artifactDialog').close();});
+  document.addEventListener('keydown',function(event){if($('artifactDialog').open||!state.case)return;if(event.key==='ArrowLeft')$('prevBtn').click();if(event.key==='ArrowRight')$('nextBtn').click();});
+  window.addEventListener('hashchange',function(){if(ignoreHashChange||!DATA)return;readHash();render();});
+
+  fetch('assets/conversations.json').then(function(response){if(!response.ok)throw new Error('HTTP '+response.status);return response.json();}).then(function(data){DATA=data;readHash();render();}).catch(function(error){$('view').innerHTML='<div class="home-view"><p>대화 데이터를 불러오지 못했다: '+esc(error.message)+'</p></div>';});
 })();
 </script>
-</body>
-</html>
