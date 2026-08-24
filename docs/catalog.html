@@ -105,7 +105,7 @@
       <li><b>엔진은 입력 오류를 막아주지 않는다.</b> 사례 H에서 Haiku는 "5,000억"을 500억으로 읽고 그대로 엔진에 넣어 1,705계약 대신 170계약을 냈다. 계산은 맞고 입력이 틀렸다.</li>
       <li><b>도구가 없으면 지어내기도 한다.</b> Haiku off는 존재하지 않는 <code>Bash</code>·<code>Write_file</code> 도구를 호출하려 했고, Sonnet off는 사례 E에서 답 대신 <code>{ruin_prob:.1%}</code> 자리표시자가 든 파이썬 스크립트를 냈다.</li>
       <li>해시(<code>calculation_hash</code>)를 답변에 인용한 것은 Opus(10건)·Sonnet(5건)뿐이고 Haiku는 0건이다. 봉투를 받아도 인용까지 가는 건 별개 문제다.</li>
-      <li><b>엔진 호출 97건 중 22건(23%)이 입력 오류로 실패했다.</b> 그중 14건이 <code>attribution</code> 한 도구에 몰려 있다 — 카탈로그가 <code>--input</code> JSON의 필드 이름을 알려주지 않아 모델이 <code>sectors</code>·<code>holdings</code>·<code>groups</code>·<code>portfolioWeight</code>를 차례로 찍어본다. 자세한 분석은 <a href="https://github.com/risingdream/finance-toolbox">finance-toolbox</a> 이슈에 정리했다.</li>
+      <li><b>엔진 호출 97건 중 22건(23%)이 입력 오류로 실패했다.</b> 그중 14건이 <code>attribution</code> 한 도구에 몰려 있다 — 카탈로그가 <code>--input</code> JSON의 필드 이름을 알려주지 않아 모델이 <code>sectors</code>·<code>holdings</code>·<code>groups</code>·<code>portfolioWeight</code>를 차례로 찍어본다. 이 결과를 받아 카탈로그가 도구별 입력 계약(실행 가능한 예시 + 필드 설명)을 함께 싣도록 고쳤다.</li>
     </ul>
   </section>
 

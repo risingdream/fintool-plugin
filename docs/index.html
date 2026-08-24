@@ -163,7 +163,7 @@
   <header class="hero" id="top">
     <span class="doc-tag">CLAUDE PLUGIN · FINTOOL</span>
     <h1>다섯 번째 수정에서도 무너지지 않는 재무 모델</h1>
-    <p class="lead">"성장률 낮춰봐", "채용 넣어봐", "원가율도" — 실제 재무 작업은 수정이 이어지는 일이다. 표를 매번 다시 쓰는 대신 spec 한 줄만 바꿔 검증된 Go 엔진을 다시 돌린다. 같은 입력이면 언제나 같은 해시.</p>
+    <p class="lead">"성장률 낮춰봐", "채용 넣어봐", "원가율도" — 실제 재무 작업은 수정이 이어지는 일이다. 표를 매번 다시 쓰는 대신 spec 한 줄만 바꿔 검증된 Go 엔진을 다시 돌린다. 같은 입력·같은 엔진 버전이면 같은 해시.</p>
     <div class="cta">
       <div class="copy"><code id="market">risingdream/fintool-plugin</code><button id="copy" type="button">마켓 주소 복사</button></div>
       <a class="ghost" href="#case-d">5턴 시퀀스 보기 ↓</a>
@@ -897,9 +897,9 @@ print(f&quot;초기5년 실질(연율)  고갈 {g5[failed].mean():.2%} / 생존 
 
   <section id="skills">
     <div class="sec-label">03 · 무엇을 하나</div>
-    <h2>스킬 8종</h2>
-    <p class="sec-intro">재무 4 + 검증 4. 스킬은 "언제 어떤 커맨드를 어떤 순서로" 쓰는지 정한 절차서고, 숫자는 전부 엔진에서 온다.</p>
-    <div class="skills"><div class="skill"><span class="kind fin">재무</span><b class="mono">startup-finance</b><p>런웨이·자금소요·bear/base/bull·캡테이블·IR 리포트</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">valuation</b><p>WACC → DCF → 민감도. 입력 인터뷰 먼저</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">portfolio-risk</b><p>최적 비중·샤프·VaR/CVaR·고갈 확률</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">fixed-income</b><p>채권 가격·듀레이션·커브·전환사채(TF 모형)</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-design</b><p>시장·경쟁·BM·제품 정의·검증 실험까지 설계</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-competitors</b><p>경쟁사 제품·가격·GTM 분석, 배틀카드</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-positioning</b><p>April Dunford 프레임 + JTBD 포지셔닝 문서</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-pitch</b><p>10분/5분/2분/1분 피치 스크립트와 Q&A</p></div></div>
+    <h2>스킬 10종</h2>
+    <p class="sec-intro">재무 6 + 검증 4. 스킬은 "언제 어떤 커맨드를 어떤 순서로" 쓰는지 정한 절차서고, 숫자는 전부 엔진에서 온다.</p>
+    <div class="skills"><div class="skill"><span class="kind fin">재무</span><b class="mono">startup-finance</b><p>런웨이·자금소요·bear/base/bull·캡테이블·IR 리포트</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">valuation</b><p>WACC → DCF → 민감도. 입력 인터뷰 먼저</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">portfolio-risk</b><p>최적 비중·샤프·VaR/CVaR·고갈 확률</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">fixed-income</b><p>채권 가격·듀레이션·커브·전환사채(TF 모형)</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">financial-statements</b><p>재무비율·듀폰 분해·FCFF/FCFE·Merton 부도확률</p></div><div class="skill"><span class="kind fin">재무</span><b class="mono">fund-performance</b><p>Brinson 성과귀속·TWRR/MWRR·IRR/TVPI/DPI/PME</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-design</b><p>시장·경쟁·BM·제품 정의·검증 실험까지 설계</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-competitors</b><p>경쟁사 제품·가격·GTM 분석, 배틀카드</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-positioning</b><p>April Dunford 프레임 + JTBD 포지셔닝 문서</p></div><div class="skill"><span class="kind chk">검증</span><b class="mono">startup-pitch</b><p>10분/5분/2분/1분 피치 스크립트와 Q&A</p></div></div>
   </section>
 
   <section id="sample">
@@ -937,13 +937,12 @@ print(f&quot;초기5년 실질(연율)  고갈 {g5[failed].mean():.2%} / 생존 
     <details><summary>내 숫자는 어디로 가나?</summary><p>원격 MCP <code>fintool-mcp.risingdream.workers.dev</code>는 Cloudflare Worker가 요청을 받아 컨테이너 안의 <code>fintool</code> 바이너리가 계산한다. D1에 남는 것은 OAuth 클라이언트·토큰 상태뿐이고, 계산 입력과 결과는 저장하지 않는다. 로컬에서 돌리고 싶으면 같은 바이너리를 <code>fintool mcp</code>로 직접 띄울 수 있다.</p></details>
     <details><summary>엔진이 갱신되면 다시 설치해야 하나?</summary><p>아니다. 계산 도구는 서버 재배포로 갱신되고 플러그인 재설치가 없다. 스킬 문서가 바뀔 때만 <code>plugin.json</code> 버전이 올라가고, 마켓플레이스 갱신으로 받는다.</p></details>
     <details><summary>엑셀 함수와 같은 값이 나오나?</summary><p><code>amort</code>는 IPMT/PPMT/CUMIPMT/CUMPRINC/ISPMT, <code>bond</code>는 PRICE/YIELD/DURATION과 같은 규약을 쓴다. 예: 3억·연 4.5%·30년 원리금균등의 2년차 이자 <code>13,178,657</code>은 <code>CUMIPMT(0.045/12, 360, 300000000, 13, 24, 0)</code>과 같은 값이다.</p></details>
+    <details><summary>엔진 소스는 공개돼 있나?</summary><p>아니다. 이 저장소가 담는 스킬·MCP 설정은 MIT지만 계산 엔진 소스는 비공개다. 대신 결과 봉투에 <code>schema_version</code>·<code>engine_version</code>·<code>calculation_hash</code>가 실린다. 같은 입력을 같은 엔진 버전으로 다시 돌려 해시가 일치하는지 대조할 수 있고, 계산은 원격 MCP에서 제공한다.</p></details>
     <details><summary>Before 쪽도 꽤 잘 답하던데?</summary><p>맞다. 과장하지 않았다. 이 모델은 전환사채도 손으로 맞춘다. 차이는 "틀린다"가 아니라 "검증할 수 없다"와 "비용"에 있다. 없음 열은 근거가 본문뿐이고 출력이 2~3배 길다. fintool 열은 호출 인자와 봉투가 남아 같은 입력으로 누구나 다시 돌릴 수 있고, 가정을 쓸 때는 첫 줄에 밝히고 민감도를 같이 낸다(사례 C).</p></details>
   </section>
 
   <footer>
     <a href="https://github.com/risingdream/fintool-plugin">GitHub · fintool-plugin</a>
-    <a href="https://github.com/risingdream/finance-toolbox">소스 · finance-toolbox</a>
-    <a href="https://github.com/risingdream/finance-toolbox/blob/main/docs/decisions/agent-plugin.md">결정 기록 · agent-plugin.md</a>
     <a href="catalog.html">테스트 카탈로그 (3모델 × 48런)</a>
     <a href="assets/transcripts/README.md">트랜스크립트 원문</a>
     <span>MIT</span>
