@@ -5,11 +5,11 @@
 스타트업 재무 계산 도구(원격 MCP)와 재무·IR 스킬 8종을 묶은 에이전트 플러그인 마켓플레이스다.
 Claude Desktop·Claude Code·Codex가 이 주소 하나로 같은 플러그인을 설치하고 갱신한다.
 
-코드는 없다. 계산의 정본은 원격 MCP `https://fintool-mcp.risingdream.workers.dev/mcp`
-(`fintool_catalog`·`fintool_run` 두 도구)이고, 이 저장소는 스킬과 MCP 설정만 담는다.
+계산의 정본은 원격 MCP `https://fintool-mcp.risingdream.workers.dev/mcp`
+(`fintool_catalog`·`fintool_run` 두 도구)이고, 이 저장소는 스킬과 MCP 설정을 담는다.
 소스와 문서는 [risingdream/finance-toolbox](https://github.com/risingdream/finance-toolbox)에 있다.
 
-## 설치
+## 플러그인 설치
 
 | 클라이언트 | 방법 |
 |------------|------|
