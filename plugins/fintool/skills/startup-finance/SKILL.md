@@ -1,6 +1,6 @@
 ---
 name: startup-finance
-description: fintool MCP로 스타트업 재무모델·시나리오·투자유치 자료를 만든다. 재무보고서, 피칭덱 재무, 런웨이, 자금소요, 캡테이블, LTV/CAC, bear/base/bull, 엑셀 워크북을 요청하면 이 스킬을 쓴다. startup-design·startup-pitch 등 스타트업 스킬 진행 중 재무 계산(Phase 7 재무, 검증 실험 판정, 피치 숫자)이 필요한 지점에서도 이 스킬을 쓴다. DCF·WACC·내재가치는 valuation 스킬로 보낸다. 숫자는 추정하지 말고 fintool 봉투만 인용한다.
+description: fintool MCP로 스타트업 재무모델·시나리오·투자유치 자료를 만든다. 재무보고서, 피칭덱 재무, 런웨이, 자금소요, 캡테이블, LTV/CAC, bear/base/bull, 엑셀 워크북을 요청하면 이 스킬을 쓴다. startup-design·startup-pitch 등 스타트업 스킬 진행 중 재무 계산(Phase 7 재무, 검증 실험 판정, 피치 숫자)이 필요한 지점에서도 이 스킬을 쓴다. DCF·WACC·내재가치는 valuation, 상장사 재무제표·재무비율·부도확률은 financial-statements, 펀드 성과귀속·PE 펀드지표는 fund-performance, 최적 비중·VaR·거래비용은 portfolio-risk, 채권 가격·듀레이션은 fixed-income으로 보낸다. 숫자는 추정하지 말고 fintool 봉투만 인용한다.
 ---
 
 # Startup Finance
@@ -8,7 +8,7 @@ description: fintool MCP로 스타트업 재무모델·시나리오·투자유�
 도구는 **원격 MCP**다. `fintool_catalog`로 스키마를 보고 `fintool_run`으로 실행한다. 로컬 바이너리를 설치하지 않는다.
 
 이 스킬 범위: 인터뷰 → 드라이버 모델/유닛/시나리오/캡테이블 → `report`·워크북.
-범위 밖: DCF·WACC·기업가치(`valuation`), 포트폴리오 VaR, 채권 프라이싱.
+범위 밖: DCF·WACC·기업가치(`valuation`), 상장사 재무제표·재무비율·회계 정규화·부도확률(`financial-statements`), 펀드 성과귀속·PE 펀드지표(`fund-performance`), 포트폴리오 VaR·거래비용(`portfolio-risk`), 채권 프라이싱(`fixed-income`).
 
 ## 원칙
 
@@ -232,6 +232,24 @@ fintool_run tool=report flags={recipe, spec, out?}   # out 생략 = 봉투 data.
 
 accrual 워크북의 `BS`에는 `balance_check` 행이 있다 — `ROUND(총자산 − 총부채및자본, 2)`. **사용자가 가정을 바꿔도 이 행이 0이면 대차가 Excel 안에서 여전히 맞는다는 뜻이다.**
 
+### xlsx로 전사한다
+
+봉투는 시트·셀별 **수식 문자열**이다. 엔진은 xlsx 바이너리를 만들지 않으므로 파일로 옮기는 것은 이쪽 일이다. Claude Code·Codex는 openpyxl로 쓰고, Desktop·웹은 xlsx 스킬의 코드 실행 환경에서 **같은 openpyxl 코드**를 돌린다. 환경이 가르는 것은 전달 경로뿐이다.
+
+**설계하지 않고 전사만 한다.** 지켜야 할 것 다섯 가지다.
+
+1. **수식은 `formulas` 원문 그대로.** `=`로 시작하면 수식, 아니면 리터럴, **빈 문자열이면 셀을 비운다.** 시트 참조(`Assumptions!G$3`)를 손대지 않는다.
+2. **수식을 읽고 다시 타이핑하지 않는다.** accrual 감가상각 수식은 36개월 실측 **2,358자**다. 스크립트가 JSON을 읽어 셀에 넣는다.
+3. **열은 `layout.month_columns[i]`를 그대로 읽는다.** 직접 계산하면 21번째 달 `Z→AA`에서 어긋나는데, 수식 안 참조는 `AA`를 가리키므로 **`#REF!`도 안 뜨고 값만 조용히 틀린다.**
+4. **시트 순서·행 번호를 바꾸지 않는다.** 수식이 절대행을 참조한다. 정렬·행 삽입 전부 금지다.
+5. **값 셀은 `values` 캐시값이 아니라 수식을 쓴다.** 값을 써 넣으면 가정을 바꿔도 재계산되지 않아 워크북이 아니라 표가 된다.
+
+**파일을 넘기기 전에 다시 열어 대조한다.** openpyxl로 재열어 수식 셀 수 = JSON 수식 수, 수식 문자열 원문 일치, 빈 셀·파라미터·서식을 본다. **불일치가 하나라도 있으면 파일을 제공하지 말고 먼저 보고한다** — 수식을 짐작해 고쳐 쓰는 순간 전사가 아니라 설계가 된다.
+
+전사·검증 스크립트 전문과 오탐 두 가지(빈 문자열 수식 468셀, 날짜 서식 셀의 `datetime` 되돌림)는 `references/workbook-transcribe.md`.
+
+파일명은 `<회사>-<모델>-<YYYYMMDD>.xlsx`다. 계산 해시는 자르지 말고 **한 번만** 인용한다. **워크북 안의 수식을 채팅에서 설명하거나 요약하지 않는다** — 설명은 워크북 A·B열에 이미 있다.
+
 ### 리볼버를 켜면 워크북이 안 나온다
 
 `solver.revolver_enabled: true`면 `supported: false`와 이유가 오고 시트는 비어 있다. 이자↔차입잔액↔현금이 순환 참조를 이루는데 Excel은 반복 계산이 기본으로 꺼져 있기 때문이다.
@@ -295,3 +313,4 @@ accrual 워크북의 `BS`에는 `balance_check` 행이 있다 — `ROUND(총자�
 |---|---|
 | `references/business-models.md` | 사업 유형별 드라이버 체인 6종 + 유형별 모드 권고 |
 | `references/accrual-inputs.md` | accrual 전용 블록 7종, 기본값·자동 균형 규칙, 불변식 |
+| `references/workbook-transcribe.md` | `--workbook` 봉투 → xlsx 전사·자체 검증 스크립트, 대조 오탐 2종 |

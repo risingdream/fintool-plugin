@@ -42,12 +42,33 @@
 | 소스 | 대체하는 미국 소스 | 접근성 | 비고 |
 |---|---|---|---|
 | **DART 전자공시** `dart.fss.or.kr` | SEC filings | A (검색·문서 열람) | 외부감사 대상 법인의 감사보고서·사업보고서 원문. **비상장 스타트업도 외감 대상이면 재무제표가 공개된다** — 미국에 없는 우위 |
-| **Open DART** `opendart.fss.or.kr` | SEC EDGAR API | K | 재무제표 API. 인증키 신청 필요 |
+| **Open DART** `opendart.fss.or.kr` | SEC EDGAR API | K | 재무제표 API. 인증키 신청 필요. **fintool `dart:` 커넥터가 이 API를 쓴다** — 아래 「fintool로 바로 받는 소스」 |
+| **한국은행 ECOS** `ecos.bok.or.kr` | FRED | K | 기준금리·국고채 커브·회사채·CD·CP. 인증키 신청 필요(유효기간 2년). **fintool `ecos:` 커넥터** |
 | **KOSIS 국가통계포털** `kosis.kr` | Census / BLS | C+K | 통계표 조회는 JS 렌더링. OpenAPI 별도 신청. **전국사업체조사**가 bottom-up 시장규모의 기준 통계 |
-| **공공데이터포털** `data.go.kr` | data.gov | K | 데이터셋 페이지는 A, 실제 API 호출은 활용신청 필요 |
+| **공공데이터포털** `data.go.kr` | data.gov | K | 데이터셋 페이지는 A, 실제 API 호출은 활용신청 필요. 금융위원회_주식시세정보(원천 KRX)가 **fintool `krx:` 커넥터** |
 | **국가법령정보센터** `law.go.kr` | — | A (Open API) | 법령 원문. 조회 레시피는 `kr-legal-tax.md` 참조 |
 | **중소벤처기업부** `mss.go.kr` | — | A | 창업기업동향·벤처투자동향 보도자료 |
 | **NTIS 국가과학기술지식정보서비스** `ntis.go.kr` | — | A | 정부 R&D 과제 수행 이력(경쟁사 신호) |
+
+### fintool로 바로 받는 소스 — 웹 조회 대신 `--from`
+
+위 셋은 **웹 화면을 읽어 옮겨 적지 않는다.** fintool이 값과 출처를 한 봉투에 담아 준다.
+계산 입력으로 넣을 때는 `--from <입력>=<ref>`, 값만 볼 때는 `fetch`의 `ref` 플래그다.
+절차와 인용 규약은 `valuation` · `fixed-income` · `financial-statements` 스킬의 「출처 있는 입력」 절에 있다.
+
+| ref | 주는 값 | 원천 |
+|---|---|---|
+| `ecos:rate:base` · `ecos:rate:ktb1y`~`ktb50y` · `cd91` · `cp91` · `corp-aa-` · `corp-bbb-` | 금리 하나 | 한국은행 ECOS |
+| `ecos:curve:ktb` | 국고채 전 구간 커브 | 한국은행 ECOS |
+| `krx:price:<6자리>` · `krx:marketcap:<6자리>` · `krx:shares:<6자리>` | 종가·시가총액·상장주식수 | 금융위 주식시세정보(원천 KRX) |
+| `dart:financials:<6자리>:<연도>:<FY\|Q1\|H1\|Q3>[:<CFS\|OFS>]` | 재무제표 표준계정 | Open DART |
+| `dart:filings:<6자리>` · `dart:search:<회사명>` | 공시 목록 · 회사명→단축코드 | Open DART |
+
+- `@as_of`를 붙이면 그 시점 기준, 생략하면 최신이다. **최신은 재현되지 않으므로** 리포트에 남길 값은
+  봉투 `sources[].as_of`를 ref에 박아 다시 부른다.
+- 종목은 **6자리 단축코드**만 받는다. 회사명은 동명이의로 틀린 회사를 집을 수 있어 계산 ref에 넣지 않는다 — `dart:search`로 먼저 확인한다.
+- 인용은 봉투 `sources[]`의 `provider`·`as_of`·`url`로 한다. ECOS 이용약관 제7조②가 출처 표시를 의무로 정한다.
+- 키가 없으면 `missing_credential`로 떨어지고 조회 화면 URL과 수기 플래그를 알려준다. 그때는 이 문서의 웹 조회 경로로 폴백한다.
 
 ### Tier 2 — 투자·기업 동향
 

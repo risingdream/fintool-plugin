@@ -1,44 +1,62 @@
 ---
 name: portfolio-risk
-description: fintool MCP로 포트폴리오 최적화·VaR·성과지표·성과 귀속·거래비용을 계산한다. 최적 비중, 샤프, VaR, CVaR, 고갈 확률, Brinson 성과 귀속(배분·선택 효과), implementation shortfall·거래비용 분석을 요청하면 이 스킬을 쓴다. 스타트업 IR은 startup-finance, DCF는 valuation으로 보낸다. 숫자는 봉투만 인용한다.
+description: fintool MCP로 포트폴리오 최적화·위험·거래비용을 계산한다. 최적 비중, 공분산·연율 변동성, VaR, CVaR, 몬테카를로 고갈 확률, implementation shortfall·거래비용 분석(TCA)을 요청하면 이 스킬을 쓴다. 자산배분, 효율적 투자선, 리스크 예산, 손실 한도, 은퇴자금 고갈, 체결 슬리피지 같은 한국어 요청에 반응한다. 시계열 없이 연율 변동성·상관계수·공분산 행렬만 주어진 배분·손실 질문도 여기서 그대로 계산한다. Brinson 성과귀속·샤프·정보비율·TWRR·PE 펀드지표는 fund-performance, DCF·WACC는 valuation, 재무비율·부도확률은 financial-statements, 채권 가격·듀레이션은 fixed-income, 스타트업 IR은 startup-finance로 보낸다. 숫자는 봉투만 인용한다.
 ---
 
 # Portfolio Risk
 
 원격 MCP: `fintool_catalog` → `fintool_run`.
 
-범위: `vol` → `portfolio` → `var` / `perf` / (선택) `montecarlo`. 성과 귀속은 `attribution`, 거래비용은 `trade-cost`.  
-범위 밖: IR HTML, DCF, 채권 프라이싱.
+범위: `vol` → `portfolio` → `var` / (선택) `montecarlo`. 거래비용은 `trade-cost`.  
+범위 밖: 성과귀속·위험조정 성과지표·펀드지표(`fund-performance` — `attribution`·`perf`·`private-markets`), DCF·WACC(`valuation`), 재무비율·부도확률(`financial-statements`), 채권 프라이싱(`fixed-income`), IR HTML(`startup-finance`).
 
 ## 흐름
 
 ```
-시계열 입력 → vol 또는 그대로 returns
+시계열(returns/prices) 또는 모수(volatilities+correlation / covariance)
+           → vol (시계열일 때만)
            → portfolio (목적함수, Σw=1)
-           → var (손실 크기) 또는 perf
+           → var (손실 크기) 또는 montecarlo (경로·고갈)
 ```
 
 가능하면 workflow `$ref`로 `annual_volatility_decimal`을 잇는다. `--seed`가 있는 호출은 시드를 고정한다.
 
-## 성과 귀속 — `attribution`
+## 성과 귀속은 이 스킬이 아니다
 
-벤치마크 대비 초과수익을 배분(allocation)·선택(selection)·상호작용(interaction)으로 쪼갠다.
-`fintool_catalog {"tool":"attribution"}`의 `input_contract`에 그대로 실행되는 예시가 있으니 필드명을 추측하지 않는다.
+벤치마크 대비 초과수익 분해(`attribution`), 샤프·정보비율·TWRR/MWRR(`perf`), PE/VC 펀드지표(`private-markets`)는
+**`fund-performance` 스킬**이 담당한다. 사용자가 "성과 귀속", "초과수익 분해", "샤프", "정보비율", "펀드 수익률"을 물으면
+여기서 추측하지 말고 그 스킬의 절차서를 따른다. 이 스킬은 사전적(ex-ante) 최적화·위험과 실행비용만 다룬다.
+
+## 모수만 주어졌을 때 — 시계열을 지어내지 않는다
+
+"연 변동성 22%·15%·9%, 상관계수 0.4·0.1·0.25, 기대수익률 11%·7%·4%"처럼 **모수만** 있는 질문이 실무에서 가장 흔하다.
+`portfolio`와 `var`는 이것을 **그대로 받는다.** Cholesky로 표본을 뽑아 CSV를 만들지 마라 — 표본공분산이 입력 모수와
+달라 답이 매번 달라진다.
 
 ```json
-{"tool":"attribution","flags":{"model":"brinson","brinson-method":"brinson-fachler","linking":"carino","input":{
- "periods":[{"name":"2026Q1","segments":[
-   {"name":"IT","portfolio_weight":0.32,"benchmark_weight":0.25,"portfolio_return":0.081,"benchmark_return":0.064},
-   {"name":"금융","portfolio_weight":0.18,"benchmark_weight":0.22,"portfolio_return":0.021,"benchmark_return":0.035},
-   {"name":"기타","portfolio_weight":0.50,"benchmark_weight":0.53,"portfolio_return":0.030,"benchmark_return":0.028}]}]}}}
+{"tool":"portfolio","flags":{"objective":"max-sharpe","risk-free":0.03,
+ "assets":["주식","채권","현금"],"mean-returns":[0.11,0.07,0.04],
+ "volatilities":[0.22,0.15,0.09],"correlation":[[1,0.4,0.1],[0.4,1,0.25],[0.1,0.25,1]]}}
 ```
 
-- 필드는 snake_case다. `sectors`·`holdings`·`groups`·`portfolioWeight`는 받지 않는다.
-- **기간마다 `portfolio_weight` 합과 `benchmark_weight` 합이 각각 1**이어야 한다. 현금 비중을 빠뜨리면 여기서 걸린다.
-- `--brinson-method`: `brinson-fachler`는 배분효과를 벤치마크 전체수익률 초과분 기준(`(wP−wB)(rB,i−RB)`)으로, `brinson-hood-beebower`는 `(wP−wB)·rB,i`로 잡는다. **어느 쪽을 썼는지 해설에 밝힌다.**
-- 다기간이면 `periods`를 여러 개 넣고 `--linking carino`로 연결한다. 기간 액티브의 단순 합은 기하 누적과 다르며, Carino 계수가 그 차이를 잔차 없이 배분한다.
-- 인용: `data.summary.{portfolio_return, benchmark_return, active_return}`, `data.summary.segments[].{allocation, selection, interaction, active}`, `data.summary.totals`. 기간별은 `data.periods[]`.
-- 해석은 세 효과를 구분해서 쓴다. 배분은 섹터 베팅, 선택은 종목, 상호작용은 둘의 곱이다.
+```json
+{"tool":"var","flags":{"volatilities":[0.22,0.15],"correlation":[[1,0.4],[0.4,1]],
+ "weights":[0.6,0.4],"confidence":0.99,"portfolio-value":1000000000}}
+```
+
+- `--volatilities` + `--correlation`(생략하면 무상관) 또는 `--covariance` 중 하나. **둘을 같이 주면 입력 오류다.**
+- 모수는 전부 **연율 소수**다(22% = `0.22`). `--assets`를 생략하면 `asset1..N`이다.
+- 시계열(`--returns`/`--prices`)과 **동시에 줄 수 없다.**
+- `--mean-returns` 없이 낼 수 있는 해는 `min-variance`와 `risk-parity`뿐이다. 나머지는 μ를 거치므로 거절된다.
+- `objective capm`은 벤치마크와의 회귀라 모수로 계산할 수 없다. 시계열을 요청한다.
+- `var`는 모수 입력에서 **경험분포가 없어 `historical`을 못 낸다.** 방식을 고르지 않으면 `parametric`으로 계산하고 알린다.
+  정규분포 가정이라 팻테일이 빠진다는 사실을 해설에 반드시 적는다.
+- `var`의 모수는 연율이고 결과는 1기간이다. `--periods-per-year`(기본 252)로 환산하며 `--horizon`은 그 기간을 센다.
+  일간 기준 `--horizon 10`이면 10일 VaR다.
+- 결과의 `moments` 블록에 `determinant`·`min_eigenvalue`·`condition_number`가 들어온다. 조건수가 크다는 경고가 붙으면
+  비중이 입력 모수의 작은 변화에도 흔들린다는 뜻이므로 해설에 인용한다.
+- 상관행렬이 양의 정부호가 아니면 계산하지 않고 최소 고윳값·행렬식과 함께 거절한다. 사용자가 준 상관계수가 서로
+  모순된다는 뜻이므로, 임의로 고치지 말고 어느 쌍이 문제인지 물어본다.
 
 ## 거래비용 — `trade-cost`
 
@@ -67,6 +85,7 @@ description: fintool MCP로 포트폴리오 최적화·VaR·성과지표·성과
 - `portfolio`는 **공매도 금지를 지원하지 않는다.** `allows_short`는 항상 true. 음수 비중 = 공매도.
 - `var_loss` / `cvar_loss`는 **양수가 손실**. 음수면 그 신뢰수준에서도 이익.
 - `--returns`와 `--prices`를 섞지 않는다.
+- **모수만 있어도 시계열을 지어내지 않는다.** `--volatilities`/`--correlation`/`--covariance`로 그대로 넘긴다(위 절차서 참고). 손으로 닫힌형을 푸는 것도 답이 아니다 — 그 값은 fintool 봉투가 아니다.
 - 표본이 자산 수보다 짧으면 공분산이 불안정하다. 경고를 해설에 인용한다.
 - **금액을 원 단위 정수로 바꿀 때 자릿수를 다시 센다.** "5,000억"은 `500000000000`(0이 11개)이다. 한 자리만 틀려도 엔진은 그대로 계산하고 결과는 10배 어긋난다. 헤지·포트폴리오 도구는 `notional_exposure`를 함께 내므로 원래 문제의 금액과 대조해 검산한다.
 - `montecarlo`는 `summary: true`로 부른다. 연도별 분포 밴드(`path`)가 봉투의 70%를 넘고, 해설에는 `ruin_rate`·`terminal_balance` 분위수·`failure_analysis`만 있으면 된다. 연도별 밴드를 표로 그릴 때만 전체를 받는다.
