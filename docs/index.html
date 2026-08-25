@@ -115,7 +115,21 @@
   .artifact-meta{font-size:12px;color:var(--muted);}
   .artifact-open{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:6px;padding:6px 10px;font-size:12px;margin-top:10px;}
 
-  dialog{width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 48px);border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);box-shadow:var(--shadow);padding:0;}
+  /* HTML 렌더 미리보기 — sandbox iframe, 스크립트·외부 요청 차단 */
+  .htmlprev{border:1px solid var(--line);border-radius:8px;margin:12px 0;background:var(--card);overflow:hidden;}
+  .htmlprev figcaption{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:6px 11px;border-bottom:1px solid var(--line);background:var(--code);font-size:11px;color:var(--muted);}
+  .htmlprev-tabs{display:inline-flex;margin-left:auto;border:1px solid var(--line);border-radius:6px;overflow:hidden;}
+  .htmlprev-tabs button{border:0;background:var(--card);color:var(--muted);padding:3px 10px;font-size:11px;}
+  .htmlprev-tabs button+button{border-left:1px solid var(--line);}
+  .htmlprev-tabs button.on{background:var(--ink);color:var(--paper);}
+  .htmlprev-render{height:420px;background:#fff;}
+  .htmlprev iframe{display:block;width:100%;height:100%;border:0;}
+  .htmlprev-source{margin:0;border-radius:0;max-height:420px;}
+  .htmlprev [hidden]{display:none;}
+  .htmlprev.tall .htmlprev-render{height:56vh;}
+  .htmlprev.tall .htmlprev-source{max-height:56vh;}
+
+  dialog{width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 48px);margin:auto;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);box-shadow:var(--shadow);padding:0;}
   dialog::backdrop{background:rgba(7,16,13,.55);backdrop-filter:blur(2px);}
   .dialog-head{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line);background:var(--card);}
   .dialog-head strong{font-family:'Iowan Old Style','Noto Serif KR',serif;font-size:18px;}
@@ -231,6 +245,7 @@
 (function(){
   let DATA=null;
   let artifactEvents=[];
+  let htmlFrames=[];
   let ignoreHashChange=false;
   let pendingTurn=0;
   const state={case:null,model:'opus',pane:'on'};
@@ -248,6 +263,63 @@
     return rendered;
   }
 
+  // 렌더 iframe에 주입하는 계약. allow-scripts를 주지 않는 데 더해 CSP로 외부 요청을 원천 차단한다.
+  // 수집 원문의 리포트 HTML 15건 중 3건이 Chart.js CDN을 참조하기 때문에 sandbox만으로는 부족하다.
+  const FRAME_CSP='<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; font-src data:;">';
+
+  function isHTMLDoc(lang,code){
+    if(String(lang||'').trim().toLowerCase()==='html')return true;
+    return /^\s*(?:<!doctype\s+html|<html[\s>])/i.test(String(code||'').slice(0,200));
+  }
+
+  function sandboxDoc(source){
+    const text=String(source||'');
+    if(/<head[^>]*>/i.test(text))return text.replace(/<head[^>]*>/i,function(tag){return tag+FRAME_CSP;});
+    return FRAME_CSP+text;
+  }
+
+  function htmlPreview(source,variant){
+    const index=htmlFrames.push(sandboxDoc(source))-1;
+    return '<figure class="htmlprev'+(variant?' '+variant:'')+'" data-frame="'+index+'">'
+      +'<figcaption><span>HTML 미리보기 · 스크립트 실행과 외부 요청을 차단한 채 렌더한다</span>'
+      +'<span class="htmlprev-tabs"><button type="button" class="on" data-mode="render">렌더</button><button type="button" data-mode="source">원문</button></span></figcaption>'
+      +'<div class="htmlprev-render"><iframe sandbox loading="lazy" title="HTML 리포트 미리보기"></iframe></div>'
+      +'<pre class="htmlprev-source" hidden>'+esc(source)+'</pre></figure>';
+  }
+
+  function bindHTMLPreviews(root){
+    (root||document).querySelectorAll('.htmlprev').forEach(function(figure){
+      const frame=figure.querySelector('iframe');
+      if(frame&&!frame.dataset.ready){frame.srcdoc=htmlFrames[Number(figure.dataset.frame)]||'';frame.dataset.ready='1';}
+      const tabs=figure.querySelectorAll('.htmlprev-tabs button');
+      tabs.forEach(function(tab){
+        tab.onclick=function(){
+          const wantSource=tab.dataset.mode==='source';
+          figure.querySelector('.htmlprev-render').hidden=wantSource;
+          figure.querySelector('.htmlprev-source').hidden=!wantSource;
+          tabs.forEach(function(other){other.classList.toggle('on',other===tab);});
+        };
+      });
+    });
+  }
+
+  // 응답 본문에서 첫 HTML 코드펜스만 꺼낸다. 아티팩트를 같은 턴 본문과 잇는 데 쓴다.
+  function firstHTMLBlock(text){
+    const lines=String(text||'').split('\n');
+    let i=0;
+    while(i<lines.length){
+      if(!/^\s*```/.test(lines[i])){i+=1;continue;}
+      const lang=lines[i].replace(/^\s*```/,'');
+      const buffer=[];
+      i+=1;
+      while(i<lines.length&&!/^\s*```/.test(lines[i])){buffer.push(lines[i]);i+=1;}
+      if(i<lines.length)i+=1;
+      const code=buffer.join('\n');
+      if(isHTMLDoc(lang,code))return code;
+    }
+    return null;
+  }
+
   function md(text){
     const lines=String(text||'').split('\n');
     const out=[];
@@ -255,11 +327,13 @@
     while(i<lines.length){
       const line=lines[i];
       if(/^\s*```/.test(line)){
+        const lang=line.replace(/^\s*```/,'');
         const buffer=[];
         i+=1;
         while(i<lines.length&&!/^\s*```/.test(lines[i])){buffer.push(lines[i]);i+=1;}
         if(i<lines.length)i+=1;
-        out.push('<pre>'+esc(buffer.join('\n'))+'</pre>');
+        const code=buffer.join('\n');
+        out.push(isHTMLDoc(lang,code)?htmlPreview(code,''):'<pre>'+esc(code)+'</pre>');
         continue;
       }
       if(/^\s*\$\$/.test(line)){
@@ -407,19 +481,37 @@
     return {title:spec.meta&&spec.meta.title?spec.meta.title:'재무 리포트',recipe:event.input&&event.input.recipe?event.input.recipe:'finance-report',components:Array.isArray(compose.components)?compose.components:[]};
   }
 
-  function artifactHTML(event){
-    const index=artifactEvents.push(event)-1;
+  function isArtifactEvent(event){
+    return event.t==='tool'&&event.ok!==false&&(event.name==='report'||event.name==='fintool_report');
+  }
+
+  // 아티팩트 이벤트의 result는 수집 단계에서 잘려 HTML 본문이 없다.
+  // 대신 그 아티팩트 직후, 다음 아티팩트 전까지 본문에 실린 첫 HTML 펜스를 그 아티팩트의 결과물로 잇는다.
+  function artifactSources(events){
+    const map={};
+    let pending=-1;
+    events.forEach(function(event,index){
+      if(isArtifactEvent(event)){pending=index;return;}
+      if(pending<0||event.t!=='text')return;
+      const found=firstHTMLBlock(event.md);
+      if(found){map[pending]=found;pending=-1;}
+    });
+    return map;
+  }
+
+  function artifactHTML(event,source){
+    const index=artifactEvents.push({event:event,source:source||null})-1;
     const meta=reportMeta(event);
     return '<section class="artifact" aria-label="report 아티팩트"><div class="artifact-head"><span>▤</span><strong>report 아티팩트</strong><span>'+esc(meta.recipe)+'</span><span class="ok">✓ 생성</span></div><div class="artifact-preview"><div class="artifact-sheet" aria-hidden="true"></div><div><div class="artifact-title">'+esc(meta.title)+'</div><div class="artifact-meta">HTML 리포트 · '+esc(sizeLabel(event.bytes))+(meta.components.length?' · '+meta.components.length+'개 섹션':'')+'</div><button type="button" class="artifact-open" data-artifact="'+index+'">전체 보기</button></div></div></section>';
   }
 
-  function eventHTML(event){
+  function eventHTML(event,source){
     if(event.t==='text')return '<div class="amsg">'+md(event.md)+'</div>';
     if(event.t==='thinking')return '<div class="think">✳ 잠시 생각함'+(event.ms?' · '+(event.ms/1000).toFixed(1)+'초':'')+'</div>';
     if(event.t==='skill')return '<div class="skill">✳ '+esc(event.name)+' 스킬 사용</div>';
     if(event.t!=='tool')return '';
     const bad=event.ok===false;
-    if(!bad&&(event.name==='report'||event.name==='fintool_report'))return artifactHTML(event);
+    if(!bad&&(event.name==='report'||event.name==='fintool_report'))return artifactHTML(event,source);
     const timing=event.ms?' · '+(event.ms/1000).toFixed(1)+'s':'';
     const head='<summary><span aria-hidden="true">⚙</span><span class="nm">'+esc(event.name)+'</span><span class="sz">'+esc(timing+(event.bytes?' · '+sizeLabel(event.bytes):''))+'</span><span class="st">'+(bad?'✗ 실패':'✓')+'</span></summary>';
     let body='<div class="tbody">';
@@ -433,17 +525,24 @@
   }
 
   function openArtifact(index){
-    const event=artifactEvents[index];
-    if(!event)return;
+    const entry=artifactEvents[index];
+    if(!entry)return;
+    const event=entry.event;
     const meta=reportMeta(event);
     $('artifactTitle').textContent=meta.title;
-    $('artifactBody').innerHTML='<p class="artifact-meta">'+esc(meta.recipe)+' · '+esc(sizeLabel(event.bytes))+'</p>'+(meta.components.length?'<p><strong>구성</strong><br>'+meta.components.map(esc).join(' · ')+'</p>':'')+'<p class="think">수집 원문에는 생성된 HTML 본문이 포함되지 않아 원문에 있는 아티팩트 메타데이터와 생성 요청만 표시한다.</p><details class="tool"><summary>생성 요청 원문</summary><div class="tbody"><pre>'+esc(JSON.stringify(event.input||{},null,2))+'</pre></div></details>';
+    const head='<p class="artifact-meta">'+esc(meta.recipe)+' · '+esc(sizeLabel(event.bytes))+'</p>'+(meta.components.length?'<p><strong>구성</strong><br>'+meta.components.map(esc).join(' · ')+'</p>':'');
+    const body=entry.source
+      ?'<p class="think">같은 턴 응답 본문에 실린 리포트 HTML을 그대로 렌더한다.</p>'+htmlPreview(entry.source,'tall')
+      :'<p class="think">수집 원문에는 생성된 HTML 본문이 포함되지 않아 원문에 있는 아티팩트 메타데이터와 생성 요청만 표시한다.</p>';
+    $('artifactBody').innerHTML=head+body+'<details class="tool"><summary>생성 요청 원문</summary><div class="tbody"><pre>'+esc(JSON.stringify(event.input||{},null,2))+'</pre></div></details>';
+    bindHTMLPreviews($('artifactBody'));
     $('artifactDialog').showModal();
   }
 
   function bindThreadActions(){
     document.querySelectorAll('.hash button').forEach(function(button){button.onclick=function(){const original=button.textContent;if(!navigator.clipboard){button.textContent='복사 불가';return;}navigator.clipboard.writeText(button.dataset.h).then(function(){button.textContent='복사됨';setTimeout(function(){button.textContent=original;},1400);}).catch(function(){button.textContent='복사 실패';});};});
     document.querySelectorAll('.artifact-open').forEach(function(button){button.onclick=function(){openArtifact(Number(button.dataset.artifact));};});
+    bindHTMLPreviews($('view'));
   }
 
   function colHeadHTML(plugin,label,run){
@@ -463,11 +562,17 @@
       const note=run?'이 턴의 기록이 없다.':(index===0?'이 조합의 실행 기록이 아직 없다.':'');
       return '<div class="pane" data-p="'+plugin+'">'+(note?'<p class="nodata">'+note+'</p>':'')+'</div>';
     }
-    return '<div class="pane" data-p="'+plugin+'">'+(showUser?'<div class="umsg">'+esc(turn.user)+'</div>':'')+turn.events.map(eventHTML).join('')+'</div>';
+    const sources=artifactSources(turn.events);
+    return '<div class="pane" data-p="'+plugin+'">'+(showUser?'<div class="umsg">'+esc(turn.user)+'</div>':'')+turn.events.map(function(event,order){return eventHTML(event,sources[order]);}).join('')+'</div>';
   }
 
   function renderCompare(){
     artifactEvents=[];
+    htmlFrames=[];
+    // 뷰를 다시 그리면 인덱스가 바뀐다. 앞서 연 아티팩트의 iframe이 남지 않도록 다이얼로그를 비운다.
+    const dialog=$('artifactDialog');
+    if(dialog.open)dialog.close();
+    $('artifactBody').innerHTML='';
     const runs={off:runFor(state.case,'off'),on:runFor(state.case,'on')};
     if(!runs.off&&!runs.on){
       const model=MODELS.find(function(item){return item[0]===state.model;});
