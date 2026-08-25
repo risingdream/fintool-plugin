@@ -126,6 +126,33 @@ expression은 `ref` | `literal` | `op` 중 하나이고 `op`의 `args`는 정확
 | `divide` | 숫자 ÷ ratio, 동일타입끼리는 ratio |
 | `min` `max` | **수수료 상한·최소수수료** |
 
+op 이름은 위 여섯 개 그대로다. `mul`·`sub` 같은 줄임말은 거부된다.
+`id`는 바깥 expression에만 붙이고 **`args` 안쪽 항에는 붙이지 않는다.**
+
+### 매출 × 원가율 — 최소 스펙
+
+`ratio` 드라이버와 중첩 수식이 함께 나오는 가장 짧은 형태다. 그대로 실행된다.
+
+```json
+{"version":"financial-model/v3","mode":"cash","start_month":"2026-09","months":12,"currency":"KRW",
+ "initial_cash":{"type":"money","unit":"KRW","value":600000000},
+ "drivers":[
+   {"id":"rev","label":"매출","value_type":"money","unit":"KRW",
+    "schedule":{"kind":"growth","base":30000000,"monthly_growth":0.3}},
+   {"id":"cogs_rate","label":"원가율","value_type":"ratio","unit":"decimal",
+    "schedule":{"kind":"monthly","values":[0.2]}}],
+ "line_items":[
+   {"id":"revenue","label":"매출","category":"revenue","subtype":"transaction","frequency":"recurring",
+    "value_type":"money","unit":"KRW","expression":{"id":"e.revenue","ref":"rev"},"statement_role":"revenue"},
+   {"id":"cogs","label":"매출원가","category":"cost","subtype":"variable","frequency":"recurring",
+    "value_type":"money","unit":"KRW",
+    "expression":{"id":"e.cogs","op":"multiply","args":[{"ref":"rev"},{"ref":"cogs_rate"}]},
+    "statement_role":"cogs"}]}
+```
+
+**`value_type`과 `unit`은 짝이다.** `money`면 `unit`이 통화(`KRW`), `ratio`면 `unit`이 반드시
+`decimal`이다. `"unit":"ratio"`는 거부된다 — `ratio`는 unit이 아니라 value_type이다.
+
 `min`/`max`가 저액 구간 역마진을 계산 가능하게 만든다. 100만원 환급에 30% 수수료지만 상한 20만원이면 `min`, 최소수수료 10만원이면 `max`다. 이 계산이 없으면 역마진을 말로만 지적하게 된다.
 
 ### 퍼널 중간 단계는 `metric`으로 노출한다
@@ -191,11 +218,31 @@ warning zero_cogs: 매출원가가 0이라 매출총이익률이 100%로 나옵�
 
 ## 산출물
 
-봉투를 `bundle.json`으로 모은다. 형식은 `docs/examples/report/acme.bundle.json`.
+봉투를 `bundle.json`으로 모은다.
 
 ```
 fintool_run tool=report flags={recipe, spec, out?}   # out 생략 = 봉투 data.html로 회수
 ```
+
+### 봉투 키는 도구마다 정해져 있다
+
+`spec`의 각 키는 **받는 도구가 고정**이다. 이름이 다르면 그 봉투는 조용히 무시되고
+`바인딩할 계산 결과가 없습니다`만 돌아온다. `base`에 `financial-model` 결과를 넣는 실수가 가장 흔하다.
+
+| 키 | 받는 도구 |
+|---|---|
+| `base` `unfunded` `bull` `bear` | `business-plan` |
+| `financial_model` | `financial-model` |
+| `unit_econ` | `unit-economics` |
+| `cap_table` | `cap-table-simulate` |
+| `capital_budget` | `capital-budget` |
+| `fsa` `amort` `wacc` `dcf` `tvm` `npv` `rate_convert` | 같은 이름의 도구 |
+
+`montecarlo`처럼 위 표에 없는 도구의 봉투는 받는 자리가 없다. 넣어도 그려지지 않는다.
+
+봉투 밖 키는 `meta`, `assumptions[]`, `use_of_funds[]`, `traction[]`, `market[]`,
+`milestones[]`, `competition[]`, `narrative{}`, `comments{}`다. 각 봉투는 `{ok, tool, data}`를
+**도구가 돌려준 그대로** 넣는다. `data` 안을 손으로 고쳐 쓰면 언마샬에서 거부된다.
 
 | 레시피 | 용도 |
 |--------|------|
