@@ -157,6 +157,35 @@
   .pane .umsg{margin-top:0;}
   .nodata{color:var(--muted);font-size:13px;border:1px dashed var(--line);border-radius:8px;padding:14px;}
 
+  /* 비교 해설 — 두 단 위에 전체 폭으로. 3단으로 쪼개면 각 단이 좁아진다 */
+  .cmpnote{border:1px solid var(--line);border-left:3px solid var(--green);border-radius:8px;
+           background:var(--card);padding:16px 18px;margin:20px 0 8px;}
+  .cmpnote>h2{font-size:13px;letter-spacing:.06em;color:var(--muted);font-weight:500;margin-bottom:10px;}
+  .cmpnote>h2 b{color:var(--ink);font-weight:600;letter-spacing:0;}
+  .cmpnote .note{font-size:14.5px;}
+  .cmpnote .note p{margin:0 0 12px;}
+  .cmpnote .note strong{color:var(--green);}
+  .cmpnote-grid{display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:18px 26px;align-items:start;}
+  .cmpnote table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .cmpnote th,.cmpnote td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;}
+  .cmpnote th:first-child,.cmpnote td:first-child{text-align:left;color:var(--muted);font-weight:400;white-space:normal;}
+  .cmpnote thead th{font-size:11px;letter-spacing:.06em;color:var(--muted);font-weight:500;border-bottom:1px solid var(--line-strong);}
+  .cmpnote thead th.on{color:var(--green);}
+  .cmpnote td.val{font-family:'IBM Plex Mono',Menlo,monospace;font-variant-numeric:tabular-nums;}
+  .cmpnote td.ok{color:var(--green);}
+  .cmpnote td.no{color:var(--bear);}
+  .cmpnote .facts{margin:0;padding:0;list-style:none;font-size:13.5px;}
+  .cmpnote .facts li{position:relative;padding-left:15px;margin:0 0 8px;}
+  .cmpnote .facts li:last-child{margin-bottom:0;}
+  .cmpnote .facts li::before{content:'';position:absolute;left:0;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--line-strong);}
+  .cmpnote .facts li[data-k="verify"]::before{background:var(--green);}
+  .cmpnote .facts li[data-k="error"]::before,.cmpnote .facts li[data-k="grade"]::before{background:var(--bear);}
+  @media (max-width:820px){
+    .cmpnote{padding:14px;margin:16px 0 4px;}
+    .cmpnote-grid{grid-template-columns:minmax(0,1fr);gap:14px;}
+    .cmpnote .tblwrap{overflow-x:auto;}
+  }
+
   /* 홈(카탈로그) */
   .home-view{max-width:1000px;margin:0 auto;padding:30px 24px 60px;}
   .home-view h1{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.3;}
@@ -558,6 +587,49 @@
     return '<div class="col-head'+(plugin==='on'?' on':'')+'" data-p="'+plugin+'"><div class="nm"><span class="mark" aria-hidden="true"></span>'+esc(label)+'</div>'+meta+'</div>';
   }
 
+  // 비교 해설. cases[].compare(사람이 쓴 고정 문단)와 compare[case|model](판정기가 뽑은
+  // 수치·사실 문장)을 합쳐 그린다. 수치는 여기서 계산하지 않는다 — 정본에 있는 것만 옮긴다.
+  function compareHTML(caseItem){
+    const block=DATA.compare?DATA.compare[caseItem.id+'|'+state.model]:null;
+    const note=caseItem.compare?'<div class="note">'+md(caseItem.compare)+'</div>':'';
+    if(!block)return note?'<section class="cmpnote"><h2>이 케이스에서 <b>무엇을 볼까</b></h2>'+note+'</section>':'';
+    const off=block.metrics.off;
+    const on=block.metrics.on;
+    // 값의 색은 어느 열인지가 아니라 결과가 무엇인지로 정한다. ON 열이라는 이유로
+    // '실패'를 초록으로 칠하면 화면이 정본과 반대되는 말을 한다.
+    const cell=function(text,tone){return {t:String(text),tone:tone||''};};
+    const grade=function(value){
+      return value===true?cell('통과','ok'):value===false?cell('실패','no'):cell('—');
+    };
+    const turns=function(side,structural){
+      const text=on.total>1?side.delivered+' / '+side.total+'턴':(side.delivered?'나옴':'없음');
+      // OFF의 0은 실패가 아니라 구조다(도구가 없다). 빨갛게 칠하지 않는다.
+      return cell(text,side.delivered?'ok':(structural?'':'no'));
+    };
+    const rows=[
+      ['검증 가능한 계산',cell(off.verified+'건'),cell(on.verified+'건',on.verified?'ok':'')],
+      ['계산 해시',cell(off.hashes),cell(on.hashes,on.hashes?'ok':'')],
+      ['산출물이 나온 턴',turns(off,true),turns(on,false)],
+      // 채점 기준이 없는 케이스는 행을 아예 뺀다. '— / —'는 읽는 사람에게 아무것도 주지 않는다.
+      (off.ok===null&&on.ok===null)?null:['채점',grade(off.ok),grade(on.ok)],
+      ['소요',cell(off.sec+'초'),cell(on.sec+'초')],
+      ['비용',cell('$'+(off.cost||0).toFixed(3)),cell('$'+(on.cost||0).toFixed(3))]
+    ].filter(Boolean).map(function(row){
+      return '<tr><td>'+esc(row[0])+'</td><td class="val '+row[1].tone+'">'+esc(row[1].t)
+        +'</td><td class="val '+row[2].tone+'">'+esc(row[2].t)+'</td></tr>';
+    }).join('');
+    const facts=block.lines.map(function(line){
+      return '<li data-k="'+esc(line.k)+'">'+inline(line.text)+'</li>';
+    }).join('');
+    const model=MODELS.find(function(item){return item[0]===state.model;});
+    return '<section class="cmpnote" aria-label="플러그인 OFF와 ON 비교">'
+      +'<h2>OFF와 ON은 <b>무엇이 달랐나</b> · '+esc(model?model[1]:state.model)+'</h2>'
+      +note
+      +'<div class="cmpnote-grid"><div class="tblwrap"><table><thead><tr><th>지표</th>'
+      +'<th>플러그인 OFF</th><th class="on">fintool ON</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+      +'<ul class="facts">'+facts+'</ul></div></section>';
+  }
+
   function paneHTML(plugin,run,index){
     const turn=run?run.turns[index]:null;
     if(!turn){
@@ -589,7 +661,9 @@
       const head=total>1?'<div class="turn-n">턴 '+(index+1)+' / '+total+'</div>':'';
       sections.push('<section class="turn" id="turn-'+(index+1)+'">'+head+'<div class="panes">'+PANES.map(function(pane){return paneHTML(pane[0],runs[pane[0]],index);}).join('')+'</div></section>');
     }
-    $('view').innerHTML='<div class="cmp" data-pane="'+state.pane+'"><div class="cmp-head">'+PANES.map(function(pane){return colHeadHTML(pane[0],pane[1],runs[pane[0]]);}).join('')+'</div>'+sections.join('')+'</div>';
+    // 비교 해설은 두 단 어느 쪽을 보든 필요하다. data-pane 전환과 무관하게 항상 그린다.
+    const note=compareHTML(findCase(state.case)||{id:state.case});
+    $('view').innerHTML='<div class="cmp" data-pane="'+state.pane+'"><div class="cmp-head">'+PANES.map(function(pane){return colHeadHTML(pane[0],pane[1],runs[pane[0]]);}).join('')+'</div>'+note+sections.join('')+'</div>';
     bindThreadActions();
     syncHeadOffset();
   }
