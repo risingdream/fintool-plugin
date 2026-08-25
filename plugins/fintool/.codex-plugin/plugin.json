@@ -1,6 +1,6 @@
 {
   "name": "fintool",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "원격 fintool MCP와 시장·기업 재무 스킬 6종(valuation·financial-statements·fund-performance·portfolio-risk·fixed-income·startup-finance), 스타트업 검증 패키지 4종(startup-design·competitors·positioning·pitch). 한국 시장 보정 references 포함.",
   "author": {
     "name": "risingdream"

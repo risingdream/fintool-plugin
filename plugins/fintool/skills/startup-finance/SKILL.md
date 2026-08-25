@@ -108,8 +108,16 @@ description: fintool MCP로 스타트업 재무모델·시나리오·투자유�
 | `monthly` | 전 기간 고정값 (수수료율·전환율 대부분) | `values: [0.3]` |
 | `growth` | 복리 성장 | `base`, `monthly_growth` |
 | `cohort` | 전월 잔량이 이월되는 기반 (구독 고객, 설치 대수) | `initial`, `retention`, 선택 `additions` |
-| `recurring` | 구간 상수 | `value`, `start`·`end` |
+| `recurring` | 구간 상수 | `value`, 선택 `start`·`end` |
 | `one_time` | 단발 | `value`, `month` |
+
+**`start`·`end`·`month`는 `"2026-10"` 같은 `"YYYY-MM"` 문자열이다.** `1`·`0` 같은 월 인덱스 숫자를
+넣으면 계산 이전에 `invalid_json`으로 죽는다(`cannot unmarshal number into ... schedule.start`).
+모델 기간(`start_month`부터 `months`개월) 안의 실제 월이어야 하고, 밖이면 `invalid_period`다.
+`recurring`·`cohort`에서 `start`·`end`를 빼면 전 기간이다.
+
+**kind마다 받는 키가 정해져 있다.** 표에 없는 키를 섞으면 `invalid_schedule`이다 —
+`monthly`에 `start`를 붙이거나 `growth`에 `value`를 붙이는 식이 그렇다.
 
 **성장·잔존을 직접 계산해 `monthly.values`에 36개 값으로 넣지 않는다.** `growth`·`cohort`가 그걸 하려고 있다. 배열을 손으로 만드는 순간 원칙 1이 깨진다.
 
@@ -152,6 +160,30 @@ op 이름은 위 여섯 개 그대로다. `mul`·`sub` 같은 줄임말은 거�
 
 **`value_type`과 `unit`은 짝이다.** `money`면 `unit`이 통화(`KRW`), `ratio`면 `unit`이 반드시
 `decimal`이다. `"unit":"ratio"`는 거부된다 — `ratio`는 unit이 아니라 value_type이다.
+
+### 구간 비용과 단발 지출 — 최소 스펙
+
+`recurring`·`one_time`이 `"YYYY-MM"` 월과 함께 나오는 가장 짧은 형태다. 그대로 실행된다.
+
+```json
+{"version":"financial-model/v3","mode":"cash","start_month":"2026-09","months":12,"currency":"KRW",
+ "initial_cash":{"type":"money","unit":"KRW","value":600000000},
+ "drivers":[
+   {"id":"rent","label":"임대료","value_type":"money","unit":"KRW",
+    "schedule":{"kind":"recurring","value":5000000,"start":"2026-10","end":"2027-03"}},
+   {"id":"setup","label":"초기 구축비","value_type":"money","unit":"KRW",
+    "schedule":{"kind":"one_time","value":80000000,"month":"2026-09"}}],
+ "line_items":[
+   {"id":"opex","label":"임대료","category":"cost","subtype":"fixed","frequency":"recurring",
+    "value_type":"money","unit":"KRW","expression":{"id":"e.opex","ref":"rent"},"statement_role":"opex"},
+   {"id":"capex","label":"초기 구축비","category":"investment","subtype":"capex","frequency":"one_time",
+    "period":{"start":"2026-09","end":"2026-09"},
+    "value_type":"money","unit":"KRW","expression":{"id":"e.capex","ref":"setup"},"statement_role":"capex"}]}
+```
+
+**드라이버의 `schedule`과 line item의 `period`는 별개다.** `frequency:"one_time"` line item은
+`period:{start, end}`가 **필수**이고 두 값이 같은 월이어야 한다(`invalid_period`).
+`frequency:"recurring"`이면 `period`는 선택이고, 빼면 전 기간이다.
 
 `min`/`max`가 저액 구간 역마진을 계산 가능하게 만든다. 100만원 환급에 30% 수수료지만 상한 20만원이면 `min`, 최소수수료 10만원이면 `max`다. 이 계산이 없으면 역마진을 말로만 지적하게 된다.
 
@@ -321,6 +353,7 @@ accrual 워크북의 `BS`에는 `balance_check` 행이 있다 — `ROUND(총자�
 - 기본 플래그는 kebab-case. batch `params`는 **snake_case**, 스칼라만.
 - `months`는 12~60이다.
 - `mode`를 생략하면 cash다. `--mode`는 스펙의 `mode`를 덮어쓴다. `cash`·`accrual` 외의 값은 거부된다.
+- **`--summary`는 accrual 결과에만 붙는다.** cash 결과에는 재무제표가 없어 축약할 것이 없고, 붙이면 입력 오류로 거부된다. cash 결과가 크면 `--summary` 대신 `months`를 줄이거나 `financial_model` 봉투를 그대로 `report`에 넘긴다.
 - **기존 `financial-model/v1`·`v2` 스펙도 그대로 받는다.** 다만 그 두 버전에 `--mode`를 주면 거부된다 — v1은 cash, v2는 accrual로 고정이다. 모드를 바꿔 돌리려면 스펙을 새 형식으로 옮긴다.
 - expression은 **같은 월 값만** 참조한다. 전월 참조는 `expression_cycle`로 거부된다 — 시간 재귀는 `growth`·`cohort` 스케줄로 푼다.
 - 재무 line item의 `value_type`은 `money`다. `count`·`ratio`는 `metric`에서만.
