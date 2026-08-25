@@ -151,8 +151,6 @@
   .turn{padding-top:2px;}
   .turn+.turn{margin-top:30px;border-top:1px dashed var(--line);}
   .turn-n{position:sticky;top:var(--headh,72px);z-index:4;background:var(--paper);padding:14px 0 8px;font-family:'IBM Plex Mono',Menlo,monospace;font-size:11px;letter-spacing:.12em;color:var(--muted);}
-  .turn-h{padding:8px 0 14px;}
-  .turn-q{background:var(--user-bg);border-radius:12px;padding:13px 16px;white-space:pre-wrap;font-size:14.5px;}
   .panes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--panegap);align-items:start;
          background:center/1px 100% no-repeat linear-gradient(var(--line),var(--line));}
   .pane{min-width:0;}
@@ -556,14 +554,14 @@
     return '<div class="col-head'+(plugin==='on'?' on':'')+'" data-p="'+plugin+'"><div class="nm"><span class="mark" aria-hidden="true"></span>'+esc(label)+'</div>'+meta+'</div>';
   }
 
-  function paneHTML(plugin,run,index,showUser){
+  function paneHTML(plugin,run,index){
     const turn=run?run.turns[index]:null;
     if(!turn){
       const note=run?'이 턴의 기록이 없다.':(index===0?'이 조합의 실행 기록이 아직 없다.':'');
       return '<div class="pane" data-p="'+plugin+'">'+(note?'<p class="nodata">'+note+'</p>':'')+'</div>';
     }
     const sources=artifactSources(turn.events);
-    return '<div class="pane" data-p="'+plugin+'">'+(showUser?'<div class="umsg">'+esc(turn.user)+'</div>':'')+turn.events.map(function(event,order){return eventHTML(event,sources[order]);}).join('')+'</div>';
+    return '<div class="pane" data-p="'+plugin+'">'+'<div class="umsg">'+esc(turn.user)+'</div>'+turn.events.map(function(event,order){return eventHTML(event,sources[order]);}).join('')+'</div>';
   }
 
   function renderCompare(){
@@ -582,11 +580,10 @@
     const total=Math.max(runs.off?runs.off.turns.length:0,runs.on?runs.on.turns.length:0);
     const sections=[];
     for(let index=0;index<total;index+=1){
-      const offTurn=runs.off?runs.off.turns[index]:null;
-      const onTurn=runs.on?runs.on.turns[index]:null;
-      const shared=offTurn&&onTurn?(offTurn.user===onTurn.user?offTurn.user:null):(offTurn||onTurn||{user:null}).user;
-      const head=(total>1?'<div class="turn-n">턴 '+(index+1)+' / '+total+'</div>':'')+'<div class="turn-h">'+(shared===null?'':'<div class="turn-q">'+esc(shared)+'</div>')+'</div>';
-      sections.push('<section class="turn" id="turn-'+(index+1)+'">'+head+'<div class="panes">'+PANES.map(function(pane){return paneHTML(pane[0],runs[pane[0]],index,shared===null);}).join('')+'</div></section>');
+      // 질문은 각 단 안에 그린다. 가운데 하나로 걸치면 두 단이 한 대화처럼 읽혀
+      // 어느 쪽 답인지 헷갈린다. 양쪽 다 자기 대화로 읽혀야 대조가 된다.
+      const head=total>1?'<div class="turn-n">턴 '+(index+1)+' / '+total+'</div>':'';
+      sections.push('<section class="turn" id="turn-'+(index+1)+'">'+head+'<div class="panes">'+PANES.map(function(pane){return paneHTML(pane[0],runs[pane[0]],index);}).join('')+'</div></section>');
     }
     $('view').innerHTML='<div class="cmp" data-pane="'+state.pane+'"><div class="cmp-head">'+PANES.map(function(pane){return colHeadHTML(pane[0],pane[1],runs[pane[0]]);}).join('')+'</div>'+sections.join('')+'</div>';
     bindThreadActions();
