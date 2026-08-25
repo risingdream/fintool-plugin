@@ -696,11 +696,12 @@
   }
 
   function takeClaim(items,seen,src,re,label,kind,pickLast){
-    re.lastIndex=0;
-    let match=re.exec(src);
-    if(pickLast){
-      let next=match;
-      while(next){match=next;next=re.exec(src);}
+    const global=new RegExp(re.source, re.flags.indexOf('g')>=0?re.flags:re.flags+'g');
+    let match=null;
+    let next;
+    while((next=global.exec(src))){
+      match=next;
+      if(!pickLast)break;
     }
     if(!match)return;
     const value=(match[1]||match[2]||'').replace(/\s+/g,'');
