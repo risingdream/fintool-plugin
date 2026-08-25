@@ -668,7 +668,8 @@
     const needles=[];
     if(item.kind==='pct'){
       const pct=Math.abs(n)<=1?n*100:n;
-      needles.push(String(Math.round(pct)),pct.toFixed(1).replace(/\.0$/,''));
+      const token=(Math.abs(pct-Math.round(pct))<0.05?String(Math.round(pct)):pct.toFixed(1).replace(/\.0$/,''))+'%';
+      return compact.indexOf(token)!==-1;
     }else if(abs>=1e8){
       const eok=abs/1e8;
       needles.push(eok.toFixed(1).replace(/\.0$/,''),eok.toFixed(2).replace(/0$/,''),String(Math.round(eok*10)/10));
@@ -682,17 +683,64 @@
 
   function addKpi(items,seen,label,value,kind){
     if(value==null||value==='')return;
-    const key=label+'|'+String(value);
-    if(seen[key])return;
-    seen[key]=true;
+    if(seen[label])return;
+    seen[label]=true;
     items.push({label:label,value:value,kind:kind||'text'});
+  }
+
+  function proseOf(text){
+    return String(text||'').split('\n').filter(function(line){
+      const t=line.trim();
+      return t&&t.charAt(0)!=='|';
+    }).join('\n');
+  }
+
+  function takeClaim(items,seen,src,re,label,kind,pickLast){
+    re.lastIndex=0;
+    let match=re.exec(src);
+    if(pickLast){
+      let next=match;
+      while(next){match=next;next=re.exec(src);}
+    }
+    if(!match)return;
+    const value=(match[1]||match[2]||'').replace(/\s+/g,'');
+    if(!value)return;
+    addKpi(items,seen,label,kind==='pct'?Number(value):value,kind||'text');
+  }
+
+  function collectTextClaims(text){
+    const items=[];
+    const seen={};
+    const src=proseOf(text);
+    takeClaim(items,seen,src,/런웨이[^\n]{0,28}?(\d+(?:\.\d+)?)\s*개월/,'런웨이','text',true);
+    takeClaim(items,seen,src,/고갈\s*확률[^\n]{0,24}?(\d+(?:\.\d+)?)\s*%/,'고갈 확률','pct');
+    takeClaim(items,seen,src,/손익분기[^\n]{0,28}?(\d{4}-\d{2})/,'손익분기','month');
+    takeClaim(items,seen,src,/(?:기말\s*현금|12개월\s*(?:후|말))[^\n]{0,24}?(\d+(?:\.\d+)?)\s*억/,'기말 현금','text');
+    takeClaim(items,seen,src,/(?:최저점|현금 저점|저점)[^\n]{0,24}?(\d+(?:\.\d+)?)\s*억/,'현금 저점','text');
+    takeClaim(items,seen,src,/(\d{4}-\d{2})[^\n]{0,12}(?:현금\s*)?고갈|고갈[^\n]{0,20}?(\d{4}-\d{2})/,'현금 소진','month');
+    takeClaim(items,seen,src,/창업자[^\n]{0,48}?(\d+(?:\.\d+)?)\s*%/,'창업자 지분','pct',true);
+    takeClaim(items,seen,src,/희석[^\n]{0,24}?(\d+(?:\.\d+)?)\s*%/,'희석','pct');
+    takeClaim(items,seen,src,/(\d{4}-\d{2})[^\n]{0,10}입금|입금[^\n]{0,10}(\d{4}-\d{2})/,'조달 입금','month');
+    const ask=/Ask[^\n]{0,80}/i.exec(src);
+    if(ask){
+      const nums=ask[0].match(/(\d+(?:\.\d+)?)\s*억/g);
+      if(nums&&nums.length)addKpi(items,seen,'Ask',nums[nums.length-1].replace(/\s*억/,'').replace(/\s+/g,''),'text');
+    }
+    takeClaim(items,seen,src,/채용 시점[^\n]{0,12}?(\d{4}-\d{2})/,'채용 시작','month');
+    takeClaim(items,seen,src,/채용 시[^\n]{0,10}?(\d+(?:\.\d+)?)\s*억/,'채용 후 최저현금','text');
+    items.forEach(function(item){
+      if(item.label==='런웨이'&&item.kind==='text'&&!/개월/.test(String(item.value)))item.value=item.value+'개월';
+      if((item.label==='기말 현금'||item.label==='현금 저점'||item.label==='Ask'||item.label==='채용 후 최저현금')&&item.kind==='text'&&!/억/.test(String(item.value)))item.value=item.value+'억';
+    });
+    return items;
   }
 
   function collectKpis(turn){
     const items=[];
     const seen={};
     if(!turn||!turn.events)return items;
-    turn.events.forEach(function(event){
+    const events=turn.events.slice().reverse();
+    events.forEach(function(event){
       if(event.t!=='tool'||event.ok===false||!event.result||typeof event.result!=='object')return;
       const result=event.result;
       const summary=result.summary;
@@ -712,6 +760,19 @@
       addKpi(items,seen,'부도확률',result.default_probability,'pct');
       addKpi(items,seen,'신용스프레드',result.credit_spread_bp,'bp');
       addKpi(items,seen,'부도거리',result.distance_to_default,'num');
+      const diluted=result.fully_diluted;
+      if(diluted&&Array.isArray(diluted.holders)){
+        let founder=0;
+        let count=0;
+        diluted.holders.forEach(function(holder){
+          if(holder&&/창업자/.test(holder.name||'')){founder+=Number(holder.ownership)||0;count+=1;}
+        });
+        if(count)addKpi(items,seen,'창업자 지분',founder,'pct');
+      }
+      if(result.round){
+        addKpi(items,seen,'투자 후 가치',result.round.post_money_valuation,'krw');
+        addKpi(items,seen,'주당가격',result.round.price_per_share,'krw');
+      }
       if(Array.isArray(result.monthly)&&result.monthly.length){
         let low=null;
         let lowMonth=null;
@@ -723,20 +784,44 @@
         if(lowMonth)addKpi(items,seen,'저점 월',lowMonth,'month');
       }
     });
-    return items.slice(0,6);
+    return items;
+  }
+
+  function collectTurnFacts(turn,onText){
+    const items=collectKpis(turn);
+    const seen={};
+    items.forEach(function(item){seen[item.label]=true;});
+    collectTextClaims(onText).forEach(function(item){
+      if(seen[item.label])return;
+      seen[item.label]=true;
+      items.push(item);
+    });
+    return items.slice(0,8);
+  }
+
+  function hasHTMLReport(turn){
+    if(!turn||!turn.events)return false;
+    return turn.events.some(function(event){
+      if(event.t==='tool'&&event.ok!==false&&(event.name==='report'||event.name==='fintool_report'))return true;
+      return event.t==='text'&&/```html|<html[\s>]/i.test(event.md||'');
+    });
   }
 
   function conclusionOf(text){
     const marked=String(text||'').match(/\*\*결론[^*]{4,180}\*\*/);
     if(marked)return marked[0].replace(/\*\*/g,'').replace(/^결론(?:[:：]\s*|\s+)/,'');
-    const lines=String(text||'').split('\n');
-    for(let i=0;i<lines.length;i+=1){
-      const line=lines[i].trim();
-      if(/^\*\*[^*]{16,180}\*\*$/.test(line)&&/다\.|다$|없다|없다\.|넘긴다|소진/.test(line)){
-        return line.replace(/\*\*/g,'').replace(/^결론(?:[:：]\s*|\s+)/,'');
-      }
+    const prose=proseOf(text);
+    const bold=/\*\*([^*|]{16,140})\*\*/g;
+    let match;
+    while((match=bold.exec(prose))){
+      let line=match[1].trim().replace(/^\d+\.\s*/,'');
+      if(/sha256|##|\n/.test(line))continue;
+      if(/돌리겠|확인하겠|보겠습니다|스펙부터|만들어 줄/.test(line))continue;
+      if(/^[·\-|]/.test(line))continue;
+      if(/다\.|다$|없습니다|마릅|살아|뒤집|필수|확률|올라갔|못 됩니다/.test(line))return line.replace(/^결론(?:[:：]\s*|\s+)/,'');
     }
-    return '';
+    const sentence=prose.match(/[^.\n]{12,110}(?:살아|뒤집|마릅|필수|안 됩니다|고갈 확률|못 됩니다)[^.\n]{0,70}\./);
+    return sentence?sentence[0].trim().replace(/^\d+\.\s*/,''):'';
   }
 
   function turnDiffHTML(offTurn,onTurn){
@@ -750,7 +835,7 @@
     else{
       const gains=[];
       const sames=[];
-      collectKpis(onTurn).forEach(function(item){
+      collectTurnFacts(onTurn,onText).forEach(function(item){
         const shown=displayKpi(item);
         if(offHasValue(offText,item))sames.push('<li class="same">'+esc(item.label)+' <b>'+esc(shown)+'</b> — OFF도 같은 수를 썼다</li>');
         else gains.push('<li class="gain">'+esc(item.label)+' <b>'+esc(shown)+'</b> — OFF 답에는 없다</li>');
@@ -758,6 +843,7 @@
       const onDated=/\d{4}-\d{2}/.test(onText);
       const offDated=/\d{4}-\d{2}/.test(offText);
       if(onDated&&!offDated)gains.push('<li class="gain">ON 표는 달을 <b>날짜</b>로 찍었다. OFF는 1·2·3월 번호다</li>');
+      if(hasHTMLReport(onTurn)&&!hasHTMLReport(offTurn))gains.push('<li class="gain">ON은 <b>HTML 리포트</b>를 만들었다. OFF는 본문만 썼다</li>');
       const notes=[];
       if(onTurn.verdict==='partial')notes.push('<li class="bad">ON은 도구를 돌렸지만 응답에 산출물이 안 보인다</li>');
       if(onTurn.verdict==='missing')notes.push('<li class="bad">ON도 이 턴의 산출물을 만들지 못했다</li>');
