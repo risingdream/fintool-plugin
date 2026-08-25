@@ -164,10 +164,16 @@
   .td-want{font-size:11px;letter-spacing:.06em;color:var(--muted);margin:0 0 8px;}
   .td-quote{font-size:13px;line-height:1.55;margin:0 0 10px;padding-left:8px;border-left:2px solid var(--green);}
   .td-facts{margin:0;padding:0;list-style:none;font-size:12.5px;line-height:1.5;}
-  .td-facts li{margin:0 0 7px;}
+  .td-facts li{position:relative;margin:0 0 7px;padding-left:16px;}
   .td-facts li:last-child{margin-bottom:0;}
+  .td-facts li::before{position:absolute;left:0;top:.15em;font-size:11px;font-weight:700;line-height:1.4;}
   .td-facts b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums;}
+  .td-facts .gain{color:var(--ink);}
+  .td-facts .gain::before{content:'▲';color:var(--green);}
   .td-facts .same{color:var(--muted);}
+  .td-facts .same::before{content:'=';color:var(--muted);font-weight:500;}
+  .td-facts .bad{color:var(--bear);}
+  .td-facts .bad::before{content:'!';color:var(--bear);}
 
   /* 비교 해설 — 두 단 위에 전체 폭으로. 3단으로 쪼개면 각 단이 좁아진다 */
   .cmpnote{border:1px solid var(--line);border-left:3px solid var(--green);border-radius:8px;
@@ -742,21 +748,25 @@
     else if(!offTurn)facts.push('<li>OFF 기록이 없다.</li>');
     else if(!onTurn)facts.push('<li>ON 기록이 없다.</li>');
     else{
+      const gains=[];
+      const sames=[];
       collectKpis(onTurn).forEach(function(item){
         const shown=displayKpi(item);
-        if(offHasValue(offText,item))facts.push('<li class="same">'+esc(item.label)+' <b>'+esc(shown)+'</b> — OFF도 같은 수를 썼다</li>');
-        else facts.push('<li>'+esc(item.label)+' <b>'+esc(shown)+'</b> — OFF 답에는 없다</li>');
+        if(offHasValue(offText,item))sames.push('<li class="same">'+esc(item.label)+' <b>'+esc(shown)+'</b> — OFF도 같은 수를 썼다</li>');
+        else gains.push('<li class="gain">'+esc(item.label)+' <b>'+esc(shown)+'</b> — OFF 답에는 없다</li>');
       });
       const onDated=/\d{4}-\d{2}/.test(onText);
       const offDated=/\d{4}-\d{2}/.test(offText);
-      if(onDated&&!offDated)facts.push('<li>ON 표는 달을 <b>날짜</b>로 찍었다. OFF는 1·2·3월 번호다</li>');
-      if(onTurn.verdict==='partial')facts.push('<li>ON은 도구를 돌렸지만 응답에 산출물이 안 보인다</li>');
-      if(onTurn.verdict==='missing')facts.push('<li>ON도 이 턴의 산출물을 만들지 못했다</li>');
-      if(onTurn.verdict==='fabricated')facts.push('<li>ON이 산출 없이 완료를 선언했다</li>');
-      if(!facts.length){
-        if(offTurn.verdict==='missing'&&onTurn.verdict==='delivered')facts.push('<li>OFF 답에는 산출이 없고 ON은 도구로 만들었다</li>');
-        else if(offText&&onText)facts.push('<li>양쪽 다 답을 썼다. 숫자 대조할 KPI는 이 턴 도구 결과에 없다</li>');
+      if(onDated&&!offDated)gains.push('<li class="gain">ON 표는 달을 <b>날짜</b>로 찍었다. OFF는 1·2·3월 번호다</li>');
+      const notes=[];
+      if(onTurn.verdict==='partial')notes.push('<li class="bad">ON은 도구를 돌렸지만 응답에 산출물이 안 보인다</li>');
+      if(onTurn.verdict==='missing')notes.push('<li class="bad">ON도 이 턴의 산출물을 만들지 못했다</li>');
+      if(onTurn.verdict==='fabricated')notes.push('<li class="bad">ON이 산출 없이 완료를 선언했다</li>');
+      if(!gains.length&&!sames.length&&!notes.length){
+        if(offTurn.verdict==='missing'&&onTurn.verdict==='delivered')gains.push('<li class="gain">OFF 답에는 산출이 없고 ON은 도구로 만들었다</li>');
+        else if(offText&&onText)sames.push('<li class="same">양쪽 다 답을 썼다. 숫자 대조할 KPI는 이 턴 도구 결과에 없다</li>');
       }
+      facts.push.apply(facts,gains.concat(sames,notes));
     }
     const quote=conclusionOf(onText);
     return '<aside class="turndiff" data-p="diff" aria-label="이 턴 답에서 달라진 것">'
