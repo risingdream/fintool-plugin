@@ -184,6 +184,13 @@
   .td-facts .same::before{content:'=';color:var(--muted);font-weight:500;}
   .td-facts .bad{color:var(--bear);}
   .td-facts .bad::before{content:'!';color:var(--bear);}
+  .td-facts .diff{color:var(--ink);}
+  .td-facts .diff::before{content:'≠';color:var(--warn);}
+  .td-facts .from{color:var(--muted);font-variant-numeric:tabular-nums;}
+  .td-facts .note{color:var(--muted);}
+  .td-facts .note::before{content:'·';color:var(--muted);font-weight:500;}
+  .td-facts .src{font-style:normal;font-size:10px;color:var(--muted);border:1px solid var(--line);border-radius:3px;padding:0 3px;margin-left:4px;vertical-align:1px;}
+  .td-meta{font-size:11.5px;line-height:1.5;color:var(--muted);margin:0 0 8px;font-variant-numeric:tabular-nums;}
 
   /* 비교 해설 — 두 단 위에 전체 폭으로. 3단으로 쪼개면 각 단이 좁아진다 */
   .cmpnote{border:1px solid var(--line);border-left:3px solid var(--green);border-radius:8px;
@@ -653,9 +660,33 @@
     return '<div class="col-head diff" data-p="diff"><div class="nm"><span class="mark" aria-hidden="true"></span>무엇이 달랐나</div><div class="runmeta"><span>이 턴 답에서 달라진 것</span></div></div>';
   }
 
+  // ── 턴 비교 카드 ────────────────────────────────────────────────────────────
+  // 세 번째 칸은 정본만으로 만든다. ON 도구 결과에서 KPI를 뽑고, 같은 라벨의 수치를 OFF 답 본문에서
+  // 뽑아 나란히 놓는다. 서술형 해설은 생성하지 않는다(ORBIT #5054).
+  //
+  // KPI 항목: {label, value, kind}  kind는 krw(원) · pct(0~100) · bp · num · int · months · month(YYYY-MM) · text
+  // 값은 kind 단위로 정규화해 저장한다. 그래야 도구 값과 본문에서 뽑은 값을 같은 자로 잴 수 있다.
+
   function turnText(turn){
     if(!turn||!turn.events)return '';
     return turn.events.filter(function(event){return event.t==='text';}).map(function(event){return event.md||'';}).join('\n');
+  }
+
+  function proseOf(text){
+    return String(text||'').split('\n').filter(function(line){
+      const t=line.trim();
+      return t&&t.charAt(0)!=='|';
+    }).join('\n');
+  }
+
+  // 굵은 글씨만 모은 텍스트. 모델은 결론을 굵게 쓰므로 수치를 뽑을 때 여기를 먼저 본다.
+  // 같은 라벨이 본문에 여러 번 나올 때(직전 값·비교 값) 결론 값을 고르는 가장 싼 방법이다.
+  function boldOf(text){
+    const out=[];
+    const re=/\*\*([^*\n]{2,200})\*\*/g;
+    let match;
+    while((match=re.exec(String(text||'')))){out.push(match[1]);}
+    return out.join('\n');
   }
 
   function krwLabel(value){
@@ -676,18 +707,26 @@
     return sign+Math.round(abs).toLocaleString('ko-KR')+'원';
   }
 
+  function pctNorm(value){
+    const n=Number(value);
+    if(!isFinite(n))return n;
+    return Math.abs(n)<=1?n*100:n;
+  }
+
   function pctLabel(value){
     const n=Number(value);
     if(!isFinite(n))return String(value);
-    const pct=Math.abs(n)<=1?n*100:n;
-    return (Math.round(pct*10)/10)+'%';
+    if(Math.abs(n)<1&&n!==0)return (Math.round(n*100)/100)+'%';
+    return (Math.round(n*10)/10)+'%';
   }
 
   function displayKpi(item){
     if(item.kind==='krw')return krwLabel(item.value);
     if(item.kind==='pct')return pctLabel(item.value);
-    if(item.kind==='bp')return Math.round(Number(item.value))+'bp';
+    if(item.kind==='bp')return (Math.round(Number(item.value)*10)/10)+'bp';
     if(item.kind==='num')return String(Math.round(Number(item.value)*100)/100);
+    if(item.kind==='int')return Math.round(Number(item.value)).toLocaleString('ko-KR');
+    if(item.kind==='months')return item.exceeds?item.value+'개월 넘김':Math.round(Number(item.value)*10)/10+'개월';
     return String(item.value);
   }
 
@@ -695,153 +734,416 @@
     return String(text||'').replace(/,/g,'').replace(/\s+/g,'');
   }
 
-  function offHasValue(offText,item){
-    const compact=compactText(offText);
-    if(item.kind==='month')return compact.indexOf(String(item.value))!==-1;
+  function monthNeedles(value){
+    const m=/^(\d{4})-(\d{2})$/.exec(String(value));
+    if(!m)return [String(value)];
+    return [m[0],m[1]+'년'+Number(m[2])+'월',m[1]+'.'+Number(m[2])+'.',m[1]+'/'+Number(m[2])];
+  }
+
+  // 본문에 이 값이 적혀 있는가. 단위별로 사람이 쓰는 표기(15.7% · 4.7억 · 1,705계약)를 만들어 찾는다.
+  function valueNeedles(item){
+    if(item.kind==='month')return monthNeedles(item.value);
     if(item.kind==='text'){
-      if(/개월 넘김$/.test(String(item.value))){
-        return /소진\s*(안\s*됨|없|되지\s*않)|마르지\s*않|horizon을 초과/.test(offText);
-      }
-      const raw=String(item.value);
-      if(raw.length>=4&&offText.indexOf(raw)!==-1)return true;
-      return compact.indexOf(compactText(raw))!==-1;
+      const raw=compactText(item.value);
+      return raw.length>=2?[raw]:[];
     }
     const n=Number(item.value);
-    if(!isFinite(n))return compact.indexOf(String(item.value))!==-1;
+    if(!isFinite(n))return [];
     const abs=Math.abs(n);
+    const strip=function(token){return token.replace(/\.0+$/,'');};
+    if(item.kind==='months')return item.exceeds?[]:[Math.round(abs)+'개월',abs.toFixed(1)+'개월'];
+    if(item.kind==='pct')return [abs.toFixed(1),String(Math.round(abs)),abs.toFixed(2),abs.toFixed(3)].map(function(token){return strip(token)+'%';});
+    if(item.kind==='bp')return [abs.toFixed(1),String(Math.round(abs)),abs.toFixed(2)].map(function(token){return strip(token)+'bp';});
+    if(item.kind==='num')return [abs.toFixed(2),abs.toFixed(1)];
+    if(item.kind==='int')return [String(Math.round(abs))];
     const needles=[];
-    if(item.kind==='pct'){
-      const pct=Math.abs(n)<=1?n*100:n;
-      const token=(Math.abs(pct-Math.round(pct))<0.05?String(Math.round(pct)):pct.toFixed(1).replace(/\.0$/,''))+'%';
-      return compact.indexOf(token)!==-1;
-    }else if(abs>=1e8){
+    if(abs>=1e8){
       const eok=abs/1e8;
-      needles.push(eok.toFixed(1).replace(/\.0$/,''),eok.toFixed(2).replace(/0$/,''),String(Math.round(eok*10)/10));
-    }else if(abs>=1e4){
-      needles.push(String(Math.round(abs/1e4)));
-    }else{
-      needles.push(String(Math.round(abs)));
+      [eok.toFixed(1),eok.toFixed(2),String(Math.round(eok)),String(Math.round(eok*10)/10)].forEach(function(token){needles.push(strip(token)+'억');});
     }
-    return needles.some(function(needle){return needle.length>=3&&compact.indexOf(needle)!==-1;});
+    if(abs>=1e4&&abs<1e9){
+      const man=abs/1e4;
+      [String(Math.round(man)),man.toFixed(1)].forEach(function(token){needles.push(strip(token)+'만');});
+    }
+    if(abs>=1e4)needles.push(String(Math.round(abs)));
+    return needles.filter(function(needle){return needle.length>=3;});
   }
 
-  function addKpi(items,seen,label,value,kind){
-    if(value==null||value==='')return;
+  // 본문에서 이 값이 처음 나오는 위치. 없으면 -1.
+  function textValuePos(text,item){
+    const compact=compactText(text);
+    if(!compact)return -1;
+    if(item.kind==='months'&&item.exceeds){
+      const found=/소진(안됨|없음|없|되지않)|마르지않|horizon을초과|무한|바닥나지않/.exec(compact);
+      return found?found.index:-1;
+    }
+    let best=-1;
+    valueNeedles(item).forEach(function(needle){
+      const at=compact.indexOf(needle);
+      if(at!==-1&&(best===-1||at<best))best=at;
+    });
+    return best;
+  }
+
+  function textHasValue(text,item){
+    return textValuePos(text,item)!==-1;
+  }
+
+  function addKpi(items,seen,label,value,kind,extra){
+    if(value==null||value===''||(typeof value==='number'&&!isFinite(value)))return;
     if(seen[label])return;
     seen[label]=true;
-    items.push({label:label,value:value,kind:kind||'text'});
+    const item={label:label,value:kind==='pct'?pctNorm(value):value,kind:kind||'text'};
+    if(extra)Object.keys(extra).forEach(function(key){item[key]=extra[key];});
+    items.push(item);
   }
 
-  function proseOf(text){
-    return String(text||'').split('\n').filter(function(line){
-      const t=line.trim();
-      return t&&t.charAt(0)!=='|';
-    }).join('\n');
+  function truncatedList(list){
+    return Array.isArray(list)&&list.length&&typeof list[list.length-1]==='string'&&list[list.length-1].indexOf('…')===0;
   }
 
-  function takeClaim(items,seen,src,re,label,kind,pickLast){
-    const global=new RegExp(re.source, re.flags.indexOf('g')>=0?re.flags:re.flags+'g');
-    let match=null;
-    let next;
-    while((next=global.exec(src))){
-      match=next;
-      if(!pickLast)break;
-    }
-    if(!match)return;
-    const value=(match[1]||match[2]||'').replace(/\s+/g,'');
-    if(!value)return;
-    addKpi(items,seen,label,kind==='pct'?Number(value):value,kind||'text');
+  function cleanList(list){
+    return Array.isArray(list)?list.filter(function(row){return typeof row!=='string';}):[];
   }
 
-  function collectTextClaims(text){
+  // 도구 하나의 결과에서 KPI를 뽑는다. 도구별 스키마는 정본에서 확인한 것만 읽는다.
+  function kpisFromResult(name,result){
     const items=[];
     const seen={};
-    const src=proseOf(text);
-    takeClaim(items,seen,src,/런웨이[^\n]{0,28}?(\d+(?:\.\d+)?)\s*개월/,'런웨이','text',true);
-    takeClaim(items,seen,src,/고갈\s*확률[^\n]{0,24}?(\d+(?:\.\d+)?)\s*%/,'고갈 확률','pct');
-    takeClaim(items,seen,src,/손익분기[^\n]{0,28}?(\d{4}-\d{2})/,'손익분기','month');
-    takeClaim(items,seen,src,/(?:기말\s*현금|12개월\s*(?:후|말))[^\n]{0,24}?(\d+(?:\.\d+)?)\s*억/,'기말 현금','text');
-    takeClaim(items,seen,src,/(?:최저점|현금 저점|저점)[^\n]{0,24}?(\d+(?:\.\d+)?)\s*억/,'현금 저점','text');
-    takeClaim(items,seen,src,/(\d{4}-\d{2})[^\n]{0,12}(?:현금\s*)?고갈|고갈[^\n]{0,20}?(\d{4}-\d{2})/,'현금 소진','month');
-    takeClaim(items,seen,src,/창업자[^\n]{0,48}?(\d+(?:\.\d+)?)\s*%/,'창업자 지분','pct',true);
-    takeClaim(items,seen,src,/희석[^\n]{0,24}?(\d+(?:\.\d+)?)\s*%/,'희석','pct');
-    takeClaim(items,seen,src,/(\d{4}-\d{2})[^\n]{0,10}입금|입금[^\n]{0,10}(\d{4}-\d{2})/,'조달 입금','month');
-    const ask=/Ask[^\n]{0,80}/i.exec(src);
-    if(ask){
-      const nums=ask[0].match(/(\d+(?:\.\d+)?)\s*억/g);
-      if(nums&&nums.length)addKpi(items,seen,'Ask',nums[nums.length-1].replace(/\s*억/,'').replace(/\s+/g,''),'text');
-    }
-    takeClaim(items,seen,src,/채용 시점[^\n]{0,12}?(\d{4}-\d{2})/,'채용 시작','month');
-    takeClaim(items,seen,src,/채용 시[^\n]{0,10}?(\d+(?:\.\d+)?)\s*억/,'채용 후 최저현금','text');
-    items.forEach(function(item){
-      if(item.label==='런웨이'&&item.kind==='text'&&!/개월/.test(String(item.value)))item.value=item.value+'개월';
-      if((item.label==='기말 현금'||item.label==='현금 저점'||item.label==='Ask'||item.label==='채용 후 최저현금')&&item.kind==='text'&&!/억/.test(String(item.value)))item.value=item.value+'억';
-    });
-    return items;
-  }
-
-  function collectKpis(turn){
-    const items=[];
-    const seen={};
-    if(!turn||!turn.events)return items;
-    const events=turn.events.slice().reverse();
-    events.forEach(function(event){
-      if(event.t!=='tool'||event.ok===false||!event.result||typeof event.result!=='object')return;
-      const result=event.result;
-      const summary=result.summary;
-      if(summary&&typeof summary==='object'){
-        addKpi(items,seen,'기말 현금',summary.ending_cash,'krw');
-        const runway=summary.runway||{};
-        if(runway.exhaustion_month)addKpi(items,seen,'현금 소진',runway.exhaustion_month,'month');
-        else if(runway.exceeds_horizon)addKpi(items,seen,'런웨이',(runway.months||'')+'개월 넘김','text');
-        else if(runway.months!=null)addKpi(items,seen,'런웨이',runway.months+'개월','text');
-        const even=summary.break_even||{};
-        if(even.month)addKpi(items,seen,'손익분기',even.month,'month');
-        else if(even.first_profitable_month)addKpi(items,seen,'손익분기',even.first_profitable_month,'month');
+    const add=function(label,value,kind,extra){addKpi(items,seen,label,value,kind,extra);};
+    const summary=result.summary&&typeof result.summary==='object'?result.summary:null;
+    if(name==='financial-model'&&summary){
+      const ending=summary.ending_cash;
+      add('기말 현금',ending&&typeof ending==='object'?ending.final:ending,'krw');
+      const runway=summary.runway||{};
+      const horizon=Array.isArray(result.months)?cleanList(result.months).length:(result.months||0);
+      if(runway.exhaustion_month){
+        add('현금 소진',runway.exhaustion_month,'month');
+        add('런웨이',runway.months,'months');
+      }else if(runway.exceeds_horizon||(runway.months!=null&&horizon&&runway.months>=horizon&&!runway.exhaustion_month)){
+        add('런웨이',runway.months,'months',{exceeds:true});
+      }else if(runway.months!=null){
+        add('런웨이',runway.months,'months');
       }
-      addKpi(items,seen,'주당가치',result.value_per_share,'krw');
-      addKpi(items,seen,'기업가치',result.enterprise_value,'krw');
-      addKpi(items,seen,'자기자본가치',result.equity_value,'krw');
-      addKpi(items,seen,'부도확률',result.default_probability,'pct');
-      addKpi(items,seen,'신용스프레드',result.credit_spread_bp,'bp');
-      addKpi(items,seen,'부도거리',result.distance_to_default,'num');
-      const diluted=result.fully_diluted;
-      if(diluted&&Array.isArray(diluted.holders)){
-        let founder=0;
-        let count=0;
-        diluted.holders.forEach(function(holder){
-          if(holder&&/창업자/.test(holder.name||'')){founder+=Number(holder.ownership)||0;count+=1;}
-        });
-        if(count)addKpi(items,seen,'창업자 지분',founder,'pct');
-      }
-      if(result.round){
-        addKpi(items,seen,'투자 후 가치',result.round.post_money_valuation,'krw');
-        addKpi(items,seen,'주당가격',result.round.price_per_share,'krw');
-      }
-      if(Array.isArray(result.monthly)&&result.monthly.length){
+      const even=summary.break_even||{};
+      add('손익분기',even.month||even.first_profitable_month,'month');
+      // 현금 저점. 잘린 배열로 계산하면 틀린 저점이 나오므로 잘렸으면 건너뛴다.
+      if(Array.isArray(result.monthly)&&!truncatedList(result.monthly)){
         let low=null;
         let lowMonth=null;
         result.monthly.forEach(function(row){
           if(!row||row.ending_cash==null)return;
           if(low==null||row.ending_cash<low){low=row.ending_cash;lowMonth=row.month;}
         });
-        if(low!=null)addKpi(items,seen,'현금 저점',low,'krw');
-        if(lowMonth)addKpi(items,seen,'저점 월',lowMonth,'month');
+        add('현금 저점',low,'krw');
+        add('저점 월',lowMonth,'month');
+      }else if(ending&&typeof ending==='object'&&Array.isArray(ending.monthly)&&!truncatedList(ending.monthly)){
+        let low=null;
+        let lowIndex=-1;
+        ending.monthly.forEach(function(cash,index){
+          if(typeof cash!=='number')return;
+          if(low==null||cash<low){low=cash;lowIndex=index;}
+        });
+        add('현금 저점',low,'krw');
+        if(lowIndex>=0&&Array.isArray(result.months)&&typeof result.months[lowIndex]==='string')add('저점 월',result.months[lowIndex],'month');
       }
+      return items;
+    }
+    if(name==='business-plan'&&summary){
+      add('런웨이',summary.runway_months,'months');
+      add('현금 저점',summary.min_cash,'krw');
+      add('필요 조달액',summary.peak_funding_need,'krw');
+      add('기말 현금',summary.ending_cash,'krw');
+      return items;
+    }
+    if(name==='cap-table-simulate'){
+      const diluted=result.fully_diluted;
+      if(diluted&&Array.isArray(diluted.holders)){
+        let founder=0;
+        let count=0;
+        cleanList(diluted.holders).forEach(function(holder){
+          if(holder&&/창업자|founder/i.test(holder.name||'')){founder+=Number(holder.ownership)||0;count+=1;}
+        });
+        if(count)add('창업자 지분',founder,'pct');
+      }
+      if(result.round){
+        add('투자 후 가치',result.round.post_money_valuation,'krw');
+        add('주당가격',result.round.price_per_share,'krw');
+      }
+      return items;
+    }
+    if(name==='montecarlo'){
+      if(Array.isArray(result.results)){
+        const rates=cleanList(result.results).map(function(row){return Number(row.ruin_rate);}).filter(isFinite);
+        if(rates.length){
+          add('고갈 확률(최선)',Math.min.apply(null,rates),'pct');
+          add('고갈 확률(최악)',Math.max.apply(null,rates),'pct');
+        }
+        return items;
+      }
+      add('고갈 확률',result.ruin_rate,'pct');
+      if(result.terminal_balance)add('잔액 중앙값',result.terminal_balance.p50,'krw');
+      return items;
+    }
+    if(name==='dcf'){
+      add('주당가치',result.value_per_share,'krw');
+      add('기업가치',result.enterprise_value,'krw');
+      add('자기자본가치',result.equity_value,'krw');
+      add('WACC',result.wacc,'pct');
+      return items;
+    }
+    if(name==='credit'){
+      add('부도확률',result.default_probability,'pct');
+      add('신용스프레드',result.credit_spread_bp,'bp');
+      add('부도거리',result.distance_to_default,'num');
+      add('자기자본가치',result.equity_value,'krw');
+      cleanList(result.measures).forEach(function(row){
+        if(row&&row.measure==='physical')add('부도확률(실측)',row.default_probability,'pct');
+      });
+      return items;
+    }
+    if(name==='convertible'){
+      add('CB 이론가',result.value,'krw');
+      add('액면 대비',result.value_pct_face,'pct');
+      add('채권 하한',result.bond_floor,'krw');
+      add('패리티',result.parity,'krw');
+      return items;
+    }
+    if(name==='derivative'&&result.hedge){
+      add('필요 계약 수',result.hedge.contracts,'int');
+      if(result.hedge.direction)add('방향',result.hedge.direction==='long'?'매수':result.hedge.direction==='short'?'매도':result.hedge.direction,'text');
+      return items;
+    }
+    if(name==='var'){
+      add('VaR',result.var_value,'krw');
+      add('CVaR',result.cvar_value,'krw');
+      return items;
+    }
+    if(name==='portfolio'){
+      const port=result.portfolio||{};
+      add('샤프',port.sharpe,'num');
+      add('기대수익률',port.expected_return,'pct');
+      add('변동성',port.volatility,'pct');
+      let top=null;
+      cleanList(result.assets).forEach(function(asset){
+        if(asset&&(top==null||Number(asset.weight)>Number(top.weight)))top=asset;
+      });
+      if(top)add('최대 비중',top.name+' '+pctLabel(pctNorm(top.weight)),'text');
+      return items;
+    }
+    if(name==='trade-cost'&&result.shortfall){
+      const sf=result.shortfall;
+      const bpOf=function(part){return part&&part.basis_points;};
+      add('IS 총비용',bpOf(sf.implementation_shortfall),'bp');
+      if(sf.implementation_shortfall)add('IS 금액',sf.implementation_shortfall.amount,'krw');
+      add('지연비용',bpOf(sf.delay_cost),'bp');
+      add('거래비용',bpOf(sf.trading_cost),'bp');
+      add('기회비용',bpOf(sf.opportunity_cost),'bp');
+      add('명시비용',bpOf(sf.explicit_cost),'bp');
+      return items;
+    }
+    if(name==='private-markets'){
+      if(result.net){
+        add('순 IRR',result.net.irr,'pct');
+        add('TVPI(순)',result.net.tvpi,'num');
+        add('DPI(순)',result.net.dpi,'num');
+      }
+      if(result.gross)add('총 IRR',result.gross.irr,'pct');
+      return items;
+    }
+    if(name==='attribution'&&summary&&summary.totals){
+      const totals=summary.totals;
+      add('초과수익',totals.active,'pct');
+      add('배분효과',totals.allocation,'pct');
+      add('선택효과',totals.selection,'pct');
+      add('상호작용',totals.interaction,'pct');
+      return items;
+    }
+    return items;
+  }
+
+  // option은 행사가마다 한 번씩 부르므로 호출 하나가 아니라 묶음에서 범위를 뽑는다.
+  function optionKpis(results){
+    const items=[];
+    const seen={};
+    const ivs=results.map(function(result){return Number(result.implied_vol);}).filter(function(value){return isFinite(value)&&value>0;});
+    if(ivs.length>1){
+      addKpi(items,seen,'내재변동성 최저',Math.min.apply(null,ivs),'pct');
+      addKpi(items,seen,'내재변동성 최고',Math.max.apply(null,ivs),'pct');
+    }else if(ivs.length===1){
+      addKpi(items,seen,'내재변동성',ivs[0],'pct');
+    }
+    return items;
+  }
+
+  // 한 턴의 도구 결과에서 KPI를 모은다. 같은 도구를 여러 번 불렀으면(시나리오·민감도)
+  // **답이 인용한 호출**을 고른다 — 뽑은 값이 본문에 가장 많이 적힌 결과. 같으면 마지막 호출.
+  // 마지막 호출만 믿으면 민감도 변형(e|opus 17번째 몬테카를로)이 답의 결론을 덮어쓴다.
+  function collectKpis(turn,onText){
+    const items=[];
+    const seen={};
+    if(!turn||!turn.events)return items;
+    const bold=boldOf(onText);
+    const prose=proseOf(onText);
+    const push=function(item){if(seen[item.label])return;seen[item.label]=true;items.push(item);};
+    const byName={};
+    const order=[];
+    turn.events.forEach(function(event){
+      if(event.t!=='tool'||event.ok===false||!event.result||typeof event.result!=='object')return;
+      if(/^카탈로그/.test(event.name||''))return;
+      if(!byName[event.name]){byName[event.name]=[];order.push(event.name);}
+      byName[event.name].push(event.result);
+    });
+    order.forEach(function(name){
+      const candidates=byName[name];
+      if(name==='option'){
+        optionKpis(candidates).forEach(push);
+        return;
+      }
+      let best=null;
+      let bestScore=-1;
+      candidates.forEach(function(result,index){
+        const kpis=kpisFromResult(name,result);
+        if(!kpis.length)return;
+        // 굵게 쓴 수치는 결론이다. 시나리오 표에 스치는 수치보다 세 배로 치고,
+        // 인용 수가 같으면 본문에서 더 앞에 나온 쪽(헤드라인)을 고른다. 그래도 같으면 마지막 호출.
+        let cited=0;
+        let first=Infinity;
+        kpis.forEach(function(item){
+          const inBold=textValuePos(bold,item);
+          const inProse=textValuePos(prose,item);
+          if(inBold!==-1){cited+=3;first=Math.min(first,inBold);}
+          if(inProse!==-1){cited+=1;first=Math.min(first,inProse);}
+        });
+        const score=cited*1e7+(isFinite(first)?(1e6-Math.min(first,999999)):0)*10+index;
+        if(score>bestScore){best=kpis;bestScore=score;}
+      });
+      if(best)best.forEach(push);
     });
     return items;
   }
 
-  function collectTurnFacts(turn,onText){
-    const items=collectKpis(turn);
-    const seen={};
-    items.forEach(function(item){seen[item.label]=true;});
-    collectTextClaims(onText).forEach(function(item){
-      if(seen[item.label])return;
-      seen[item.label]=true;
-      items.push(item);
+  // 본문에서 수치를 뽑는 규칙. 굵은 글씨를 먼저 보고, 없으면 본문 전체를 본다.
+  // OFF는 도구가 없으므로 이것이 OFF 쪽 유일한 수치 출처다. ON은 도구 결과가 없을 때만 쓴다.
+  const NUM='(\\d+(?:,\\d{3})*(?:\\.\\d+)?)';
+  const MONEY=NUM+'\\s*(억|만\\s*원|만|원)';
+  const CLAIM_RULES=[
+    {label:'런웨이',kind:'months',re:new RegExp('런웨이[^\\n]{0,28}?'+NUM+'\\s*개월')},
+    {label:'고갈 확률',kind:'pct',re:new RegExp('고갈\\s*확률[^\\n]{0,24}?'+NUM+'\\s*%')},
+    {label:'손익분기',kind:'month',re:/손익분기[^\n]{0,28}?(\d{4}-\d{2})/},
+    {label:'기말 현금',kind:'krw',re:new RegExp('(?:기말\\s*현금|12개월\\s*(?:후|말)|기말\\s*잔액)[^\\n]{0,24}?'+MONEY)},
+    {label:'현금 저점',kind:'krw',re:new RegExp('(?:최저점|현금\\s*저점|저점|최저\\s*현금|최소\\s*현금)[^\\n]{0,24}?'+MONEY)},
+    {label:'현금 소진',kind:'month',re:/(\d{4}-\d{2})[^\n]{0,12}(?:현금\s*)?(?:고갈|소진)|(?:고갈|소진)[^\n]{0,20}?(\d{4}-\d{2})/},
+    {label:'창업자 지분',kind:'pct',re:new RegExp('창업자[^\\n]{0,48}?'+NUM+'\\s*%')},
+    {label:'희석',kind:'pct',re:new RegExp('희석[^\\n]{0,24}?'+NUM+'\\s*%')},
+    {label:'조달 입금',kind:'month',re:/(\d{4}-\d{2})[^\n]{0,10}입금|입금[^\n]{0,10}(\d{4}-\d{2})/},
+    {label:'Ask',kind:'krw',window:/(?:Ask|필요\s*조달액|권장\s*조달|조달\s*규모)[^\n]{0,80}/i,pick:'last'},
+    {label:'필요 조달액',kind:'krw',re:new RegExp('(?:필요\\s*조달액|최대\\s*부족액|자금\\s*소요)[^\\n]{0,30}?'+MONEY)},
+    {label:'채용 시작',kind:'month',re:/채용\s*(?:시점|시작)[^\n]{0,12}?(\d{4}-\d{2})/},
+    {label:'주당가치',kind:'krw',re:new RegExp('주당\\s*(?:가치|내재가치|적정가치|가격)[^\\n]{0,30}?'+NUM+'\\s*원')},
+    {label:'기업가치',kind:'krw',re:new RegExp('(?:기업가치|EV)[^\\n]{0,24}?'+MONEY)},
+    {label:'자기자본가치',kind:'krw',re:new RegExp('(?:자기자본\\s*가치|주주\\s*가치|지분\\s*가치|자기자본\\s*시장가치)[^\\n]{0,24}?'+MONEY)},
+    {label:'WACC',kind:'pct',re:new RegExp('WACC[^\\n]{0,24}?'+NUM+'\\s*%')},
+    {label:'부도확률',kind:'pct',re:new RegExp('(?:부도\\s*확률|PD)[^\\n]{0,30}?'+NUM+'\\s*%')},
+    {label:'신용스프레드',kind:'bp',re:new RegExp('스프레드[^\\n]{0,30}?'+NUM+'\\s*bps?')},
+    {label:'부도거리',kind:'num',re:new RegExp('(?:부도\\s*거리|distance\\s*to\\s*default)[^\\n]{0,24}?'+NUM,'i')},
+    {label:'CB 이론가',kind:'krw',re:new RegExp('(?:이론가|CB\\s*가치|전환사채\\s*가치|이론\\s*가치|총\\s*가치|CB\\s*이론가)[^\\n]{0,30}?'+MONEY)},
+    {label:'액면 대비',kind:'pct',re:new RegExp('액면\\s*대비[^\\n]{0,20}?'+NUM+'\\s*%')},
+    {label:'채권 하한',kind:'krw',re:new RegExp('(?:bond\\s*floor|채권\\s*하한|일반사채\\s*가치|채권\\s*가치|순수채권\\s*가치|채권\\s*부분)[^\\n]{0,30}?'+MONEY,'i')},
+    {label:'필요 계약 수',kind:'int',re:new RegExp(NUM+'\\s*계약')},
+    {label:'VaR',kind:'krw',re:new RegExp('(?:^|[^C])VaR[^\\n\\d]{0,16}?'+MONEY)},
+    {label:'CVaR',kind:'krw',re:new RegExp('CVaR[^\\n\\d]{0,16}?'+MONEY)},
+    {label:'샤프',kind:'num',window:/샤프[^\n]{0,40}/,pick:'last'},
+    {label:'IS 총비용',kind:'bp',re:new RegExp('(?:총\\s*(?:비용|IS)|implementation\\s*shortfall|총\\s*shortfall|\\bIS\\b)[^\\n]{0,40}?'+NUM+'\\s*bps?','i')},
+    {label:'지연비용',kind:'bp',re:new RegExp('지연\\s*비용[^\\n]{0,24}?'+NUM+'\\s*bps?')},
+    {label:'거래비용',kind:'bp',re:new RegExp('거래\\s*비용[^\\n]{0,24}?'+NUM+'\\s*bps?')},
+    {label:'기회비용',kind:'bp',re:new RegExp('기회\\s*비용[^\\n]{0,24}?'+NUM+'\\s*bps?')},
+    {label:'명시비용',kind:'bp',re:new RegExp('명시\\s*비용[^\\n]{0,24}?'+NUM+'\\s*bps?')},
+    {label:'순 IRR',kind:'pct',re:new RegExp('(?:Net|순)\\s*IRR[^\\n]{0,24}?'+NUM+'\\s*%','i')},
+    {label:'총 IRR',kind:'pct',re:new RegExp('(?:Gross|총)\\s*IRR[^\\n]{0,24}?'+NUM+'\\s*%','i')},
+    {label:'TVPI(순)',kind:'num',re:new RegExp('(?:Net\\s*)?(?:TVPI|MOIC)[^\\n]{0,30}?'+NUM+'\\s*x','i')}
+  ];
+
+  function moneyValue(numText,unit){
+    const n=Number(String(numText).replace(/,/g,''));
+    if(!isFinite(n))return null;
+    const u=String(unit||'').replace(/\s+/g,'');
+    if(u==='억')return n*1e8;
+    if(u==='만원'||u==='만')return n*1e4;
+    return n;
+  }
+
+  function claimValue(rule,match){
+    if(rule.kind==='month')return match[1]||match[2]||null;
+    const raw=match[1];
+    if(raw==null)return null;
+    if(rule.kind==='krw')return moneyValue(raw,match[2]);
+    const n=Number(String(raw).replace(/,/g,''));
+    if(!isFinite(n))return null;
+    return rule.kind==='pct'?pctNorm(n):n;
+  }
+
+  function applyRule(rule,src){
+    if(rule.window){
+      const found=rule.window.exec(src);
+      if(!found)return null;
+      const scan=new RegExp(rule.kind==='krw'?MONEY:rule.kind==='pct'?NUM+'\\s*%':NUM,'g');
+      let match=null;
+      let next;
+      while((next=scan.exec(found[0]))){match=next;if(rule.pick!=='last')break;}
+      return match?claimValue(rule,match):null;
+    }
+    const match=rule.re.exec(src);
+    return match?claimValue(rule,match):null;
+  }
+
+  // 내재변동성은 표로 쓰는 일이 많아 규칙이 다르다. IV가 언급된 줄의 %를 전부 모아 범위를 낸다.
+  function ivClaims(text,claims){
+    const values=[];
+    String(text||'').split('\n').forEach(function(line){
+      if(!/IV|내재\s*변동성|implied/i.test(line))return;
+      const re=/(\d+(?:\.\d+)?)\s*%/g;
+      let match;
+      while((match=re.exec(line))){
+        const n=Number(match[1]);
+        if(n>=5&&n<=120)values.push(n);
+      }
     });
-    return items.slice(0,8);
+    if(values.length>1){
+      claims['내재변동성 최저']={value:Math.min.apply(null,values),kind:'pct'};
+      claims['내재변동성 최고']={value:Math.max.apply(null,values),kind:'pct'};
+    }else if(values.length===1){
+      claims['내재변동성']={value:values[0],kind:'pct'};
+    }
+  }
+
+  function claimsOf(text){
+    const claims={};
+    const bold=boldOf(text);
+    const prose=proseOf(text);
+    CLAIM_RULES.forEach(function(rule){
+      let value=applyRule(rule,bold);
+      if(value==null)value=applyRule(rule,prose);
+      if(value==null)return;
+      claims[rule.label]={value:value,kind:rule.kind};
+    });
+    ivClaims(text,claims);
+    return claims;
+  }
+
+  function claimItems(claims){
+    return Object.keys(claims).map(function(label){
+      return {label:label,value:claims[label].value,kind:claims[label].kind,src:'text'};
+    });
+  }
+
+  function sameValue(a,b,kind){
+    if(kind==='month'||kind==='text')return String(a)===String(b);
+    const x=Number(a);
+    const y=Number(b);
+    if(!isFinite(x)||!isFinite(y))return String(a)===String(b);
+    const floor={pct:0.15,bp:1,num:0.02,int:0.5,months:0.5,krw:0}[kind]||0;
+    return Math.abs(x-y)<=Math.max(Math.abs(y)*0.02,floor);
   }
 
   function hasHTMLReport(turn){
@@ -852,21 +1154,64 @@
     });
   }
 
+  // 결론 한 문장. 소수점(3.23억)에서 끊기지 않도록 한글 뒤의 마침표만 문장 경계로 본다.
+  const PLAN_SENTENCE=/겠[다습어네음]|볼게|해볼게|스펙부터|만들어 줄|주세요|알려주|^[├└│─┌┐]|^\d+월차/;
+  const CONCLUSION_HINT=/살아|뒤집|마릅|마르지|필수|안 됩니다|못 됩니다|고갈|바닥|유리|불리|바뀌|밀리|버티|넘|올라갔|내려갔|결론|차이|소진|충분|부족|초과|필요합니다|않습니다/;
+
+  function sentencesOf(text){
+    return proseOf(text).replace(/\*\*/g,'').split(/(?<=[가-힣)\]"”’」』])[.!?](?=\s|$)|\n+/).map(function(s){return s.trim();}).filter(Boolean);
+  }
+
+  function cleanSentence(line){
+    let s=String(line||'').replace(/\*\*/g,'').trim();
+    s=s.replace(/^\d+\.\s*/,'').replace(/^결론(?:[:：]\s*|\s*[—-]\s*|\s+)/,'').replace(/^[→▶•·\-]\s*/,'').trim();
+    if(s.length>170)s=s.slice(0,168).replace(/\s+\S*$/,'')+'…';
+    else if(/[가-힣]$/.test(s))s+='.';
+    return s;
+  }
+
   function conclusionOf(text){
-    const marked=String(text||'').match(/\*\*결론[^*]{4,180}\*\*/);
-    if(marked)return marked[0].replace(/\*\*/g,'').replace(/^결론(?:[:：]\s*|\s+)/,'');
-    const prose=proseOf(text);
-    const bold=/\*\*([^*|]{16,140})\*\*/g;
-    let match;
-    while((match=bold.exec(prose))){
-      let line=match[1].trim().replace(/^\d+\.\s*/,'');
-      if(/sha256|##|\n/.test(line))continue;
-      if(/돌리겠|확인하겠|보겠습니다|스펙부터|만들어 줄/.test(line))continue;
-      if(/^[·\-|]/.test(line))continue;
-      if(/다\.|다$|없습니다|마릅|살아|뒤집|필수|확률|올라갔|못 됩니다/.test(line))return line.replace(/^결론(?:[:：]\s*|\s+)/,'');
+    const src=String(text||'');
+    const marked=src.match(/\*\*결론[^*]{4,200}\*\*/);
+    if(marked)return cleanSentence(marked[0]);
+    const bold=boldOf(src).split('\n');
+    for(let i=0;i<bold.length;i+=1){
+      const line=bold[i].trim().replace(/^\d+\.\s*/,'');
+      if(line.length<16||line.length>200)continue;
+      if(/sha256|\||^[·\-]/.test(line)||PLAN_SENTENCE.test(line))continue;
+      if(/(?:다|니다|요)\.?$/.test(line)||CONCLUSION_HINT.test(line))return cleanSentence(line);
     }
-    const sentence=prose.match(/[^.\n]{12,110}(?:살아|뒤집|마릅|필수|안 됩니다|고갈 확률|못 됩니다)[^.\n]{0,70}\./);
-    return sentence?sentence[0].trim().replace(/^\d+\.\s*/,''):'';
+    const sentences=sentencesOf(src);
+    for(let i=0;i<sentences.length;i+=1){
+      const s=sentences[i];
+      if(s.length<16||s.length>200)continue;
+      if(/sha256|\||^[·\-#]/.test(s)||PLAN_SENTENCE.test(s))continue;
+      if(CONCLUSION_HINT.test(s))return cleanSentence(s);
+    }
+    return '';
+  }
+
+  // 판정 전환과 도구 시도를 한 줄로. 형식 지표지만 "왜 ON이 검증 가능한가"의 근거라 카드 맨 위에 둔다.
+  function verdictLine(offTurn,onTurn){
+    const label=function(turn){return turn?(VERDICT_LABEL[turn.verdict]||'기록 없음'):'기록 없음';};
+    let line='OFF '+label(offTurn)+' → ON '+label(onTurn);
+    const tools=(onTurn&&onTurn.events||[]).filter(function(event){return event.t==='tool'&&!/^카탈로그/.test(event.name||'');});
+    if(tools.length){
+      const counts={};
+      tools.forEach(function(event){const status=toolStatus(event);counts[status]=(counts[status]||0)+1;});
+      const ok=counts.ok||0;
+      const bits=['도구 '+ok+'/'+tools.length+'회'];
+      if(counts.recovered)bits.push('거절 '+counts.recovered+' 회복');
+      if(counts.failed)bits.push('미회복 '+counts.failed);
+      if(counts.external)bits.push('외부 오류 '+counts.external);
+      line+=' · '+bits.join(' · ');
+    }
+    return line;
+  }
+
+  function factHTML(cls,label,body,item){
+    const src=item&&item.src==='text'?' <i class="src" title="도구 결과가 아니라 ON 답 본문에서 뽑은 수치">본문</i>':'';
+    return '<li class="'+cls+'">'+esc(label)+' '+body+src+'</li>';
   }
 
   function turnDiffHTML(offTurn,onTurn){
@@ -874,34 +1219,48 @@
     const offText=turnText(offTurn);
     const onText=turnText(onTurn);
     const facts=[];
-    if(!offTurn&&!onTurn)facts.push('<li>이 턴의 기록이 없다.</li>');
-    else if(!offTurn)facts.push('<li>OFF 기록이 없다.</li>');
-    else if(!onTurn)facts.push('<li>ON 기록이 없다.</li>');
+    let meta='';
+    if(!offTurn&&!onTurn)facts.push('<li class="note">이 턴의 기록이 없다.</li>');
+    else if(!offTurn)facts.push('<li class="note">OFF 기록이 없다.</li>');
+    else if(!onTurn)facts.push('<li class="note">ON 기록이 없다.</li>');
     else{
+      meta=verdictLine(offTurn,onTurn);
+      let onItems=collectKpis(onTurn,onText);
+      if(!onItems.length)onItems=claimItems(claimsOf(onText));
+      const offClaims=claimsOf(offText);
+      const diffs=[];
       const gains=[];
       const sames=[];
-      collectTurnFacts(onTurn,onText).forEach(function(item){
+      onItems.forEach(function(item){
         const shown=displayKpi(item);
-        if(offHasValue(offText,item))sames.push('<li class="same">'+esc(item.label)+' <b>'+esc(shown)+'</b> — OFF도 같은 수를 썼다</li>');
-        else gains.push('<li class="gain">'+esc(item.label)+' <b>'+esc(shown)+'</b> — OFF 답에는 없다</li>');
+        const off=offClaims[item.label];
+        if(off&&off.kind===item.kind){
+          if(sameValue(off.value,item.value,item.kind))sames.push(factHTML('same',item.label,'<b>'+esc(shown)+'</b> — OFF도 같은 수',item));
+          else diffs.push(factHTML('diff',item.label,'OFF <span class="from">'+esc(displayKpi({kind:item.kind,value:off.value}))+'</span> → ON <b>'+esc(shown)+'</b>',item));
+        }else if(textHasValue(offText,item)){
+          sames.push(factHTML('same',item.label,'<b>'+esc(shown)+'</b> — OFF도 같은 수',item));
+        }else{
+          gains.push(factHTML('gain',item.label,'<b>'+esc(shown)+'</b> — OFF 답엔 없다',item));
+        }
       });
-      const onDated=/\d{4}-\d{2}/.test(onText);
-      const offDated=/\d{4}-\d{2}/.test(offText);
-      if(onDated&&!offDated)gains.push('<li class="gain">ON 표는 달을 <b>날짜</b>로 찍었다. OFF는 1·2·3월 번호다</li>');
-      if(hasHTMLReport(onTurn)&&!hasHTMLReport(offTurn))gains.push('<li class="gain">ON은 <b>HTML 리포트</b>를 만들었다. OFF는 본문만 썼다</li>');
       const notes=[];
-      if(onTurn.verdict==='partial')notes.push('<li class="bad">ON은 도구를 돌렸지만 응답에 산출물이 안 보인다</li>');
-      if(onTurn.verdict==='missing')notes.push('<li class="bad">ON도 이 턴의 산출물을 만들지 못했다</li>');
-      if(onTurn.verdict==='fabricated')notes.push('<li class="bad">ON이 산출 없이 완료를 선언했다</li>');
-      if(!gains.length&&!sames.length&&!notes.length){
-        if(offTurn.verdict==='missing'&&onTurn.verdict==='delivered')gains.push('<li class="gain">OFF 답에는 산출이 없고 ON은 도구로 만들었다</li>');
-        else if(offText&&onText)sames.push('<li class="same">양쪽 다 답을 썼다. 숫자 대조할 KPI는 이 턴 도구 결과에 없다</li>');
+      if(hasHTMLReport(onTurn)&&!hasHTMLReport(offTurn))gains.push('<li class="gain">ON은 <b>HTML 리포트</b>를 만들었다. OFF는 본문만 썼다</li>');
+      if(/\d{4}-\d{2}/.test(onText)&&!/\d{4}-\d{2}/.test(offText))notes.push('<li class="note">ON은 달을 <b>2026-09</b>처럼 날짜로 찍었다. OFF는 1·2·3월 번호다</li>');
+      const bads=[];
+      if(onTurn.verdict==='partial')bads.push('<li class="bad">ON은 도구를 돌렸지만 응답에 산출물이 안 보인다</li>');
+      if(onTurn.verdict==='missing')bads.push('<li class="bad">ON도 이 턴의 산출물을 만들지 못했다</li>');
+      if(onTurn.verdict==='fabricated')bads.push('<li class="bad">ON이 산출 없이 완료를 선언했다</li>');
+      const ranked=diffs.concat(gains,sames).slice(0,9);
+      if(!ranked.length&&!bads.length){
+        if(offTurn.verdict==='missing'&&onTurn.verdict==='delivered')ranked.push('<li class="gain">OFF 답에는 산출이 없고 ON은 도구로 만들었다</li>');
+        else if(offText&&onText)ranked.push('<li class="note">양쪽 다 답을 썼다. 대조할 수치를 못 뽑았다</li>');
       }
-      facts.push.apply(facts,gains.concat(sames,notes));
+      facts.push.apply(facts,ranked.concat(bads,notes));
     }
     const quote=conclusionOf(onText);
     return '<aside class="turndiff" data-p="diff" aria-label="이 턴 답에서 달라진 것">'
       +(want?'<p class="td-want">'+esc(want)+'</p>':'')
+      +(meta?'<p class="td-meta">'+esc(meta)+'</p>':'')
       +(quote?'<p class="td-quote">'+esc(quote)+'</p>':'')
       +'<ul class="td-facts">'+facts.join('')+'</ul></aside>';
   }
