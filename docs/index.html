@@ -6,17 +6,17 @@
 <style>
   :root{
     --paper:#F5F7F6;--card:#FFFFFF;--ink:#132420;--muted:#5C6B66;--green:#0C6B52;--green-soft:#E3EFEA;
-    --bear:#BC4A2E;--bear-soft:#F6E7E1;--line:#D8DFDC;--line-strong:#132420;--code:#EEF2F0;--side:#EFF2F1;--user-bg:#E9EEEC;
+    --bear:#BC4A2E;--bear-soft:#F6E7E1;--warn:#9A6B12;--warn-soft:#F4EBD6;--line:#D8DFDC;--line-strong:#132420;--code:#EEF2F0;--side:#EFF2F1;--user-bg:#E9EEEC;
     --shadow:0 18px 60px rgba(19,36,32,.12);color-scheme:light;
   }
   :root[data-theme="dark"]{
     --paper:#0F1715;--card:#162220;--ink:#E6EFEB;--muted:#93A39D;--green:#5FC9A5;--green-soft:#17342B;
-    --bear:#E88A6E;--bear-soft:#3A221B;--line:#273632;--line-strong:#E6EFEB;--code:#1E2B28;--side:#121C1A;--user-bg:#1C2926;
+    --bear:#E88A6E;--bear-soft:#3A221B;--warn:#E0B15A;--warn-soft:#3A2E14;--line:#273632;--line-strong:#E6EFEB;--code:#1E2B28;--side:#121C1A;--user-bg:#1C2926;
     --shadow:0 18px 60px rgba(0,0,0,.38);color-scheme:dark;
   }
   @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
     --paper:#0F1715;--card:#162220;--ink:#E6EFEB;--muted:#93A39D;--green:#5FC9A5;--green-soft:#17342B;
-    --bear:#E88A6E;--bear-soft:#3A221B;--line:#273632;--line-strong:#E6EFEB;--code:#1E2B28;--side:#121C1A;--user-bg:#1C2926;
+    --bear:#E88A6E;--bear-soft:#3A221B;--warn:#E0B15A;--warn-soft:#3A2E14;--line:#273632;--line-strong:#E6EFEB;--code:#1E2B28;--side:#121C1A;--user-bg:#1C2926;
   }}
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{height:100%;overflow:hidden;}
@@ -67,6 +67,7 @@
   .runmeta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11.5px;color:var(--muted);font-family:'IBM Plex Mono',Menlo,monospace;padding-bottom:14px;margin-bottom:20px;border-bottom:1px dashed var(--line);}
   .runmeta b{color:var(--ink);font-weight:500;}
   .runmeta .ok{color:var(--green);} .runmeta .no{color:var(--bear);}
+  .runmeta .rec,.runmeta .warn{color:var(--warn);}
 
   .umsg{background:var(--user-bg);border-radius:12px;padding:13px 16px;margin:26px 0 18px;white-space:pre-wrap;font-size:14.5px;}
   .amsg{font-size:14.5px;}
@@ -88,11 +89,16 @@
 
   .tool{border:1px solid var(--line);border-radius:8px;margin:12px 0;background:var(--card);overflow:hidden;}
   .tool.bad{border-color:var(--bear);}
+  .tool.recov{border-color:var(--warn);}
+  .tool.conf{border-style:dashed;border-color:var(--warn);}
+  .tool.ext{border-color:var(--muted);}
   .tool>summary{list-style:none;cursor:pointer;padding:9px 13px;display:flex;align-items:center;gap:9px;font-size:12.5px;font-family:'IBM Plex Mono',Menlo,monospace;}
   .tool>summary::-webkit-details-marker{display:none;}
   .tool .nm{font-weight:500;}
   .tool .st{margin-left:auto;color:var(--green);}
   .tool.bad .st{color:var(--bear);}
+  .tool.recov .st,.tool.conf .st{color:var(--warn);}
+  .tool.ext .st{color:var(--muted);}
   .tool .sz{color:var(--muted);font-size:11px;}
   .tbody{border-top:1px solid var(--line);padding:11px 13px;}
   .lbl{font-size:11px;letter-spacing:.1em;color:var(--muted);margin:8px 0 4px;}
@@ -152,7 +158,11 @@
 
   .turn{padding-top:2px;}
   .turn+.turn{margin-top:30px;border-top:1px dashed var(--line);}
-  .turn-n{position:sticky;top:var(--headh,72px);z-index:4;background:var(--paper);padding:14px 0 8px;font-family:'IBM Plex Mono',Menlo,monospace;font-size:11px;letter-spacing:.12em;color:var(--muted);}
+  .turn-n{position:sticky;top:var(--headh,72px);z-index:4;background:var(--paper);padding:14px 0 8px;font-family:'IBM Plex Mono',Menlo,monospace;font-size:11px;letter-spacing:.12em;color:var(--muted);display:flex;align-items:center;gap:10px;}
+  .vd-pair{display:inline-flex;gap:6px;letter-spacing:0;}
+  .vd{font-size:12px;}
+  .vd.delivered{color:var(--green);} .vd.fabricated,.vd.failed{color:var(--bear);}
+  .vd.partial,.vd.conflict{color:var(--warn);}
   .panes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(200px,.58fr);gap:var(--panegap);align-items:start;}
   .pane{min-width:0;}
   .pane .umsg{margin-top:0;}
@@ -196,8 +206,9 @@
   .cmpnote .facts li{position:relative;padding-left:15px;margin:0 0 8px;}
   .cmpnote .facts li:last-child{margin-bottom:0;}
   .cmpnote .facts li::before{content:'';position:absolute;left:0;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--line-strong);}
-  .cmpnote .facts li[data-k="verify"]::before{background:var(--green);}
+  .cmpnote .facts li[data-k="verify"]::before,.cmpnote .facts li[data-k="recover"]::before{background:var(--green);}
   .cmpnote .facts li[data-k="error"]::before,.cmpnote .facts li[data-k="grade"]::before{background:var(--bear);}
+  .cmpnote td.warn{color:var(--warn);}
   @media (max-width:820px){
     .cmpnote{padding:14px;margin:16px 0 4px;}
     .cmpnote-grid{grid-template-columns:minmax(0,1fr);gap:14px;}
@@ -216,6 +227,7 @@
   .matrix .cellbtn{border:0;background:none;color:inherit;text-align:left;padding:0;font-size:13px;width:100%;border-radius:4px;}
   .matrix .cellbtn:hover b,.matrix .cellbtn:focus-visible b{color:var(--green);text-decoration:underline;text-underline-offset:3px;}
   .matrix .mini{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',Menlo,monospace;display:block;margin-top:3px;}
+  .matrix .fab{color:var(--warn);font-size:11px;}
   .notes{margin:24px 0 0 18px;color:var(--ink);font-size:14px;}
   .notes li{margin:8px 0;}
   .tblwrap{overflow-x:auto;}
@@ -508,17 +520,32 @@
   function renderHome(){
     const rows=MODELS.map(function(model){
       const cells=['off','on'].map(function(condition){
-        let pass=0;
-        let total=0;
+        let delivered=0;
+        let turns=0;
         let cost=0;
-        let calls=0;
-        let hashes=0;
-        DATA.cases.forEach(function(item){const run=DATA.runs[item.id+'|'+model[0]+'|'+condition];if(!run)return;if(run.ok===true)pass+=1;if(run.ok!==null&&run.ok!==undefined)total+=1;cost+=run.usage.cost||0;calls+=run.calls||0;hashes+=run.hashes||0;});
-        return '<td class="'+(condition==='on'?'on':'')+'"><button type="button" class="cellbtn" data-model="'+model[0]+'" data-plugin="'+condition+'"><b>'+(total?pass+'/'+total:'—')+'</b><span class="mini">$'+cost.toFixed(2)+' · 도구 '+calls+' · 해시 '+hashes+'</span></button></td>';
+        let recovered=0;
+        let failed=0;
+        let fabricated=0;
+        DATA.cases.forEach(function(item){
+          const run=DATA.runs[item.id+'|'+model[0]+'|'+condition];
+          if(!run)return;
+          delivered+=run.delivered||0;
+          turns+=run.total||0;
+          cost+=run.usage.cost||0;
+          const status=run.tool_status||{};
+          recovered+=status.recovered||0;
+          failed+=status.failed||0;
+          fabricated+=(run.fabricated||[]).length;
+        });
+        const bits=['$'+cost.toFixed(2)];
+        if(recovered)bits.push('회복 '+recovered);
+        if(failed)bits.push('미회복 '+failed);
+        const fab=fabricated?'<span class="fab"> · 허위 완료 '+fabricated+'</span>':'';
+        return '<td class="'+(condition==='on'?'on':'')+'"><button type="button" class="cellbtn" data-model="'+model[0]+'" data-plugin="'+condition+'"><b>'+(turns?delivered+'/'+turns:'—')+'</b><span class="mini">'+bits.join(' · ')+fab+'</span></button></td>';
       }).join('');
       return '<tr><td><b>'+model[1]+'</b></td>'+cells+'</tr>';
     }).join('');
-    $('view').innerHTML='<div class="home-view"><h1>같은 문제를 모델별로, 플러그인 없이/있이 전부 돌린 기록</h1><p class="lead">'+esc(DATA.meta.note)+' 왼쪽에서 대화를 고르면 플러그인 없이 돌린 실행과 fintool을 붙인 실행이 좌우로 나란히 재생된다. 위쪽 모델 세그먼트를 바꾸면 같은 질문의 다른 모델 실행으로 즉시 넘어간다.</p><div class="tblwrap"><table class="matrix"><thead><tr><th>모델</th><th>플러그인 없음</th><th class="on">fintool</th></tr></thead><tbody>'+rows+'</tbody></table></div><ul class="notes"><li>채점은 케이스마다 미리 정한 핵심 수치가 답변에 나오는지 기계적으로 확인한 결과다. 서술 품질은 채점하지 않는다.</li><li>응답 텍스트는 한 글자도 고치지 않았다. 표시되는 수치·해시는 전부 실행 결과에서 온 것이다.</li><li>수집 '+esc(DATA.meta.collected)+' · 플러그인 v'+esc(DATA.meta.plugin)+'</li></ul></div>';
+    $('view').innerHTML='<div class="home-view"><h1>같은 문제를 모델별로, 플러그인 없이/있이 전부 돌린 기록</h1><p class="lead">'+esc(DATA.meta.note)+' 왼쪽에서 대화를 고르면 플러그인 없이 돌린 실행과 fintool을 붙인 실행이 좌우로 나란히 재생된다. 위쪽 모델 세그먼트를 바꾸면 같은 질문의 다른 모델 실행으로 즉시 넘어간다.</p><div class="tblwrap"><table class="matrix"><thead><tr><th>모델</th><th>플러그인 없음</th><th class="on">fintool</th></tr></thead><tbody>'+rows+'</tbody></table></div><ul class="notes"><li>1차 숫자는 산출물이 나온 턴 / 전체 턴이다. 채점 통과 수가 아니다.</li><li>응답 텍스트는 한 글자도 고치지 않았다. 표시되는 수치·해시는 전부 실행 결과에서 온 것이다.</li><li>수집 '+esc(DATA.meta.collected)+' · 플러그인 v'+esc(DATA.meta.plugin)+'</li></ul></div>';
     document.querySelectorAll('.cellbtn').forEach(function(button){button.onclick=function(){state.model=button.dataset.model;state.pane=button.dataset.plugin;const first=DATA.cases.find(function(item){return runFor(item.id,'on')||runFor(item.id,'off');});state.case=first?first.id:null;render();};});
   }
 
@@ -554,23 +581,33 @@
     return '<section class="artifact" aria-label="report 아티팩트"><div class="artifact-head"><span>▤</span><strong>report 아티팩트</strong><span>'+esc(meta.recipe)+'</span><span class="ok">✓ 생성</span></div><div class="artifact-preview"><div class="artifact-sheet" aria-hidden="true"></div><div><div class="artifact-title">'+esc(meta.title)+'</div><div class="artifact-meta">HTML 리포트 · '+esc(sizeLabel(event.bytes))+(meta.components.length?' · '+meta.components.length+'개 섹션':'')+'</div><button type="button" class="artifact-open" data-artifact="'+index+'">전체 보기</button></div></div></section>';
   }
 
+  const STATUS_LABEL={ok:'✓',recovered:'회복',failed:'✗ 미회복',external:'외부 오류',conflict:'비정상'};
+  const STATUS_CLASS={ok:'',recovered:' recov',failed:' bad',external:' ext',conflict:' conf'};
+
+  function toolStatus(event){
+    if(event.status)return event.status;
+    if(event.ok===false)return 'failed';
+    return 'ok';
+  }
+
   function eventHTML(event,source){
     if(event.t==='text')return '<div class="amsg">'+md(event.md)+'</div>';
     if(event.t==='thinking')return '<div class="think">✳ 잠시 생각함'+(event.ms?' · '+(event.ms/1000).toFixed(1)+'초':'')+'</div>';
     if(event.t==='skill')return '<div class="skill">✳ '+esc(event.name)+' 스킬 사용</div>';
     if(event.t!=='tool')return '';
-    const bad=event.ok===false;
-    if(!bad&&(event.name==='report'||event.name==='fintool_report'))return artifactHTML(event,source);
+    const status=toolStatus(event);
+    if(status==='ok'&&(event.name==='report'||event.name==='fintool_report'))return artifactHTML(event,source);
     const timing=event.ms?' · '+(event.ms/1000).toFixed(1)+'s':'';
-    const head='<summary><span aria-hidden="true">⚙</span><span class="nm">'+esc(event.name)+'</span><span class="sz">'+esc(timing+(event.bytes?' · '+sizeLabel(event.bytes):''))+'</span><span class="st">'+(bad?'✗ 실패':'✓')+'</span></summary>';
+    const head='<summary><span aria-hidden="true">⚙</span><span class="nm">'+esc(event.name)+'</span><span class="sz">'+esc(timing+(event.bytes?' · '+sizeLabel(event.bytes):''))+'</span><span class="st">'+esc(STATUS_LABEL[status]||STATUS_LABEL.ok)+'</span></summary>';
     let body='<div class="tbody">';
     if(event.input&&Object.keys(event.input).length)body+='<div class="lbl">요청</div><pre>'+esc(JSON.stringify(event.input,null,2))+'</pre>';
-    if(bad){body+='<div class="lbl">오류</div><div class="err">'+esc(event.error||'')+'</div>';if(event.contract)body+='<div class="lbl">엔진이 함께 준 입력 계약</div><pre>'+esc(JSON.stringify(event.contract,null,2))+'</pre>';}
+    if(status==='conflict'){body+='<div class="lbl">상태</div><div class="think">본문은 성공 출력인데 MCP 오류 메타데이터와 충돌한다. 원문 결과는 파일로 접혀 있다.</div>';}
+    else if(status==='failed'||status==='recovered'||status==='external'){body+='<div class="lbl">'+(status==='recovered'?'거절된 입력':'오류')+'</div><div class="err">'+esc(event.error||'')+'</div>';if(event.contract)body+='<div class="lbl">엔진이 함께 준 입력 계약</div><pre>'+esc(JSON.stringify(event.contract,null,2))+'</pre>';}
     else if(event.persisted){body+='<div class="lbl">결과</div><div class="think">결과가 커서 파일로 저장됐다. 모델은 이 응답에서 값을 직접 읽지 못했다.</div>';}
     else if(event.result!==undefined){body+='<div class="lbl">결과</div>'+resultHTML(event.result);}
     if(event.hash)body+='<div class="hash"><span>'+esc(event.hash)+'</span><button type="button" data-h="'+esc(event.hash)+'">복사</button></div>';
     body+='</div>';
-    return '<details class="tool'+(bad?' bad':'')+'">'+head+body+'</details>';
+    return '<details class="tool'+(STATUS_CLASS[status]||'')+'">'+head+body+'</details>';
   }
 
   function openArtifact(index){
@@ -600,7 +637,14 @@
       meta='<div class="runmeta"><span>이 조합의 실행 기록이 없다</span></div>';
     }else{
       const usage=run.usage;
-      meta='<div class="runmeta"><span><b>'+usage.sec+'s</b></span><span>출력 <b>'+(usage.out||0).toLocaleString()+'</b> tok</span><span><b>$'+(usage.cost||0).toFixed(3)+'</b></span>'+(run.calls?'<span>도구 <b>'+run.calls+'</b>'+(run.errors?' · <span class="no">오류 '+run.errors+'</span>':'')+'</span>':'')+(run.hashes?'<span class="ok">해시 '+run.hashes+'</span>':'')+(run.ok===true?'<span class="ok">채점 통과</span>':run.ok===false?'<span class="no">채점 실패</span>':'')+'</div>';
+      const status=run.tool_status||{};
+      const bits=[];
+      if(run.calls)bits.push('도구 <b>'+run.calls+'</b>');
+      if(status.recovered)bits.push('<span class="rec">회복 '+status.recovered+'</span>');
+      if(status.failed)bits.push('<span class="no">미회복 '+status.failed+'</span>');
+      if(status.external)bits.push('외부 '+status.external);
+      if(status.conflict)bits.push('<span class="warn">비정상 '+status.conflict+'</span>');
+      meta='<div class="runmeta"><span><b>'+usage.sec+'s</b></span><span>출력 <b>'+(usage.out||0).toLocaleString()+'</b> tok</span><span><b>$'+(usage.cost||0).toFixed(3)+'</b></span>'+(bits.length?'<span>'+bits.join(' · ')+'</span>':'')+(run.hashes?'<span class="ok">해시 '+run.hashes+'</span>':'')+(run.ok===true?'<span class="ok">채점 통과</span>':run.ok===false?'<span class="no">채점 실패</span>':'')+'</div>';
     }
     return '<div class="col-head'+(plugin==='on'?' on':'')+'" data-p="'+plugin+'"><div class="nm"><span class="mark" aria-hidden="true"></span>'+esc(label)+'</div>'+meta+'</div>';
   }
@@ -905,6 +949,20 @@
       +'<ul class="facts">'+facts+'</ul></div></section>';
   }
 
+  const VERDICT_MARK={delivered:'●',partial:'◐',unverified:'○',fabricated:'✗',missing:'·'};
+  const VERDICT_LABEL={delivered:'완수',partial:'도구만',unverified:'미검증',fabricated:'허위 완료',missing:'미산출'};
+
+  function turnHead(index,total,runs){
+    const mark=function(plugin){
+      const turn=runs[plugin]&&runs[plugin].turns[index];
+      const verdict=turn&&turn.verdict;
+      const symbol=VERDICT_MARK[verdict]||'·';
+      const title=(plugin==='on'?'ON':'OFF')+' '+(VERDICT_LABEL[verdict]||'기록 없음');
+      return '<span class="vd '+(verdict||'')+'" title="'+esc(title)+'">'+symbol+'</span>';
+    };
+    return '<div class="turn-n">턴 '+(index+1)+' / '+total+' <span class="vd-pair" aria-hidden="true">'+mark('off')+mark('on')+'</span></div>';
+  }
+
   function paneHTML(plugin,run,index){
     const turn=run?run.turns[index]:null;
     if(!turn){
@@ -933,7 +991,7 @@
     for(let index=0;index<total;index+=1){
       // 질문은 각 단 안에 그린다. 가운데 하나로 걸치면 두 단이 한 대화처럼 읽혀
       // 어느 쪽 답인지 헷갈린다. 양쪽 다 자기 대화로 읽혀야 대조가 된다.
-      const head=total>1?'<div class="turn-n">턴 '+(index+1)+' / '+total+'</div>':'';
+      const head=total>1?turnHead(index,total,runs):'';
       const offTurn=runs.off?runs.off.turns[index]:null;
       const onTurn=runs.on?runs.on.turns[index]:null;
       sections.push('<section class="turn" id="turn-'+(index+1)+'">'+head+'<div class="panes">'+PANES.map(function(pane){return paneHTML(pane[0],runs[pane[0]],index);}).join('')+turnDiffHTML(offTurn,onTurn)+'</div></section>');
@@ -998,7 +1056,7 @@
   $('menuBtn').onclick=function(){const open=!$('side').classList.contains('open');$('side').classList.toggle('open',open);$('backdrop').classList.toggle('on',open);$('menuBtn').setAttribute('aria-expanded',String(open));};
   $('backdrop').onclick=closeSide;
   $('homeBtn').onclick=function(){state.case=null;render();if(window.innerWidth<=820)closeSide();};
-  $('pluginBtn').onclick=function(){state.pane=state.pane==='on'?'off':'on';renderBar();const cmp=document.querySelector('.cmp');if(cmp)cmp.dataset.pane=state.pane;};
+  $('pluginBtn').onclick=function(){state.pane=state.pane==='on'?'off':'on';renderBar();const cmp=document.querySelector('.cmp');if(cmp)cmp.dataset.pane=state.pane;syncHash();};
   $('dialogClose').onclick=function(){$('artifactDialog').close();};
   $('artifactDialog').addEventListener('click',function(event){if(event.target===$('artifactDialog'))$('artifactDialog').close();});
   window.addEventListener('resize',syncHeadOffset);
