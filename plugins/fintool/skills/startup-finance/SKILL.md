@@ -58,6 +58,8 @@ description: fintool MCP로 스타트업 재무모델·시나리오·투자유�
 4. 시나리오   → 드라이버 축으로 bear/base/bull, 미조달, oat
 5. 캡테이블   → cap-table-simulate
 6. 산출물     → report(bundle.json + comments) / --workbook
+7. 저장       → "모델을 저장할까요?" → fintool_save (스펙만)
+다음 세션     → fintool_list → "저장된 모델 N개" → load 후 이어서
 ```
 
 ## 1단계 — 드라이버 발굴 인터뷰
@@ -276,6 +278,15 @@ fintool_run tool=report flags={recipe, spec, out?}   # out 생략 = 봉투 data.
 `milestones[]`, `competition[]`, `narrative{}`, `comments{}`다. 각 봉투는 `{ok, tool, data}`를
 **도구가 돌려준 그대로** 넣는다. `data` 안을 손으로 고쳐 쓰면 언마샬에서 거부된다.
 
+`meta.raise`는 **원 단위 숫자**다. 통화는 KRW로 고정이고 `meta`에 `currency` 필드는 없다.
+
+```json
+{"meta":{"title":"시리즈 A","date":"2026-08-25","subject":"B2B SaaS","raise":500000000},
+ "financial_model": {"ok":true,"tool":"financial-model","data":{}}}
+```
+
+`"5억 원"`이나 `{"amount":500000000,"currency":"KRW"}`는 `invalid_type` at `$.meta.raise`로 거부된다.
+
 | 레시피 | 용도 |
 |--------|------|
 | `finance-report` | 내부 재무 뷰. driver-trace 포함 |
@@ -337,6 +348,61 @@ accrual 워크북의 `BS`에는 `balance_check` 행이 있다 — `ROUND(총자�
 
 재무 리포트만으로 충분한지, 조작 가능한 워크북이 필요한지 **먼저 묻는다.** 둘은 다른 산출물이다. 계약 전문은 `docs/decisions/workbook-contract.md`.
 
+## 저장과 재개
+
+Desktop 원격 MCP에는 파일시스템이 없다. 세션이 끝나면 스펙이 사라진다. "지난번 모델에 시나리오 추가해줘"는 서버에 스펙이 있을 때만 된다.
+
+저장 도구는 **신원이 확인된 연결에서만** 보인다. `fintool_save` · `fintool_load` · `fintool_list`. 카탈로그에 없거나 `identity_required`·`store_unavailable`이면 저장하지 않은 것이다. 로컬 파일로 흉내 내지 않는다.
+
+### 이 세션이 끝날 때
+
+모델이 한 번이라도 돌아갔으면 **저장을 제안한다.** 숫자를 새로 만들지 말고 묻기만 한다.
+
+> 이 모델을 저장할까요? 다음 세션에서 "지난번 모델에 시나리오 추가"가 됩니다.
+
+동의하면 `fintool_save`에 **계산에 넣은 스펙**을 넣는다. 결과 봉투·HTML·워크북은 저장하지 않는다.
+
+```
+fintool_save name=아크메랩스-base spec=<financial-model 스펙> note="창업자 인터뷰 2026-08-25 base"
+```
+
+이름: `{회사}-{역할}`. 64자, 대소문자 구분 없음. 사용자가 이름을 주면 그걸 쓴다.
+
+같은 이름에 다시 저장하려면 `overwrite: true`다. 기본은 `name_conflict`로 거절한다. 덮어쓸지 새 이름인지는 묻는다.
+
+### 다음 세션이 시작될 때
+
+재무 요청이 오면 **계산하기 전에** `fintool_list`를 부른다.
+
+- `count`가 0이면 저장본이 없다고 말하고 인터뷰부터 한다.
+- `count`가 1 이상이면 이름·head seq·갱신 시각을 보여 주고 제안한다.
+
+> 저장된 모델 N개가 있습니다. 이어서 쓸까요?
+
+"지난번 모델에 시나리오 추가"처럼 재개가 분명하면 묻지 않고 고른다. 하나면 그걸 쓰고, 여러 개면 이름을 고르게 한다.
+
+```
+fintool_load name=아크메랩스-base
+```
+
+받은 `data.spec`을 **한 글자도 바꾸지 말고** `financial-model`에 다시 넣는다. 시나리오는 그 스펙의 드라이버를 축으로 짠다. 채팅에서 성장률을 다시 계산해 넣지 않는다.
+
+같은 이름에 새 버전을 남기려면 `overwrite: true`. 시나리오를 다른 이름으로 가르려면 `fintool_branch from=아크메랩스-base name=아크메랩스-bull`. 드라이버 하나만 고치려면 `fintool_patch`.
+
+`list`의 `models[]`에는 스펙이 없다. 내용을 보려면 `load`다.
+
+### 실패
+
+| kind | 할 일 |
+|---|---|
+| `identity_required` | 로그인된 커넥터가 아니다. 저장·재개 불가라고 알린다 |
+| `store_unavailable` | 원격 저장소가 닫혀 있다. 꾸며서 저장했다고 하지 않는다 |
+| `not_found` | 그 이름(그 사용자)에 없다. 다른 사용자 모델은 원래 안 보인다 |
+| `name_conflict` | overwrite 또는 새 이름을 묻는다 |
+| `quota_exceeded` | 50개. 지우거나 기존 이름에 버전을 추가한다 |
+
+해시는 자르지 않는다. 저장·load 봉투의 `hash`를 한 번 인용한다.
+
 ## 카탈로그 호출 줄이기
 
 `fintool_catalog`는 스펙 조회일 뿐 계산이 아니다. 계측에서 전체 도구 호출의 31%가 카탈로그였다.
@@ -347,6 +413,8 @@ accrual 워크북의 `BS`에는 `balance_check` 행이 있다 — `ROUND(총자�
 
 ## 호출 함정
 - **금액을 원 단위 정수로 바꿀 때 자릿수를 다시 센다.** "5,000억"은 `500000000000`(0이 11개)이다. 엔진은 단위를 검증하지 못하고 그대로 계산한다.
+- **저장은 스펙만.** 결과 봉투를 `fintool_save`에 넣지 않는다. 도구가 없거나 `store_unavailable`이면 로컬 파일로 대신 저장했다고 말하지 않는다.
+- 다음 세션에서 저장본을 짐작하지 않는다. `fintool_list`가 말한 이름만 `load`한다.
 
 
 - `fintool_run`의 `spec`은 **문자열**로 직렬화한다.
