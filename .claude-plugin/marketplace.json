@@ -12,7 +12,7 @@
       "name": "fintool",
       "source": "./plugins/fintool",
       "description": "스타트업 재무 계산(원격 MCP) + startup-finance·valuation·portfolio-risk·fixed-income 스킬, 스타트업 검증 패키지(startup-design·competitors·positioning·pitch)",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "author": {
         "name": "risingdream"
       },
