@@ -242,7 +242,7 @@
   .tn-cta:hover,.tn-cta:focus-visible{background:var(--green);outline:none;}
 
   .home-view{max-width:1080px;margin:0 auto;padding:10px 24px 60px;word-break:keep-all;overflow-wrap:anywhere;}
-  .home-view .lead,.home-view .sec-intro,.home-view .tcard p,.home-view .sk p,.home-view details p,.home-view .cl-sum,.home-view .pair p,.home-view .uc p,.home-view .step p,.home-view .icard li,.home-view .req li,.home-view .oauth{font-family:'Avenir Next','Noto Sans KR','Apple SD Gothic Neo',sans-serif;}
+  .home-view .lead,.home-view .sec-intro,.home-view .tcard p,.home-view .sk p,.home-view details p,.home-view .cl-sum,.home-view .pair p,.home-view .uc p,.home-view .step p{font-family:'Avenir Next','Noto Sans KR','Apple SD Gothic Neo',sans-serif;}
   .home-view section{padding:44px 0 12px;border-bottom:1px solid var(--line);scroll-margin-top:12px;}
   .home-view section:last-of-type{border-bottom:0;}
   .home-view .sec-label{font-size:11px;letter-spacing:.08em;color:var(--green);font-family:'IBM Plex Mono',Menlo,monospace;}
@@ -382,24 +382,6 @@
   .home-view .cl-title{grid-area:title;font-size:13.5px;font-weight:600;}
   .home-view .cl-meta{grid-area:meta;font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',Menlo,monospace;}
   .home-view .cl-sum{grid-area:sum;font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5;}
-  /* 시작하기 */
-  .copy{display:inline-flex;max-width:100%;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden;background:var(--card);margin-top:18px;}
-  .copy code{padding:9px 14px;font-size:13.5px;background:none;min-width:0;overflow-wrap:anywhere;}
-  .copy button{border:0;border-left:1px solid var(--line-strong);background:var(--ink);color:var(--paper);padding:9px 14px;font-size:12.5px;cursor:pointer;white-space:nowrap;}
-  .copy button:hover,.copy button:focus-visible{background:var(--green);}
-  .install{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0 0;}
-  .icard{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:15px 16px;min-width:0;}
-  .icard b{display:block;margin-bottom:8px;font-size:15px;}
-  .icard ol{margin:0 0 0 18px;font-size:13.5px;color:var(--muted);}
-  .icard li{margin:5px 0;}
-  .icard li b{display:inline;font-size:inherit;margin:0;color:var(--ink);}
-  .icard code{font-size:12px;}
-  .oauth{color:var(--muted);font-size:13px;margin-top:12px;}
-  .reqs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 22px;margin:22px 0 28px;}
-  .req{border-top:1px solid var(--line);padding-top:12px;min-width:0;}
-  .req b{display:block;font-size:13.5px;margin-bottom:6px;}
-  .req ul{margin:0 0 0 16px;font-size:13px;color:var(--muted);}
-  .req li{margin:4px 0;}
   /* FAQ·푸터 */
   .home-view details{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:10px 14px;margin-top:10px;}
   .home-view details:last-of-type{margin-bottom:26px;}
@@ -411,7 +393,7 @@
   @media (max-width:900px){
     .home-view .hero{grid-template-columns:1fr;gap:28px;padding-top:26px;}
     .home-view .hero h1{font-size:36px;}
-    .pair,.steps,.install,.reqs,.home-view .trust,.home-view .sample{grid-template-columns:1fr;}
+    .pair,.steps,.home-view .trust,.home-view .sample{grid-template-columns:1fr;}
     .pair .is{border-left:0;border-top:1px solid var(--line);}
     .ucs,.home-view .sks,.home-view .caselist{grid-template-columns:1fr 1fr;}
     .home-view .frame{height:320px;}
@@ -476,8 +458,8 @@
   <div class="main">
     <nav class="topnav" id="topnav" aria-label="페이지 안내">
       <a class="tn-brand" href="#top">fintool <small>Claude 재무 플러그인</small></a>
-      <div class="tn-links"><a href="#problem">왜 필요한가</a><a href="#cases">사용 사례</a><a href="#how">어떻게 다른가</a><a href="#evidence">신뢰 근거</a><a href="#start">시작하기</a></div>
-      <a class="tn-cta" href="#start">설치하기</a>
+      <div class="tn-links"><a href="#problem">왜 필요한가</a><a href="#cases">사용 사례</a><a href="#how">어떻게 다른가</a><a href="#evidence">신뢰 근거</a></div>
+      <a class="tn-cta" href="#cases">실제 대화 보기</a>
       <button type="button" class="theme" id="themeBtn2" aria-label="색상 테마 전환">◐ <span>테마</span></button>
     </nav>
     <div class="bar">
@@ -721,7 +703,7 @@
   }
 
   // ── 첫 화면(랜딩) ──────────────────────────────────────────────────────────
-  // 첫 화면은 잠재 고객용 랜딩이다(#5073): 문제 → 해결 → 사용 사례 → 신뢰 근거(접힘) → 시작하기.
+  // 첫 화면은 잠재 고객용 랜딩이다(#5073): 문제 → 해결 → 사용 사례 → 신뢰 근거(접힘) → FAQ. 설치 안내는 완전 공개 전이라 두지 않는다.
   // 정적 섹션은 데이터를 기다리지 않고 바로 그리고, 정본에서 오는 카드(히어로 장면·레저·사례·성적표)는
   // conversations.json이 도착하면 채운다. 벤치마크 앱 셸(사이드바·모델 바·해시)은 케이스에 들어갈 때만 보인다.
   // 카드의 질문·결론·수치·해시는 전부 정본에서 옮긴 것이다 — 가공 채팅은 쓰지 않는다.
@@ -781,7 +763,7 @@
       return '<tr><td><b>'+model[1]+'</b></td>'+cells+'</tr>';
     }).join('');
     return '<div class="tblwrap"><table class="matrix"><thead><tr><th>모델</th><th>Plain</th><th class="on">Fintool</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
-      +'<ul class="notes"><li>굵은 숫자는 <b>답을 낸 턴 / 전체 턴</b>. 양쪽 같은 기준이다. 셀을 누르면 그 모델의 대화로 들어간다.</li><li><b>검증 가능</b>은 도구 봉투가 남아 수치를 되짚을 수 있는 턴. Plain은 도구가 없으므로 구조상 0이지 답을 못 했다는 뜻이 아니다. <b>도구만</b>은 도구는 돌았는데 응답에 산출물이 안 보인 턴.</li><li><b>채점</b>은 정답 기준이 있는 케이스에서 핵심 수치가 맞은 수. Plain이 Fintool보다 높을 수 있다 — 맞았지만 되짚을 근거가 없는 것과, 근거가 남았지만 한 케이스를 틀린 것의 차이다.</li><li>응답 텍스트는 한 글자도 고치지 않았다. 표시되는 수치·해시는 전부 실행 결과에서 온 것이다.</li><li>수집 '+esc(DATA.meta.collected)+' · 수집 당시 플러그인 v'+esc(DATA.meta.plugin)+'. 현재 배포 버전과 다를 수 있다.</li></ul>';
+      +'<ul class="notes"><li>굵은 숫자는 <b>답을 낸 턴 / 전체 턴</b>이며 양쪽 같은 기준입니다. 셀을 누르면 그 모델의 대화로 들어갑니다.</li><li><b>검증 가능</b>은 도구 봉투가 남아 수치를 되짚을 수 있는 턴입니다. Plain은 도구가 없으므로 구조상 0이지, 답을 못 했다는 뜻이 아닙니다. <b>도구만</b>은 도구는 돌았는데 응답에 산출물이 보이지 않은 턴입니다.</li><li><b>채점</b>은 정답 기준이 있는 케이스에서 핵심 수치가 맞은 수입니다. Plain이 Fintool보다 높을 수 있습니다 — 맞았지만 되짚을 근거가 없는 것과, 근거가 남았지만 한 케이스를 틀린 것의 차이입니다.</li><li>응답 텍스트는 한 글자도 고치지 않았습니다. 표시되는 수치·해시는 전부 실행 결과에서 온 것입니다.</li><li>수집 '+esc(DATA.meta.collected)+' · 수집 당시 플러그인 v'+esc(DATA.meta.plugin)+'. 현재 배포 버전과 다를 수 있습니다.</li></ul>';
   }
 
   // 리비전 레저. 케이스 D Opus의 턴마다 기말 현금을 Plain(답 본문에서 뽑음)과 Fintool(계산 봉투)로 놓는다.
@@ -828,9 +810,9 @@
     });
     const flipped=columns.filter(function(col){return col.flip;}).map(function(col){return col.n;});
     return '<figure class="ledger" aria-label="케이스 5턴 누적 수정, Opus, 턴별 기말 현금">'
-      +'<figcaption><span class="lg-title">리비전 레저</span><span>케이스 "5턴 누적 수정" · Opus · 기말 현금</span>'+(flipped.length?'<span class="lg-flip">▲ 턴 '+flipped.join('·')+'에서 결론이 뒤집힌다</span>':'')+'</figcaption>'
+      +'<figcaption><span class="lg-title">리비전 레저</span><span>케이스 "5턴 누적 수정" · Opus · 기말 현금</span>'+(flipped.length?'<span class="lg-flip">▲ 턴 '+flipped.join('·')+'에서 결론이 뒤집힙니다</span>':'')+'</figcaption>'
       +'<div class="lg-scroll"><table><thead><tr><th style="--i:0"></th>'+head+'</tr></thead><tbody>'+plainRow+finRow+'</tbody></table></div>'
-      +'<p class="lg-note">Plain 값은 답 본문에서 뽑은 수치, Fintool 값은 계산 봉투의 수치. <span class="lg-hash">#해시</span>는 그 턴 계산의 SHA-256 앞 8자리 — 같은 입력이면 같은 해시. <a href="#case=d&model=opus&plugin=on">대화 전체 보기 →</a></p>'
+      +'<p class="lg-note">Plain 값은 답 본문에서 뽑은 수치, Fintool 값은 계산 봉투의 수치입니다. <span class="lg-hash">#해시</span>는 그 턴 계산의 SHA-256 앞 8자리 — 같은 입력이면 같은 해시가 나옵니다. <a href="#case=d&model=opus&plugin=on">대화 전체 보기 →</a></p>'
       +'</figure>';
   }
 
@@ -849,7 +831,6 @@
     }).join('')+'</div>';
   }
 
-  const MARKET='risingdream/fintool-plugin';
   const SHOW_MODEL='opus'; // 랜딩의 사례·히어로 장면은 성적표의 모델 선택과 무관하게 Opus 정본으로 고정한다
   // 정본 cases[].group을 고객군 라벨로 옮긴다
   const AUDIENCE={'창업 재무':'창업자 · IR 담당자','가치평가':'투자 · 리서치','채권·파생':'채권 · 파생 운용','자산관리':'자산관리 · 은퇴설계','성과평가':'펀드 운용 · 성과평가','대체투자':'PE · VC'};
@@ -920,10 +901,10 @@
   // 신뢰 근거(접힘) 안쪽 — 모델 선택·전체 성적표·케이스 목록. 모델 선택은 이 안에서만 동작한다.
   function benchBodyHTML(){
     if(!DATA)return waitHTML();
-    return '<p class="sec-intro">'+esc(DATA.meta.note)+' 모델을 고르면 그 모델의 성적표와 케이스 채점으로 바뀐다. 셀이나 케이스를 누르면 Plain과 Fintool 대화가 나란히 재생된다.</p>'
+    return '<p class="sec-intro">모델을 고르면 그 모델의 성적표와 케이스 채점으로 바뀝니다. 셀이나 케이스를 누르면 Plain과 Fintool 대화가 나란히 재생됩니다.</p>'
       +'<fieldset class="seg" id="homeModelSeg"><legend class="sr">모델 선택</legend>'+MODELS.map(function(model){return '<button type="button" data-m="'+model[0]+'" class="'+(state.model===model[0]?'on':'')+'" aria-pressed="'+(state.model===model[0])+'">'+model[1]+'</button>';}).join('')+'</fieldset>'
       +scoreboardHTML()
-      +'<div class="sec-label" style="margin-top:14px">케이스</div><h3 class="h3">'+DATA.cases.length+'개 케이스 — 눌러서 대화로 들어간다</h3><p class="sec-intro">점은 위에서 고른 모델의 Plain · Fintool 채점. 초록 통과, 빨강 실패, 빈 점은 채점 기준 없음.</p>'+caseIndexHTML();
+      +'<div class="sec-label" style="margin-top:14px">케이스</div><h3 class="h3">'+DATA.cases.length+'개 케이스 — 누르면 대화로 들어갑니다</h3><p class="sec-intro">점은 위에서 고른 모델의 Plain · Fintool 채점입니다. 초록은 통과, 빨강은 실패, 빈 점은 채점 기준이 없는 케이스입니다.</p>'+caseIndexHTML();
   }
   function benchSummaryMeta(){
     if(!DATA)return '';
@@ -946,7 +927,7 @@
       +'<span class="doc-tag">CLAUDE 플러그인 · FINTOOL</span>'
       +'<h1>Claude에게 물어도<br>믿을 수 있는 재무 숫자</h1>'
       +'<p class="lead">재무모델·IR·가치평가·채권·포트폴리오를 Claude로 다루는 창업자와 재무·회계·투자 실무자를 위한 플러그인입니다. 계산은 검증된 엔진이 하고, 모든 숫자에 계산 해시가 붙어 누구나 같은 결과를 다시 만들 수 있습니다.</p>'
-      +'<div class="cta"><a class="btn primary" href="#start">설치하기</a><a class="btn" href="#cases">실제 대화로 확인하기</a></div>'
+      +'<div class="cta"><a class="btn primary" href="#cases">실제 대화로 확인하기</a><a class="btn" href="#problem">왜 필요한가</a></div>'
       +'<ul class="chips" aria-label="요약"><li>계산 커맨드 41개</li><li>스킬 10종</li><li>Claude Desktop · Code · Codex</li><li>실제 대화 기록 전부 공개</li></ul>'
       +'</div>'+heroProofHTML()+'</header>'
       // 2. 문제 → 해결
@@ -980,34 +961,17 @@
       // 5. 신뢰 근거 — 벤치마크는 접어 둔다
       +'<section id="evidence" aria-labelledby="h-evidence"><div class="sec-label">신뢰 근거</div><h2 id="h-evidence">같은 문제를 세 모델에서 전부 돌린 기록</h2><p class="sec-intro">위 사례는 골라 보여준 것이 아닙니다. 모든 문제를 Opus·Sonnet·Haiku 세 모델에서 플러그인 없이(Plain)·플러그인을 붙여(Fintool) 전부 돌렸고, 응답 원문을 한 글자도 고치지 않고 공개합니다. 전체 성적표는 벤치마크에 관심 있는 분을 위해 접어 두었습니다.</p>'
       +'<details class="bench" id="benchDetails"><summary>전체 성적표 펼치기 <span class="sum-meta">'+esc(benchSummaryMeta())+'</span></summary><div class="bench-body" id="benchBody">'+benchBodyHTML()+'</div></details></section>'
-      // 6. 시작하기
-      +'<section id="start" aria-labelledby="h-start"><div class="sec-label">시작하기</div><h2 id="h-start">마켓 주소 하나로 설치합니다</h2><p class="sec-intro">Claude Desktop·Claude Code·Codex가 같은 주소에서 같은 플러그인을 받습니다. 별도 프로그램 설치는 없습니다.</p>'
-      +'<div class="copy"><code>'+MARKET+'</code><button type="button" id="copyMarket">마켓 주소 복사</button></div>'
-      +'<div class="install">'
-      +'<div class="icard"><b>Claude Desktop</b><ol><li>설정 → 플러그인 → 추가 → <b>저장소에서 추가</b></li><li><code>'+MARKET+'</code> 입력</li><li>fintool 설치</li></ol></div>'
-      +'<div class="icard"><b>Claude Code</b><ol><li><code>/plugin marketplace add '+MARKET+'</code></li><li><code>/plugin install fintool@fintool-plugin</code></li></ol></div>'
-      +'<div class="icard"><b>Codex</b><ol><li><code>codex plugin marketplace add '+MARKET+'</code></li></ol></div></div>'
-      +'<p class="oauth">첫 도구 호출 때 <code>fintool</code> 커넥터의 로그인 화면이 한 번 뜹니다. 허용하면 그 뒤로는 묻지 않습니다.</p>'
-      +'<div class="reqs">'
-      +'<div class="req"><b>요구 사항</b><ul><li>Claude Desktop, Claude Code, Codex 중 하나</li><li>계산은 원격 MCP에서 돌아가므로 바이너리 설치가 필요 없습니다</li><li>한국 공공 API(ECOS·DART·KRX) 조회는 원격에서 지원하지 않습니다</li></ul></div>'
-      +'<div class="req"><b>지원 범위</b><ul><li>스타트업 재무 — 런웨이·시나리오·캡테이블·IR 리포트</li><li>가치평가·재무제표 분석·신용위험</li><li>채권·전환사채, 포트폴리오 최적화·VaR, 펀드 성과귀속</li><li>스타트업 검증 — 시장·경쟁·포지셔닝·피치</li></ul></div>'
-      +'<div class="req"><b>데이터</b><ul><li>계산 입력과 결과는 저장하지 않습니다</li><li><code>fintool_save</code>로 명시적으로 저장한 모델 스펙만 내 계정 아래에 보관됩니다(서울 리전)</li><li>로컬에서만 돌리고 싶으면 같은 바이너리를 <code>fintool mcp</code>로 직접 띄울 수 있습니다</li></ul></div>'
-      +'</div></section>'
-      // 7. FAQ
-      +'<section id="faq" aria-labelledby="h-faq"><div class="sec-label">FAQ</div><h2 id="h-faq">의심스러운 것들</h2>'
-      +'<details><summary>내 숫자는 어디로 가나?</summary><p>원격 MCP는 Cloudflare Worker가 요청을 받아 컨테이너 안의 <code>fintool</code> 바이너리가 계산한다. 계산 입력과 결과는 저장하지 않는다. 남는 것은 로그인 상태와, 내가 <code>fintool_save</code>로 명시적으로 저장한 모델 스펙뿐이다(서울 리전, 내 계정 경로 아래). 로컬에서 돌리고 싶으면 같은 바이너리를 <code>fintool mcp</code>로 직접 띄울 수 있다.</p></details>'
-      +'<details><summary>엔진이 갱신되면 다시 설치해야 하나?</summary><p>아니다. 계산 도구는 서버 재배포로 갱신되고 플러그인 재설치가 없다. 스킬 문서가 바뀔 때만 <code>plugin.json</code> 버전이 올라가고, 마켓플레이스 갱신으로 받는다.</p></details>'
-      +'<details><summary>엑셀 함수와 같은 값이 나오나?</summary><p><code>amort</code>는 IPMT/PPMT/CUMIPMT/CUMPRINC/ISPMT, <code>bond</code>는 PRICE/YIELD/DURATION과 같은 규약을 쓴다. 예: 3억·연 4.5%·30년 원리금균등의 2년차 이자 <code>13,178,657</code>은 <code>CUMIPMT(0.045/12, 360, 300000000, 13, 24, 0)</code>과 같은 값이다.</p></details>'
-      +'<details><summary>Plain도 꽤 잘 답하던데?</summary><p>맞다. 과장하지 않았다. 신뢰 근거의 성적표에서 정답 채점은 Plain Opus가 6/6으로 Fintool(5/6)보다 높다. 차이는 "틀린다"가 아니라 "검증할 수 없다"와 "수정이 쌓일 때"에 있다. Plain 열은 근거가 본문뿐이고, 다섯 번째 수정쯤엔 앞 턴의 표를 다시 쓰다 어긋난다. Fintool 열은 호출 인자와 봉투가 남아 같은 입력으로 누구나 다시 돌릴 수 있고, 가정을 쓸 때는 첫 줄에 밝히고 민감도를 같이 낸다.</p></details></section>'
-      +'<footer class="home-foot"><a href="https://github.com/risingdream/fintool-plugin" target="_blank" rel="noopener">GitHub · fintool-plugin</a><a href="https://github.com/risingdream/finance-toolbox" target="_blank" rel="noopener">소스 · finance-toolbox</a><a href="https://github.com/risingdream/finance-toolbox/blob/main/docs/decisions/agent-plugin.md" target="_blank" rel="noopener">결정 기록 · agent-plugin.md</a><a href="assets/transcripts/README.md" target="_blank" rel="noopener">트랜스크립트 원문</a><span>MIT</span></footer>'
+      // 6. FAQ — 고객 질문 형태, 존댓말. 수치(6/6·5/6·13,178,657)는 정본과 엔진 결과에서 온 것이다.
+      +'<section id="faq" aria-labelledby="h-faq"><div class="sec-label">FAQ</div><h2 id="h-faq">자주 묻는 질문</h2>'
+      +'<details><summary>Claude가 이미 재무를 잘 아는데, 굳이 붙일 이유가 있나요?</summary><p>맞습니다. 위 성적표에서도 정답 채점은 플러그인 없는 Opus가 6/6으로 Fintool(5/6)보다 높습니다. 차이는 맞고 틀림이 아니라 <b>확인할 수 있는가</b>와 <b>수정이 쌓여도 버티는가</b>에 있습니다. 플러그인 없이 나온 숫자는 근거가 본문뿐이라 되짚을 수 없고, 다섯 번째 수정쯤 앞 표를 다시 쓰다 어긋납니다. fintool은 호출 인자와 계산 봉투가 남아 누구나 같은 입력으로 다시 돌릴 수 있고, 가정을 쓰면 답 첫 줄에 밝히고 민감도를 함께 냅니다.</p></details>'
+      +'<details><summary>어떤 질문을 할 수 있나요?</summary><p>런웨이·자금소요·캡테이블·IR 리포트 같은 스타트업 재무, WACC·DCF 가치평가, 재무비율·부도확률, 채권·전환사채, 포트폴리오 최적화·VaR, 펀드 성과귀속·PE 펀드 지표, 그리고 시장·경쟁·포지셔닝·피치 같은 스타트업 검증까지 스킬 10종이 다룹니다. 위 사용 사례의 질문을 그대로 던져 보셔도 됩니다.</p></details>'
+      +'<details><summary>엑셀로 검산하면 같은 값이 나오나요?</summary><p>네. 상환표(<code>amort</code>)는 IPMT/PPMT/CUMIPMT/CUMPRINC/ISPMT, 채권(<code>bond</code>)은 PRICE/YIELD/DURATION과 같은 규약을 씁니다. 예를 들어 3억 원을 연 4.5%, 30년 원리금균등으로 빌렸을 때 2년차 이자 <code>13,178,657</code>원은 엑셀의 <code>CUMIPMT(0.045/12, 360, 300000000, 13, 24, 0)</code>과 같은 값입니다.</p></details>'
+      +'<details><summary>내 숫자는 어디로 가나요?</summary><p>계산 요청은 Cloudflare Worker가 받아 컨테이너 안의 <code>fintool</code> 엔진이 처리합니다. 계산 입력과 결과는 저장하지 않습니다. 남는 것은 로그인 상태와 직접 <code>fintool_save</code>로 저장한 모델 스펙뿐이고, 그것도 내 계정 경로 아래(서울 리전)에만 보관됩니다. 외부로 보내고 싶지 않다면 같은 엔진을 로컬에서 <code>fintool mcp</code>로 띄워 쓸 수 있습니다.</p></details>'
+      +'<details><summary>한국 데이터도 쓸 수 있나요?</summary><p>한국은행 ECOS, DART, KRX 조회는 해당 API의 한국 IP 제약 때문에 현재 원격 MCP에서 지원하지 않습니다. 필요한 값과 출처를 직접 제공해 주세요.</p></details>'
+      +'<details><summary>엔진이 바뀌면 다시 설치해야 하나요?</summary><p>아니요. 계산 엔진은 서버 쪽에서 갱신되므로 플러그인을 다시 설치할 일이 없습니다. 스킬(절차서)이 바뀔 때만 플러그인 버전이 올라가고, 마켓플레이스 갱신으로 받습니다.</p></details></section>'
+      +'<footer class="home-foot"><a href="https://github.com/risingdream/finance-toolbox" target="_blank" rel="noopener">소스 · finance-toolbox</a><a href="https://github.com/risingdream/finance-toolbox/blob/main/docs/decisions/agent-plugin.md" target="_blank" rel="noopener">결정 기록 · agent-plugin.md</a><a href="assets/transcripts/README.md" target="_blank" rel="noopener">트랜스크립트 원문</a><span>MIT</span></footer>'
       +'</div>';
     bindBench($('view'));
-    const copy=$('copyMarket');
-    if(copy)copy.onclick=function(){
-      const done=function(){copy.textContent='복사됨';setTimeout(function(){copy.textContent='마켓 주소 복사';},1500);};
-      if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(MARKET).then(done,function(){copy.textContent=MARKET;});
-      else copy.textContent=MARKET;
-    };
   }
 
   function reportMeta(event){
@@ -1832,7 +1796,7 @@
     return params.toString();
   }
 
-  // 벤치마크 해시(#case=…&model=…&plugin=…)와 랜딩 앵커(#start 등)를 구분한다.
+  // 벤치마크 해시(#case=…&model=…&plugin=…)와 랜딩 앵커(#cases 등)를 구분한다.
   // 해시 상태는 케이스 안에서만 쓴다. 랜딩으로 돌아오면 벤치마크 해시를 지운다.
   function isBenchHash(hash){
     const params=new URLSearchParams(String(hash||'').replace(/^#/,''));
