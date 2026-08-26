@@ -54,10 +54,10 @@ description: fintool MCP로 스타트업 재무모델·시나리오·투자유�
 ```
 1. 인터뷰     → 수익 메커니즘을 드라이버 체인으로 (source 필수)
 2. 모드 판정  → 기본 cash. accrual이면 추가 인터뷰
-3. Base       → financial-model + unit-economics
-4. 시나리오   → 드라이버 축으로 bear/base/bull, 미조달, oat
-5. 캡테이블   → cap-table-simulate
-6. 산출물     → report(bundle.json + comments) / --workbook
+3. Base       → financial-model + unit-economics  → 턴 조각
+4. 시나리오   → 드라이버 축으로 bear/base/bull, 미조달, oat  → 턴 조각
+5. 캡테이블   → cap-table-simulate  → 턴 조각
+6. 풀 리포트  → compose 없이 recipe 기본 / --workbook
 7. 저장       → "모델을 저장할까요?" → fintool_save (스펙만)
 다음 세션     → fintool_list → "저장된 모델 N개" → load 후 이어서
 ```
@@ -252,7 +252,48 @@ warning zero_cogs: 매출원가가 0이라 매출총이익률이 100%로 나옵�
 
 ## 산출물
 
-봉투를 `bundle.json`으로 모은다.
+### 턴마다 조각
+
+계산 도구가 성공한 턴에는 **그 자리에서** 조각 HTML을 낸다. 마지막에 몰아서 풀 리포트만 만들지 않는다.
+모델이 도구를 안 부르고 "완성"이라고 선언하는 실패(#4997)를, 조각이 없으면 그 턴에서 드러낸다.
+
+경로: `fintool_run` + `tool=report`. **`fintool_report`에 compose를 넣지 않는다.**
+
+최소 구성은 항상 `header` + 그 턴 부품 + `assumption-ledger`. 부품만 뽑으면 거절된다.
+
+| 이 턴의 도구 | 조각 부품 |
+|---|---|
+| `business-plan` (`base`) | `pl-cash-table` |
+| `business-plan` (`unfunded`) | `runway-track` |
+| `business-plan` (`bear`/`bull`) | `scenario-table` |
+| `financial-model` | `fm-summary-table` |
+| `financial-model --workbook` | `workbook-table` |
+| `unit-economics` | `unit-econ-table` |
+| `cap-table-simulate` | `cap-bar` |
+| `business-plan --batch` | `batch-summary` |
+
+전체 매핑·동반 부품·제외 목록은 저장소 `docs/tools/report-fragments.md`.
+
+실행 가능한 조각 호출이다. 숫자만 바꿔 그대로 쓴다.
+
+```json
+{"tool":"report","flags":{"recipe":"finance-report","spec":{"meta":{"title":"예시","date":"2026-08-23","raise":500000000},"base":{"ok":true,"tool":"business-plan","data":{"rows":[{"year":1,"revenue":1200000000,"ebitda":-540000000,"cash_end":2881095890}]}}},"compose":{"recipe":"finance-report","components":["header","pl-cash-table","assumption-ledger"]}}}
+```
+
+`out`은 생략한다. `data.html`을 한 글자도 바꾸지 말고 HTML 아티팩트로 낸다.
+
+#### 조각을 내지 않는 때
+
+1. 같은 부품을 이미 냈고 값이 안 바뀐 재계산
+2. 도구가 실패한 턴 (입력 오류 재시도 포함)
+3. 계산이 없는 인터뷰·가정 수집 턴
+4. `fintool_catalog` / `fintool_save` / `fintool_load` / `fintool_list`
+5. 마지막 풀 리포트를 내는 턴 — 조각을 겹쳐 내지 않는다
+6. 서사·입력 표만 갱신한 턴. 서사 단독 조각은 빈 리포트 가드가 거절한다
+
+### 풀 리포트
+
+모든 계산이 끝나면 봉투를 `bundle.json`으로 모아 compose 없이 한 번 더 낸다.
 
 ```
 fintool_run tool=report flags={recipe, spec, out?}   # out 생략 = 봉투 data.html로 회수
