@@ -280,7 +280,7 @@ warning zero_cogs: 매출원가가 0이라 매출총이익률이 100%로 나옵�
 {"tool":"report","flags":{"recipe":"finance-report","spec":{"meta":{"title":"예시","date":"2026-08-23","raise":500000000},"base":{"ok":true,"tool":"business-plan","data":{"rows":[{"year":1,"revenue":1200000000,"ebitda":-540000000,"cash_end":2881095890}]}}},"compose":{"recipe":"finance-report","components":["header","pl-cash-table","assumption-ledger"]}}}
 ```
 
-`out`은 생략한다. `data.html`을 한 글자도 바꾸지 말고 HTML 아티팩트로 낸다.
+`out`은 생략한다. 배달은 Worker가 고른다. `data.html`이 오면 한 글자도 바꾸지 말고 HTML 아티팩트로 낸다. `data.url`이 오면 그 링크와 `data.summary.figures`를 인용한다.
 
 #### 조각을 내지 않는 때
 
@@ -295,8 +295,8 @@ warning zero_cogs: 매출원가가 0이라 매출총이익률이 100%로 나옵�
 
 모든 계산이 끝나면 봉투를 `bundle.json`으로 모아 compose 없이 한 번 더 낸다.
 
-```
-fintool_run tool=report flags={recipe, spec, out?}   # out 생략 = 봉투 data.html로 회수
+```json
+{"tool":"report","flags":{"recipe":"finance-report","spec":{"meta":{"title":"예시","date":"2026-08-23","raise":500000000},"base":{"ok":true,"tool":"business-plan","data":{"rows":[{"year":1,"revenue":1200000000,"ebitda":-540000000,"cash_end":2881095890}]}}}}}
 ```
 
 ### 봉투 키는 도구마다 정해져 있다
@@ -339,10 +339,18 @@ fintool_run tool=report flags={recipe, spec, out?}   # out 생략 = 봉투 data.
 
 ### HTML 회수 — 원격 MCP
 
-`out`을 주면 HTML은 파일로만 나간다. **원격 MCP에서는 그 파일을 회수할 수 없다.**
-원격이면 `out`을 생략한다. Worker는 HTML을 호스팅하고 봉투에는 **`data.url`(기본 비공개)** 과 요약만 싣는다. 그 URL을 인용한다. `data.html`을 아티팩트로 다시 만들지 않는다.
+`out`을 주면 HTML은 파일로만 나간다. **원격 MCP에서는 그 파일을 회수할 수 없다.** 원격이면 `out`을 생략한다.
 
-로컬 실행이라 파일이 필요하면 `out`을 준다. 두 경우 렌더 결과는 같다.
+**배달은 Worker가 고른다. 스킬이 봉투/링크를 고르지 않는다.**
+
+| 응답 | 언제 | 할 일 |
+|---|---|---|
+| `data.html` | 대화 중 조각 (`compose` 있음, `workbook-table` 없음, 16 KiB 이하) | 한 글자도 바꾸지 말고 HTML 아티팩트로 낸다 |
+| `data.url` + `data.summary` | 풀 리포트, `workbook-table`, 16 KiB 초과 | URL을 인용하고 `summary.figures`로 숫자를 말한다. `data.html`을 아티팩트로 다시 만들지 않는다 |
+
+`summary.figures` 키는 `raise`, `revenue`, `ebitda`, `cash_end`, `runway_months`, `peak_funding_need`, `ltv`, `ltv_cac`, `post_money`다. 없는 값은 생략된다. 링크만 주면 모델이 결과를 말할 수 없어서 요약이 같이 온다.
+
+로컬에서 파일이 필요하면 `out`을 준다. 렌더 결과는 같다.
 
 ### 공개 공유 — 사용자 명시 요청만
 
