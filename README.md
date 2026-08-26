@@ -24,9 +24,17 @@ Claude Desktop·Claude Code·Codex가 이 주소 하나로 같은 플러그인�
 |------------|------|
 | Claude Desktop | 설정 → 플러그인 → 추가 → **저장소에서 추가** → `risingdream/fintool-plugin` |
 | Claude Code | `/plugin marketplace add risingdream/fintool-plugin` 후 `/plugin install fintool@fintool-plugin` |
-| Codex | `codex plugin marketplace add risingdream/fintool-plugin` |
+| Codex | `codex plugin marketplace add risingdream/fintool-plugin` 후 `codex plugin add fintool@fintool-plugin`; `codex plugin list`로 확인 |
 
 첫 도구 호출 때 `fintool` 커넥터의 OAuth 동의 화면이 한 번 뜬다. 허용하면 그 뒤로는 묻지 않는다.
+
+Codex에서는 다음 세 명령으로 marketplace 등록, 설치, 로드 결과를 순서대로 확인한다.
+
+```bash
+codex plugin marketplace add risingdream/fintool-plugin
+codex plugin add fintool@fintool-plugin
+codex plugin list
+```
 
 ## 들어 있는 것
 
@@ -47,7 +55,7 @@ plugins/fintool/
 | 층 | 어떻게 |
 |----|--------|
 | 계산 도구 | 서버 재배포. 플러그인 재설치 없음 |
-| 스킬 | `plugin.json`의 `version`이 올라가면 마켓플레이스 갱신(`/plugin marketplace update`, `codex plugin marketplace upgrade`, Desktop 플러그인 업데이트)으로 받는다 |
+| 스킬 | `plugin.json`의 `version`이 올라가면 마켓플레이스 갱신(Claude Code: `/plugin marketplace update`, Codex: `codex plugin marketplace upgrade fintool-plugin` 후 `codex plugin add fintool@fintool-plugin`, Desktop 플러그인 업데이트)으로 받는다 |
 
 `plugins/fintool/`은 비공개 엔진 저장소에서 GitHub Actions가 동기화한다.
 여기에 직접 낸 PR은 다음 동기화 때 덮어쓰이므로, 스킬 수정 제안·버그 신고는
