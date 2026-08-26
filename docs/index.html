@@ -763,7 +763,7 @@
       return '<tr><td><b>'+model[1]+'</b></td>'+cells+'</tr>';
     }).join('');
     return '<div class="tblwrap"><table class="matrix"><thead><tr><th>모델</th><th>Plain</th><th class="on">Fintool</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
-      +'<ul class="notes"><li>굵은 숫자는 <b>답을 낸 턴 / 전체 턴</b>이며 양쪽 같은 기준입니다. 셀을 누르면 그 모델의 대화로 들어갑니다.</li><li><b>검증 가능</b>은 도구 봉투가 남아 수치를 되짚을 수 있는 턴입니다. Plain은 도구가 없으므로 구조상 0이지, 답을 못 했다는 뜻이 아닙니다. <b>도구만</b>은 도구는 돌았는데 응답에 산출물이 보이지 않은 턴입니다.</li><li><b>채점</b>은 정답 기준이 있는 케이스에서 핵심 수치가 맞은 수입니다. Plain이 Fintool보다 높을 수 있습니다 — 맞았지만 되짚을 근거가 없는 것과, 근거가 남았지만 한 케이스를 틀린 것의 차이입니다.</li><li>응답 텍스트는 한 글자도 고치지 않았습니다. 표시되는 수치·해시는 전부 실행 결과에서 온 것입니다.</li><li>수집 '+esc(DATA.meta.collected)+' · 수집 당시 플러그인 v'+esc(DATA.meta.plugin)+'. 현재 배포 버전과 다를 수 있습니다.</li></ul>';
+      +'<ul class="notes"><li>굵은 숫자는 <b>답을 낸 턴 / 전체 턴</b>이며 양쪽 같은 기준입니다. 셀을 누르면 그 모델의 대화로 들어갑니다.</li><li><b>검증 가능</b>은 도구 봉투가 남아 수치를 되짚을 수 있는 턴입니다. Plain은 도구가 없으므로 구조상 0이지, 답을 못 했다는 뜻이 아닙니다. <b>도구만</b>은 도구는 돌았는데 응답에 산출물이 보이지 않은 턴입니다.</li><li><b>채점</b>은 정답 기준이 있는 케이스에서 핵심 수치가 맞은 수입니다. 맞았는지와 되짚을 근거가 남았는지는 다른 문제라, 채점이 같아도 검증 가능 수는 갈립니다.</li><li>응답 텍스트는 한 글자도 고치지 않았습니다. 표시되는 수치·해시는 전부 실행 결과에서 온 것입니다.</li><li>수집 '+esc(DATA.meta.collected)+' · 수집 당시 플러그인 v'+esc(DATA.meta.plugin)+'. 현재 배포 버전과 다를 수 있습니다.</li></ul>';
   }
 
   // 리비전 레저. 케이스 D Opus의 턴마다 기말 현금을 Plain(답 본문에서 뽑음)과 Fintool(계산 봉투)로 놓는다.
@@ -961,9 +961,9 @@
       // 5. 신뢰 근거 — 벤치마크는 접어 둔다
       +'<section id="evidence" aria-labelledby="h-evidence"><div class="sec-label">신뢰 근거</div><h2 id="h-evidence">같은 문제를 세 모델에서 전부 돌린 기록</h2><p class="sec-intro">위 사례는 골라 보여준 것이 아닙니다. 모든 문제를 Opus·Sonnet·Haiku 세 모델에서 플러그인 없이(Plain)·플러그인을 붙여(Fintool) 전부 돌렸고, 응답 원문을 한 글자도 고치지 않고 공개합니다. 전체 성적표는 벤치마크에 관심 있는 분을 위해 접어 두었습니다.</p>'
       +'<details class="bench" id="benchDetails"><summary>전체 성적표 펼치기 <span class="sum-meta">'+esc(benchSummaryMeta())+'</span></summary><div class="bench-body" id="benchBody">'+benchBodyHTML()+'</div></details></section>'
-      // 6. FAQ — 고객 질문 형태, 존댓말. 수치(6/6·5/6·13,178,657)는 정본과 엔진 결과에서 온 것이다.
+      // 6. FAQ — 고객 질문 형태, 존댓말. 수치(13,178,657)는 엔진 결과, 채점 언급은 정본 성적표(Opus·Sonnet 양쪽 6/6)에서 온 것이다.
       +'<section id="faq" aria-labelledby="h-faq"><div class="sec-label">FAQ</div><h2 id="h-faq">자주 묻는 질문</h2>'
-      +'<details><summary>Claude가 이미 재무를 잘 아는데, 굳이 붙일 이유가 있나요?</summary><p>맞습니다. 위 성적표에서도 정답 채점은 플러그인 없는 Opus가 6/6으로 Fintool(5/6)보다 높습니다. 차이는 맞고 틀림이 아니라 <b>확인할 수 있는가</b>와 <b>수정이 쌓여도 버티는가</b>에 있습니다. 플러그인 없이 나온 숫자는 근거가 본문뿐이라 되짚을 수 없고, 다섯 번째 수정쯤 앞 표를 다시 쓰다 어긋납니다. fintool은 호출 인자와 계산 봉투가 남아 누구나 같은 입력으로 다시 돌릴 수 있고, 가정을 쓰면 답 첫 줄에 밝히고 민감도를 함께 냅니다.</p></details>'
+      +'<details><summary>Claude가 이미 재무를 잘 아는데, 굳이 붙일 이유가 있나요?</summary><p>맞습니다. 위 성적표에서도 정답 기준이 있는 문제는 Opus·Sonnet이 플러그인 없이도 전부 맞혔습니다. 차이는 맞고 틀림이 아니라 <b>확인할 수 있는가</b>와 <b>수정이 쌓여도 버티는가</b>에 있습니다. 플러그인 없이 나온 숫자는 근거가 본문뿐이라 되짚을 수 없고, 다섯 번째 수정쯤 앞 표를 다시 쓰다 어긋납니다. fintool은 호출 인자와 계산 봉투가 남아 누구나 같은 입력으로 다시 돌릴 수 있고, 가정을 쓰면 답 첫 줄에 밝히고 민감도를 함께 냅니다. 작은 모델(Haiku)에서는 채점 자체도 플러그인을 붙인 쪽이 더 많이 맞혔습니다.</p></details>'
       +'<details><summary>어떤 질문을 할 수 있나요?</summary><p>런웨이·자금소요·캡테이블·IR 리포트 같은 스타트업 재무, WACC·DCF 가치평가, 재무비율·부도확률, 채권·전환사채, 포트폴리오 최적화·VaR, 펀드 성과귀속·PE 펀드 지표, 그리고 시장·경쟁·포지셔닝·피치 같은 스타트업 검증까지 스킬 10종이 다룹니다. 위 사용 사례의 질문을 그대로 던져 보셔도 됩니다.</p></details>'
       +'<details><summary>엑셀로 검산하면 같은 값이 나오나요?</summary><p>네. 상환표(<code>amort</code>)는 IPMT/PPMT/CUMIPMT/CUMPRINC/ISPMT, 채권(<code>bond</code>)은 PRICE/YIELD/DURATION과 같은 규약을 씁니다. 예를 들어 3억 원을 연 4.5%, 30년 원리금균등으로 빌렸을 때 2년차 이자 <code>13,178,657</code>원은 엑셀의 <code>CUMIPMT(0.045/12, 360, 300000000, 13, 24, 0)</code>과 같은 값입니다.</p></details>'
       +'<details><summary>내 숫자는 어디로 가나요?</summary><p>계산 요청은 Cloudflare Worker가 받아 컨테이너 안의 <code>fintool</code> 엔진이 처리합니다. 계산 입력과 결과는 저장하지 않습니다. 남는 것은 로그인 상태와 직접 <code>fintool_save</code>로 저장한 모델 스펙뿐이고, 그것도 내 계정 경로 아래(서울 리전)에만 보관됩니다. 외부로 보내고 싶지 않다면 같은 엔진을 로컬에서 <code>fintool mcp</code>로 띄워 쓸 수 있습니다.</p></details>'
