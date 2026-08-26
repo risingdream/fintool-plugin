@@ -242,6 +242,66 @@
   .notes{margin:24px 0 0 18px;color:var(--ink);font-size:14px;}
   .notes li{margin:8px 0;}
   .tblwrap{overflow-x:auto;}
+  /* 첫 화면 랜딩 섹션 */
+  .home-view{max-width:1040px;}
+  .home-view .hero{padding:26px 0 34px;border-bottom:1px solid var(--line);}
+  .home-view .doc-tag{display:inline-block;font-size:11px;letter-spacing:.12em;color:var(--green);border:1px solid var(--green);border-radius:4px;padding:2px 8px;font-family:'IBM Plex Mono',Menlo,monospace;}
+  .home-view .hero h1{font-size:34px;margin-top:16px;max-width:760px;}
+  .home-view .hero .lead{font-size:16px;}
+  .home-view .cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:22px;}
+  .home-view .copy{display:flex;border:1px solid var(--line-strong);border-radius:6px;overflow:hidden;background:var(--card);}
+  .home-view .copy code{padding:8px 12px;font-size:13px;background:none;}
+  .home-view .copy button{border:0;border-left:1px solid var(--line-strong);background:var(--ink);color:var(--paper);padding:8px 12px;font-size:12px;cursor:pointer;}
+  .home-view .ghost{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:8px 12px;font-size:13px;background:var(--card);color:var(--ink);text-decoration:none;cursor:pointer;}
+  .home-view .ghost:hover{border-color:var(--green);color:var(--green);}
+  .home-view .badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px;}
+  .home-view .badge{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 9px;}
+  .home-view section{padding:38px 0 6px;border-bottom:1px solid var(--line);}
+  .home-view section:last-of-type{border-bottom:0;}
+  .home-view .sec-label{font-size:11px;letter-spacing:.12em;color:var(--muted);font-family:'IBM Plex Mono',Menlo,monospace;}
+  .home-view h2{font-size:22px;font-weight:700;letter-spacing:-.01em;margin-top:6px;line-height:1.35;}
+  .home-view h2 code{font-size:20px;}
+  .home-view .sec-intro{color:var(--muted);margin-top:8px;max-width:720px;}
+  .home-view .notes{margin-bottom:26px;}
+  .home-view .teasers{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 28px;}
+  .home-view .teaser{display:flex;flex-direction:column;gap:10px;}
+  .home-view .teaser-q{font-size:12px;color:var(--muted);}
+  .home-view .teaser-q span{color:var(--ink);}
+  .home-view .teaser .turndiff{position:static;}
+  .home-view .teaser .ghost{align-self:flex-start;}
+  .home-view .trust,.home-view .install{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0 28px;}
+  .home-view .tcard,.home-view .icard,.home-view .skill{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:14px 15px;font-size:13.5px;}
+  .home-view .tcard b,.home-view .icard b{display:block;margin-bottom:6px;}
+  .home-view .tcard p,.home-view .skill p{color:var(--muted);line-height:1.6;}
+  .home-view .tcard pre{margin-top:10px;font-size:11px;line-height:1.5;background:var(--code);border-radius:6px;padding:9px 10px;overflow-x:auto;white-space:pre;}
+  .home-view .skills{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 28px;}
+  .home-view .skill .kind{display:inline-block;font-size:10px;letter-spacing:.08em;border-radius:3px;padding:1px 6px;margin-bottom:6px;}
+  .home-view .skill .kind.fin{background:var(--green-soft);color:var(--green);}
+  .home-view .skill .kind.chk{background:var(--warn-soft);color:var(--warn);}
+  .home-view .skill b{display:block;font-size:13px;margin-bottom:4px;}
+  .home-view .sample{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;margin:18px 0 28px;align-items:start;}
+  .home-view .frame{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;height:420px;}
+  .home-view .frame iframe{width:100%;height:100%;border:0;}
+  .home-view .sample ul{margin-left:18px;font-size:14px;}
+  .home-view .sample li{margin:6px 0;}
+  .home-view .more{margin-top:14px;}
+  .home-view .icard ol{margin:0 0 0 18px;font-size:13.5px;}
+  .home-view .icard li{margin:4px 0;}
+  .home-view .icard code{font-size:12px;}
+  .home-view .oauth{color:var(--muted);font-size:13px;margin-bottom:26px;}
+  .home-view details{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:10px 14px;margin-top:10px;}
+  .home-view details:last-of-type{margin-bottom:26px;}
+  .home-view summary{cursor:pointer;font-weight:600;font-size:14px;}
+  .home-view details p{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.65;}
+  .home-view .home-foot{display:flex;flex-wrap:wrap;gap:16px;padding:26px 0 10px;font-size:12px;color:var(--muted);}
+  .home-view .home-foot a{color:var(--muted);text-decoration:none;}
+  .home-view .home-foot a:hover{color:var(--green);}
+  @media (max-width:900px){
+    .home-view .teasers,.home-view .trust,.home-view .install,.home-view .sample{grid-template-columns:1fr;}
+    .home-view .skills{grid-template-columns:1fr 1fr;}
+    .home-view .hero h1{font-size:27px;}
+    .home-view .frame{height:320px;}
+  }
 
   .menu{display:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:5px 10px;font-size:12px;}
   .backdrop{display:none;}
@@ -528,10 +588,26 @@
     $('barSub').textContent=selected?selected.summary:'';
   }
 
-  // 전체 성적표. 양쪽에 같은 의미의 숫자를 놓는다 — 답을 낸 턴(판정 delivered·unverified).
-  // "검증 가능"(delivered)은 OFF가 구조상 0이므로 굵은 숫자로 쓰면 OFF가 아무 답도 못 한 것처럼 읽힌다.
-  // 정답 기준 채점(ok)은 OFF가 더 높을 수 있다 — 그게 이 표가 숨기면 안 되는 사실이다.
-  function renderHome(){
+  // ── 첫 화면(랜딩) ──────────────────────────────────────────────────────────
+  // 옛 랜딩(aebcb77, #4895에서 쇼케이스가 대체)의 섹션을 첫 화면에 되살린다. 순서:
+  // 히어로 → 증거(성적표) → 무엇이 달라지나(케이스 D 턴 비교 카드) → 신뢰 모델 → 스킬 → 리포트 → 설치 → FAQ.
+  // 성적표·비교 카드는 정본에서 그리고, 나머지는 고정 문안이다.
+
+  const MARKET='risingdream/fintool-plugin';
+  const SKILLS=[
+    ['fin','startup-finance','런웨이·자금소요·bear/base/bull·캡테이블·IR 리포트'],
+    ['fin','valuation','WACC → DCF → 민감도. 입력 인터뷰 먼저'],
+    ['fin','portfolio-risk','최적 비중·샤프·VaR/CVaR·고갈 확률·거래비용'],
+    ['fin','fixed-income','채권 가격·듀레이션·커브·전환사채(TF 모형)'],
+    ['fin','financial-statements','재무비율·듀폰·EPS·FCFF·Merton 부도확률'],
+    ['fin','fund-performance','Brinson 귀속·샤프·TWRR/MWRR·PE 펀드지표'],
+    ['chk','startup-design','시장·경쟁·BM·제품 정의·검증 실험까지 설계'],
+    ['chk','startup-competitors','경쟁사 제품·가격·GTM 분석, 배틀카드'],
+    ['chk','startup-positioning','April Dunford 프레임 + JTBD 포지셔닝 문서'],
+    ['chk','startup-pitch','10분/5분/2분/1분 피치 스크립트와 Q&A']
+  ];
+
+  function scoreboardHTML(){
     const rows=MODELS.map(function(model){
       const cells=['off','on'].map(function(condition){
         let answered=0;
@@ -572,8 +648,64 @@
       }).join('');
       return '<tr><td><b>'+model[1]+'</b></td>'+cells+'</tr>';
     }).join('');
-    $('view').innerHTML='<div class="home-view"><h1>같은 문제를 모델별로, 플러그인 없이/있이 전부 돌린 기록</h1><p class="lead">'+esc(DATA.meta.note)+' 왼쪽에서 대화를 고르면 플러그인 없이 돌린 실행과 fintool을 붙인 실행이 좌우로 나란히 재생된다. 위쪽 모델 세그먼트를 바꾸면 같은 질문의 다른 모델 실행으로 즉시 넘어간다.</p><div class="tblwrap"><table class="matrix"><thead><tr><th>모델</th><th>플러그인 없음</th><th class="on">fintool</th></tr></thead><tbody>'+rows+'</tbody></table></div><ul class="notes"><li>굵은 숫자는 <b>답을 낸 턴 / 전체 턴</b>. 양쪽 같은 기준이다.</li><li><b>검증 가능</b>은 도구 봉투가 남아 수치를 되짚을 수 있는 턴. OFF는 도구가 없으므로 구조상 0이지 답을 못 했다는 뜻이 아니다. <b>도구만</b>은 도구는 돌았는데 응답에 산출물이 안 보인 턴.</li><li><b>채점</b>은 정답 기준이 있는 케이스에서 핵심 수치가 맞은 수. OFF가 ON보다 높을 수 있다 — 맞았지만 되짚을 근거가 없는 것과, 근거가 남았지만 한 케이스를 틀린 것의 차이다.</li><li>응답 텍스트는 한 글자도 고치지 않았다. 표시되는 수치·해시는 전부 실행 결과에서 온 것이다.</li><li>수집 '+esc(DATA.meta.collected)+' · 플러그인 v'+esc(DATA.meta.plugin)+'</li></ul></div>';
+    return '<div class="tblwrap"><table class="matrix"><thead><tr><th>모델</th><th>플러그인 없음</th><th class="on">fintool</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+      +'<ul class="notes"><li>굵은 숫자는 <b>답을 낸 턴 / 전체 턴</b>. 양쪽 같은 기준이다. 셀을 누르면 그 모델의 대화로 들어간다.</li><li><b>검증 가능</b>은 도구 봉투가 남아 수치를 되짚을 수 있는 턴. OFF는 도구가 없으므로 구조상 0이지 답을 못 했다는 뜻이 아니다. <b>도구만</b>은 도구는 돌았는데 응답에 산출물이 안 보인 턴.</li><li><b>채점</b>은 정답 기준이 있는 케이스에서 핵심 수치가 맞은 수. OFF가 ON보다 높을 수 있다 — 맞았지만 되짚을 근거가 없는 것과, 근거가 남았지만 한 케이스를 틀린 것의 차이다.</li><li>응답 텍스트는 한 글자도 고치지 않았다. 표시되는 수치·해시는 전부 실행 결과에서 온 것이다.</li><li>수집 '+esc(DATA.meta.collected)+' · 플러그인 v'+esc(DATA.meta.plugin)+'</li></ul>';
+  }
+
+  // 케이스 D(5턴 누적 수정) Opus의 턴 4·5 비교 카드. 넷째 수정에서 결론이 뒤집히고 다섯째에서 조달액이 나온다.
+  function diffTeaserHTML(){
+    const off=DATA.runs['d|opus|off'];
+    const on=DATA.runs['d|opus|on'];
+    if(!off||!on)return '';
+    const cards=[4,5].map(function(n){
+      const offTurn=off.turns[n-1];
+      const onTurn=on.turns[n-1];
+      if(!offTurn||!onTurn)return '';
+      return '<div class="teaser"><div class="teaser-q">턴 '+n+' · <span>'+esc(onTurn.user)+'</span></div>'+turnDiffHTML(offTurn,onTurn)+'<a class="ghost" href="#case=d&model=opus&plugin=on&turn='+n+'">이 턴 보기 →</a></div>';
+    }).join('');
+    return cards?'<div class="teasers">'+cards+'</div>':'';
+  }
+
+  function renderHome(){
+    const version=String(DATA.meta.plugin||'').split(' ')[0];
+    $('view').innerHTML='<div class="home-view">'
+      +'<header class="hero"><span class="doc-tag">CLAUDE PLUGIN · FINTOOL'+(version?' v'+esc(version):'')+'</span>'
+      +'<h1>다섯 번째 수정에서도 무너지지 않는 재무 모델</h1>'
+      +'<p class="lead">"성장률 낮춰봐", "채용 넣어봐", "원가율도" — 실제 재무 작업은 수정이 이어지는 일이다. 표를 매번 다시 쓰는 대신 spec 한 줄만 바꿔 검증된 Go 엔진을 다시 돌린다. 같은 입력이면 언제나 같은 해시.</p>'
+      +'<div class="cta"><div class="copy"><code>'+MARKET+'</code><button type="button" id="copyMarket">마켓 주소 복사</button></div><button type="button" class="ghost" data-scroll="install">설치 ↓</button><button type="button" class="ghost" data-scroll="evidence">증거 보기 ↓</button></div>'
+      +'<div class="badges"><span class="badge">Claude Desktop</span><span class="badge">Claude Code</span><span class="badge">Codex</span><span class="badge">MIT</span></div></header>'
+      +'<section id="evidence"><div class="sec-label">01 · 증거</div><h2>같은 문제를 모델별로, 플러그인 없이/있이 전부 돌린 기록</h2><p class="sec-intro">'+esc(DATA.meta.note)+' 13개 케이스 × 3개 모델 × 플러그인 없이/있이 = 78런, 75턴. 왼쪽에서 대화를 고르면 두 실행이 좌우로 나란히 재생되고 세 번째 칸에 그 턴에서 달라진 수치가 붙는다.</p>'+scoreboardHTML()+'</section>'
+      +'<section id="diff"><div class="sec-label">02 · 무엇이 달라지나</div><h2>같은 대화, 넷째·다섯째 수정에서 갈린다</h2><p class="sec-intro">케이스 "5턴 누적 수정"의 Opus 실행. 넷째 수정(원가율)에서 현금이 마르고, 다섯째에서 필요 조달액이 나온다. 카드는 정본 수치만으로 그린 것이고, 아래 화면에서는 모든 턴에 이 카드가 붙는다.</p>'+diffTeaserHTML()+'</section>'
+      +'<section id="why"><div class="sec-label">03 · 왜 다른가</div><h2>신뢰 모델</h2><div class="trust">'
+      +'<div class="tcard"><b>봉투만 인용</b><p>모든 계산은 <code>ok / data / error</code> 봉투로 돌아온다. 스킬 원칙 1번: "LLM은 숫자를 만들지 않는다. 수치는 JSON 봉투만 인용한다."</p><pre>{"ok": true, "tool": "convertible",\n "data": {"model": "tsiveriotis-fernandes",\n   "value": 10764990730.9, "bond_floor": 8317567484.3,\n   "component_method_value": 10429314832.2, …}}</pre></div>'
+      +'<div class="tcard"><b>계산 해시</b><p>월별 재무모델(<code>financial-model</code>)과 캡테이블은 정규화 입력·월별 결과·엔진 버전을 SHA-256으로 묶는다. 같은 입력·같은 엔진이면 같은 해시. 해시는 자르지 않는다.</p><pre>"calculation_hash":\n"sha256:cc507f52611dbc0ed7f7700204a8c3ecb7da02ca5d2efa0ed5f268844c064a1e"</pre></div>'
+      +'<div class="tcard"><b>41개 계산 커맨드, 하나의 엔진</b><p>상환표·TVM·WACC·DCF·전환사채·몬테카를로·캡테이블·성과귀속까지 41개 커맨드가 단일 Go 바이너리에서 결정론적으로 실행된다. MCP는 <code>fintool_catalog</code>·<code>fintool_run</code>과 모델 저장 도구만 노출한다.</p></div></div></section>'
+      +'<section id="skills"><div class="sec-label">04 · 무엇을 하나</div><h2>스킬 10종</h2><p class="sec-intro">재무 6 + 검증 4. 스킬은 "언제 어떤 커맨드를 어떤 순서로" 쓰는지 정한 절차서고, 숫자는 전부 엔진에서 온다.</p><div class="skills">'
+      +SKILLS.map(function(skill){return '<div class="skill"><span class="kind '+skill[0]+'">'+(skill[0]==='fin'?'재무':'검증')+'</span><b class="mono">'+esc(skill[1])+'</b><p>'+esc(skill[2])+'</p></div>';}).join('')
+      +'</div></section>'
+      +'<section id="sample"><div class="sec-label">05 · 리포트 샘플</div><h2><code>fintool report</code>가 만드는 것</h2><p class="sec-intro">합성 케이스 c01(SaaS 시드, 가상 회사 "브릿지온")의 IR 재무 리포트. 페이지에서 보는 디자인 토큰이 그대로 리포트에 쓰인다.</p><div class="sample"><div class="frame"><iframe src="sample-report.html" title="샘플 리포트" loading="lazy"></iframe></div><div><ul>'
+      +'<li>KPI·런웨이 트랙·손익/현금 표·자금소요(Ask)·캡테이블이 부품(part) 단위로 배치된다.</li><li>부품마다 Claude의 코멘트가 붙지만, 코멘트는 새 숫자를 만들지 않는다.</li><li>표 아래 출처 블록에 커맨드·해시가 남는다. 숫자를 의심하면 같은 커맨드를 다시 돌리면 된다.</li><li>HTML 한 장. Claude가 HTML을 직접 쓰지 않고 <code>report</code> 커맨드가 번들을 렌더한다.</li></ul>'
+      +'<p class="more"><a class="ghost" href="sample-report.html" target="_blank" rel="noopener">전체 보기 →</a></p></div></div></section>'
+      +'<section id="install"><div class="sec-label">06 · 설치</div><h2>마켓 주소 하나로</h2><div class="install">'
+      +'<div class="icard"><b>Claude Desktop</b><ol><li>설정 → 플러그인 → 추가 → <b>저장소에서 추가</b></li><li><code>'+MARKET+'</code> 입력</li><li>fintool 설치</li></ol></div>'
+      +'<div class="icard"><b>Claude Code</b><ol><li><code>/plugin marketplace add '+MARKET+'</code></li><li><code>/plugin install fintool@fintool-plugin</code></li></ol></div>'
+      +'<div class="icard"><b>Codex</b><ol><li><code>codex plugin marketplace add '+MARKET+'</code></li></ol></div></div>'
+      +'<p class="oauth">첫 도구 호출 때 <code>fintool</code> 커넥터의 로그인 화면이 한 번 뜬다. 허용하면 그 뒤로는 묻지 않는다.</p></section>'
+      +'<section id="faq"><div class="sec-label">07 · FAQ</div><h2>의심스러운 것들</h2>'
+      +'<details><summary>내 숫자는 어디로 가나?</summary><p>원격 MCP는 Cloudflare Worker가 요청을 받아 컨테이너 안의 <code>fintool</code> 바이너리가 계산한다. 계산 입력과 결과는 저장하지 않는다. 남는 것은 로그인 상태와, 내가 <code>fintool_save</code>로 명시적으로 저장한 모델 스펙뿐이다(서울 리전, 내 계정 경로 아래). 로컬에서 돌리고 싶으면 같은 바이너리를 <code>fintool mcp</code>로 직접 띄울 수 있다.</p></details>'
+      +'<details><summary>엔진이 갱신되면 다시 설치해야 하나?</summary><p>아니다. 계산 도구는 서버 재배포로 갱신되고 플러그인 재설치가 없다. 스킬 문서가 바뀔 때만 <code>plugin.json</code> 버전이 올라가고, 마켓플레이스 갱신으로 받는다.</p></details>'
+      +'<details><summary>엑셀 함수와 같은 값이 나오나?</summary><p><code>amort</code>는 IPMT/PPMT/CUMIPMT/CUMPRINC/ISPMT, <code>bond</code>는 PRICE/YIELD/DURATION과 같은 규약을 쓴다. 예: 3억·연 4.5%·30년 원리금균등의 2년차 이자 <code>13,178,657</code>은 <code>CUMIPMT(0.045/12, 360, 300000000, 13, 24, 0)</code>과 같은 값이다.</p></details>'
+      +'<details><summary>플러그인 없이도 꽤 잘 답하던데?</summary><p>맞다. 과장하지 않았다. 위 성적표에서 정답 채점은 OFF Opus가 6/6으로 ON(5/6)보다 높다. 차이는 "틀린다"가 아니라 "검증할 수 없다"와 "수정이 쌓일 때"에 있다. 없음 열은 근거가 본문뿐이고, 다섯 번째 수정쯤엔 앞 턴의 표를 다시 쓰다 어긋난다. fintool 열은 호출 인자와 봉투가 남아 같은 입력으로 누구나 다시 돌릴 수 있고, 가정을 쓸 때는 첫 줄에 밝히고 민감도를 같이 낸다.</p></details></section>'
+      +'<footer class="home-foot"><a href="https://github.com/risingdream/fintool-plugin" target="_blank" rel="noopener">GitHub · fintool-plugin</a><a href="https://github.com/risingdream/finance-toolbox" target="_blank" rel="noopener">소스 · finance-toolbox</a><a href="https://github.com/risingdream/finance-toolbox/blob/main/docs/decisions/agent-plugin.md" target="_blank" rel="noopener">결정 기록 · agent-plugin.md</a><a href="assets/transcripts/README.md" target="_blank" rel="noopener">트랜스크립트 원문</a><span>MIT</span></footer>'
+      +'</div>';
     document.querySelectorAll('.cellbtn').forEach(function(button){button.onclick=function(){state.model=button.dataset.model;state.pane=button.dataset.plugin;const first=DATA.cases.find(function(item){return runFor(item.id,'on')||runFor(item.id,'off');});state.case=first?first.id:null;render();};});
+    document.querySelectorAll('[data-scroll]').forEach(function(button){button.onclick=function(){const target=document.getElementById(button.dataset.scroll);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});};});
+    const copy=$('copyMarket');
+    if(copy)copy.onclick=function(){
+      const done=function(){copy.textContent='복사됨';setTimeout(function(){copy.textContent='마켓 주소 복사';},1500);};
+      if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(MARKET).then(done,function(){copy.textContent=MARKET;});
+      else copy.textContent=MARKET;
+    };
   }
 
   function reportMeta(event){
