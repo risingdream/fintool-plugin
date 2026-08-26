@@ -641,7 +641,7 @@
       return '<tr><td><b>'+model[1]+'</b></td>'+cells+'</tr>';
     }).join('');
     return '<div class="tblwrap"><table class="matrix"><thead><tr><th>모델</th><th>플러그인 없음</th><th class="on">fintool</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
-      +'<ul class="notes"><li>굵은 숫자는 <b>답을 낸 턴 / 전체 턴</b>. 양쪽 같은 기준이다. 셀을 누르면 그 모델의 대화로 들어간다.</li><li><b>검증 가능</b>은 도구 봉투가 남아 수치를 되짚을 수 있는 턴. OFF는 도구가 없으므로 구조상 0이지 답을 못 했다는 뜻이 아니다. <b>도구만</b>은 도구는 돌았는데 응답에 산출물이 안 보인 턴.</li><li><b>채점</b>은 정답 기준이 있는 케이스에서 핵심 수치가 맞은 수. OFF가 ON보다 높을 수 있다 — 맞았지만 되짚을 근거가 없는 것과, 근거가 남았지만 한 케이스를 틀린 것의 차이다.</li><li>응답 텍스트는 한 글자도 고치지 않았다. 표시되는 수치·해시는 전부 실행 결과에서 온 것이다.</li><li>수집 '+esc(DATA.meta.collected)+' · 플러그인 v'+esc(DATA.meta.plugin)+'</li></ul>';
+      +'<ul class="notes"><li>굵은 숫자는 <b>답을 낸 턴 / 전체 턴</b>. 양쪽 같은 기준이다. 셀을 누르면 그 모델의 대화로 들어간다.</li><li><b>검증 가능</b>은 도구 봉투가 남아 수치를 되짚을 수 있는 턴. OFF는 도구가 없으므로 구조상 0이지 답을 못 했다는 뜻이 아니다. <b>도구만</b>은 도구는 돌았는데 응답에 산출물이 안 보인 턴.</li><li><b>채점</b>은 정답 기준이 있는 케이스에서 핵심 수치가 맞은 수. OFF가 ON보다 높을 수 있다 — 맞았지만 되짚을 근거가 없는 것과, 근거가 남았지만 한 케이스를 틀린 것의 차이다.</li><li>응답 텍스트는 한 글자도 고치지 않았다. 표시되는 수치·해시는 전부 실행 결과에서 온 것이다.</li><li>수집 '+esc(DATA.meta.collected)+' · 수집 당시 플러그인 v'+esc(DATA.meta.plugin)+'. 현재 배포 버전과 다를 수 있다.</li></ul>';
   }
 
   // 케이스 D(5턴 누적 수정) Opus의 턴 4·5 비교 카드. 넷째 수정에서 결론이 뒤집히고 다섯째에서 조달액이 나온다.
@@ -659,9 +659,8 @@
   }
 
   function renderHome(){
-    const version=String(DATA.meta.plugin||'').split(' ')[0];
     $('view').innerHTML='<div class="home-view">'
-      +'<header class="hero"><span class="doc-tag">CLAUDE PLUGIN · FINTOOL'+(version?' v'+esc(version):'')+'</span>'
+      +'<header class="hero"><span class="doc-tag">CLAUDE PLUGIN · FINTOOL</span>'
       +'<h1>다섯 번째 수정에서도 무너지지 않는 재무 모델</h1>'
       +'<p class="lead">"성장률 낮춰봐", "채용 넣어봐", "원가율도" — 실제 재무 작업은 수정이 이어지는 일이다. 표를 매번 다시 쓰는 대신 spec 한 줄만 바꿔 검증된 Go 엔진을 다시 돌린다. 같은 입력이면 언제나 같은 해시.</p>'
       +'<div class="cta"><button type="button" class="ghost" data-scroll="evidence">증거 보기 ↓</button><button type="button" class="ghost" data-scroll="diff">무엇이 달라지나 ↓</button></div>'
