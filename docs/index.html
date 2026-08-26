@@ -248,7 +248,10 @@
   /* 첫 화면 랜딩 섹션 (#5068 #5069) */
   :root{--ledger:#0F1F1B;--ledger-ink:#E6EFEB;--ledger-mute:#8FA39C;--ledger-line:#24352F;--hash:#7FD1B0;}
   :root[data-theme="dark"]{--ledger:#0B1512;--ledger-line:#1E2C27;}
-  .home-view{max-width:1080px;padding-top:22px;}
+  body.at-home .app{grid-template-columns:1fr;}
+  body.at-home .side,body.at-home .menu,body.at-home .backdrop{display:none;}
+  .home-view{max-width:1080px;padding-top:22px;word-break:keep-all;overflow-wrap:anywhere;}
+  .home-view .tcard p,.home-view .skill p,.home-view .sec-intro,.home-view .lead,.home-view details p,.home-view .cl-sum{font-family:'Avenir Next','Noto Sans KR','Apple SD Gothic Neo',sans-serif;}
   .home-view .hero{padding:18px 0 34px;border-bottom:1px solid var(--line);}
   .home-view .hero-top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
   .home-view .doc-tag{display:inline-block;font-size:11px;letter-spacing:.14em;color:var(--green);border:1px solid var(--green);border-radius:4px;padding:2px 8px;font-family:'IBM Plex Mono',Menlo,monospace;}
@@ -265,18 +268,19 @@
   .ledger .lg-title{color:var(--ledger-ink);letter-spacing:.14em;font-size:11px;font-weight:600;}
   .ledger .lg-flip{color:#F0A58A;margin-left:auto;}
   .ledger .lg-scroll{overflow-x:auto;margin-top:14px;}
-  .ledger table{border-collapse:collapse;width:100%;min-width:640px;}
+  .ledger table{border-collapse:collapse;width:100%;min-width:680px;table-layout:fixed;}
   .ledger th,.ledger td{text-align:left;vertical-align:top;padding:10px 12px 10px 0;border-top:1px solid var(--ledger-line);font-weight:400;}
   .ledger thead th{border-top:0;padding-bottom:6px;}
   .ledger thead th:first-child,.ledger tbody th{width:74px;color:var(--ledger-mute);font-size:12px;letter-spacing:.08em;padding-top:16px;}
   .ledger .lg-n{display:block;font-size:11px;color:var(--ledger-mute);letter-spacing:.1em;}
-  .ledger .lg-want{display:block;font-size:12px;color:var(--ledger-ink);margin-top:3px;font-family:'Avenir Next','Noto Sans KR','Apple SD Gothic Neo',sans-serif;}
-  .ledger .lg-val{display:block;font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums;}
+  .ledger .lg-want{display:block;font-size:12px;color:var(--ledger-ink);margin-top:3px;font-family:'Avenir Next','Noto Sans KR','Apple SD Gothic Neo',sans-serif;word-break:keep-all;}
+  .ledger .lg-val{display:block;font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums;color:var(--ledger-ink);}
   .ledger .lg-val.none{font-size:12px;font-weight:400;color:var(--ledger-mute);font-family:'Avenir Next','Noto Sans KR','Apple SD Gothic Neo',sans-serif;padding-top:6px;}
   .ledger .lg-sub{display:block;font-size:11px;color:var(--ledger-mute);margin-top:4px;}
   .ledger .lg-hash{color:var(--hash);}
   .ledger .lg-fin .lg-val{color:var(--hash);}
-  .ledger th.flip,.ledger td.flip{background:rgba(240,165,138,.09);box-shadow:inset 3px 0 0 #F0A58A;padding-left:10px;}
+  .ledger th.flip,.ledger td.flip{background:rgba(240,165,138,.10);box-shadow:inset 0 2px 0 #F0A58A;padding-left:10px;padding-right:10px;}
+  .ledger thead th.flip{box-shadow:inset 0 2px 0 #F0A58A;}
   .ledger .lg-fin td.flip .lg-val{color:#F0A58A;}
   .ledger .lg-note{margin-top:12px;font-size:12px;color:var(--ledger-mute);font-family:'Avenir Next','Noto Sans KR','Apple SD Gothic Neo',sans-serif;line-height:1.6;}
   .ledger .lg-note a{color:var(--ledger-ink);text-underline-offset:3px;}
@@ -286,7 +290,8 @@
   /* 섹션 */
   .home-view section{padding:40px 0 8px;border-bottom:1px solid var(--line);}
   .home-view section:last-of-type{border-bottom:0;}
-  .home-view .sec-label{font-size:11px;letter-spacing:.14em;color:var(--green);font-family:'IBM Plex Mono',Menlo,monospace;}
+  .home-view .sec-label{font-size:11px;letter-spacing:.08em;color:var(--green);font-family:'IBM Plex Mono',Menlo,monospace;}
+  .home-view .h3{font-size:18px;font-weight:700;margin-top:6px;}
   .home-view h2{font-family:'Noto Serif KR','Apple SD Gothic Neo',serif;font-size:26px;font-weight:800;letter-spacing:-.025em;margin-top:8px;line-height:1.3;}
   .home-view h2 code{font-size:22px;font-weight:600;}
   .home-view .sec-intro{color:var(--muted);margin-top:10px;max-width:720px;}
@@ -297,22 +302,33 @@
   .home-view .teaser-q span{color:var(--ink);}
   .home-view .teaser .turndiff{position:static;}
   .home-view .teaser .ghost{align-self:flex-start;}
-  .home-view .trust{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0 28px;}
-  .home-view .tcard,.home-view .skill{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:14px 15px;font-size:13.5px;}
+  .home-view .trust{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0 28px;align-items:start;}
+  .home-view .tcard,.home-view .skill{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:14px 15px;font-size:13.5px;min-width:0;}
   .home-view .tcard b{display:block;margin-bottom:6px;}
   .home-view .tcard p,.home-view .skill p{color:var(--muted);line-height:1.6;}
   .home-view .tcard pre{margin-top:10px;font-size:11px;line-height:1.5;background:var(--code);border-radius:6px;padding:9px 10px;overflow-x:auto;white-space:pre;}
-  .home-view .skills{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 28px;}
-  .home-view .skill .kind{display:inline-block;font-size:10px;letter-spacing:.08em;border-radius:3px;padding:1px 6px;margin-bottom:6px;}
+  .home-view .skills{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0 28px;align-items:start;}
+  .home-view .skill .kind{display:inline-block;font-size:10px;letter-spacing:.08em;border-radius:3px;padding:1px 6px;margin-bottom:6px;white-space:nowrap;}
   .home-view .skill .kind.fin{background:var(--green-soft);color:var(--green);}
   .home-view .skill .kind.chk{background:var(--warn-soft);color:var(--warn);}
-  .home-view .skill b{display:block;font-size:13px;margin-bottom:4px;}
+  .home-view .skill b{display:block;font-size:12.5px;margin-bottom:4px;word-break:break-all;}
   .home-view .sample{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;margin:18px 0 28px;align-items:start;}
   .home-view .frame{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;height:420px;}
-  .home-view .frame iframe{width:100%;height:100%;border:0;}
+  .home-view .frame iframe{width:160%;height:160%;border:0;transform:scale(.625);transform-origin:0 0;pointer-events:none;}
   .home-view .sample ul{margin-left:18px;font-size:14px;}
   .home-view .sample li{margin:6px 0;}
   .home-view .more{margin-top:14px;}
+  .home-view .caselist{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 18px;margin:16px 0 30px;}
+  .home-view .cl-grp{font-size:11px;letter-spacing:.06em;color:var(--muted);margin:6px 0 6px;font-family:'IBM Plex Mono',Menlo,monospace;}
+  .home-view .cl-case{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:'dots title meta' 'sum sum sum';column-gap:8px;align-items:center;width:100%;text-align:left;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);padding:10px 12px;margin-bottom:8px;font-family:inherit;cursor:pointer;}
+  .home-view .cl-case:hover,.home-view .cl-case:focus-visible{border-color:var(--green);outline:none;}
+  .home-view .cl-case:disabled{opacity:.45;cursor:default;}
+  .home-view .cl-dots{grid-area:dots;display:inline-flex;gap:3px;}
+  .home-view .cl-dots .dot{width:7px;height:7px;border-radius:50%;background:var(--line);display:inline-block;}
+  .home-view .cl-dots .dot.ok{background:var(--green);} .home-view .cl-dots .dot.no{background:var(--bear);}
+  .home-view .cl-title{grid-area:title;font-size:13.5px;font-weight:600;}
+  .home-view .cl-meta{grid-area:meta;font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',Menlo,monospace;}
+  .home-view .cl-sum{grid-area:sum;font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5;}
   .home-view details{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:10px 14px;margin-top:10px;}
   .home-view details:last-of-type{margin-bottom:26px;}
   .home-view summary{cursor:pointer;font-weight:600;font-size:14px;}
@@ -322,7 +338,7 @@
   .home-view .home-foot a:hover{color:var(--green);}
   @media (max-width:900px){
     .home-view .teasers,.home-view .trust,.home-view .sample{grid-template-columns:1fr;}
-    .home-view .skills{grid-template-columns:1fr 1fr;}
+    .home-view .skills,.home-view .caselist{grid-template-columns:1fr 1fr;}
     .home-view .hero h1{font-size:34px;}
     .home-view .frame{height:320px;}
     .ledger{padding:14px 14px 12px;border-radius:10px;}
@@ -739,6 +755,21 @@
     return cards?'<div class="teasers">'+cards+'</div>':'';
   }
 
+  // 첫 화면은 사이드바를 접으므로 케이스 목록을 섹션으로 둔다. 점은 현재 모델의 Plain/Fintool 채점.
+  function caseIndexHTML(){
+    const groups=[];
+    const byGroup={};
+    DATA.cases.forEach(function(item){if(!byGroup[item.group]){byGroup[item.group]=[];groups.push(item.group);}byGroup[item.group].push(item);});
+    return '<div class="caselist">'+groups.map(function(group){
+      return '<div class="cl-group"><div class="cl-grp">'+esc(group)+'</div>'+byGroup[group].map(function(item){
+        const runs=PANES.map(function(pane){return runFor(item.id,pane[0]);});
+        const dots=runs.map(function(run,index){return '<span class="dot '+(run&&run.ok===true?'ok':run&&run.ok===false?'no':'')+'" title="'+PANES[index][1]+' '+(!run?'기록 없음':run.ok===true?'채점 통과':run.ok===false?'채점 실패':'채점 없음')+'"></span>';}).join('');
+        const has=runs.some(Boolean);
+        return '<button type="button" class="cl-case" data-case="'+item.id+'"'+(has?'':' disabled')+'><span class="cl-dots">'+dots+'</span><span class="cl-title">'+esc(item.title)+'</span><span class="cl-meta">'+(item.turns>1?item.turns+'턴':'1턴')+'</span><span class="cl-sum">'+esc(item.summary||'')+'</span></button>';
+      }).join('')+'</div>';
+    }).join('')+'</div>';
+  }
+
   function renderHome(){
     $('view').innerHTML='<div class="home-view">'
       +'<header class="hero"><div class="hero-top"><span class="doc-tag">CLAUDE PLUGIN · FINTOOL</span><span class="legend"><b>Plain</b> 플러그인 없는 Claude &nbsp;·&nbsp; <b>Fintool</b> fintool을 붙인 Claude</span></div>'
@@ -747,7 +778,7 @@
       +'<div class="cta"><button type="button" class="ghost" data-scroll="evidence">전체 성적표 ↓</button><button type="button" class="ghost" data-scroll="diff">무엇이 달라지나 ↓</button></div>'
       +ledgerHTML()
       +'</header>'
-      +'<section id="evidence"><div class="sec-label">증거</div><h2>같은 문제를 세 모델에서 Plain과 Fintool로 전부 돌린 기록</h2><p class="sec-intro">'+esc(DATA.meta.note)+' 13개 케이스 × 3개 모델 × Plain/Fintool = 78런, 75턴. 왼쪽에서 대화를 고르면 두 실행이 좌우로 나란히 재생되고 세 번째 칸에 그 턴에서 달라진 수치가 붙는다.</p>'+scoreboardHTML()+'</section>'
+      +'<section id="evidence"><div class="sec-label">증거</div><h2>같은 문제를 세 모델에서 Plain과 Fintool로 전부 돌린 기록</h2><p class="sec-intro">'+esc(DATA.meta.note)+' 13개 케이스 × 3개 모델 × Plain/Fintool = 78런, 75턴. 왼쪽에서 대화를 고르면 두 실행이 좌우로 나란히 재생되고 세 번째 칸에 그 턴에서 달라진 수치가 붙는다.</p>'+scoreboardHTML()+'<div class="sec-label" style="margin-top:6px">케이스</div><h3 class="h3">13개 케이스 — 눌러서 대화로 들어간다</h3><p class="sec-intro">점은 위에서 고른 모델의 Plain · Fintool 채점. 초록 통과, 빨강 실패, 빈 점은 채점 기준 없음.</p>'+caseIndexHTML()+'</section>'
       +'<section id="diff"><div class="sec-label">무엇이 달라지나</div><h2>같은 대화, 넷째·다섯째 수정에서 갈린다</h2><p class="sec-intro">위 레저의 턴 4·5를 카드로 편 것. 카드는 정본 수치만으로 그린 것이고, 대화 화면에서는 모든 턴에 이 카드가 붙는다.</p>'+diffTeaserHTML()+'</section>'
       +'<section id="why"><div class="sec-label">왜 다른가</div><h2>신뢰 모델</h2><div class="trust">'
       +'<div class="tcard"><b>봉투만 인용</b><p>모든 계산은 <code>ok / data / error</code> 봉투로 돌아온다. 스킬 원칙 1번: "LLM은 숫자를 만들지 않는다. 수치는 JSON 봉투만 인용한다."</p><pre>{"ok": true, "tool": "convertible",\n "data": {"model": "tsiveriotis-fernandes",\n   "value": 10764990730.9, "bond_floor": 8317567484.3,\n   "component_method_value": 10429314832.2, …}}</pre></div>'
@@ -767,6 +798,7 @@
       +'<footer class="home-foot"><a href="https://github.com/risingdream/finance-toolbox" target="_blank" rel="noopener">소스 · finance-toolbox</a><a href="https://github.com/risingdream/finance-toolbox/blob/main/docs/decisions/agent-plugin.md" target="_blank" rel="noopener">결정 기록 · agent-plugin.md</a><a href="assets/transcripts/README.md" target="_blank" rel="noopener">트랜스크립트 원문</a><span>MIT</span></footer>'
       +'</div>';
     document.querySelectorAll('.cellbtn').forEach(function(button){button.onclick=function(){state.model=button.dataset.model;state.pane=button.dataset.plugin;const first=DATA.cases.find(function(item){return runFor(item.id,'on')||runFor(item.id,'off');});state.case=first?first.id:null;render();};});
+    document.querySelectorAll('.cl-case').forEach(function(button){button.onclick=function(){state.case=button.dataset.case;render();};});
     document.querySelectorAll('[data-scroll]').forEach(function(button){button.onclick=function(){const target=document.getElementById(button.dataset.scroll);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});};});
   }
 
@@ -1616,6 +1648,7 @@
     const settings=options||{};
     renderBar();
     renderSide();
+    document.body.classList.toggle('at-home',!state.case);
     if(state.case)renderCompare();else renderHome();
     if(!settings.keepScroll)$('scroll').scrollTop=0;
     if(pendingTurn){const anchor=document.getElementById('turn-'+pendingTurn);if(anchor)anchor.scrollIntoView({block:'start'});pendingTurn=0;}
