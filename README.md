@@ -2,7 +2,7 @@
 
 **랜딩 페이지(플러그인 유무 Before/After 대조): https://risingdream.github.io/fintool-plugin/**
 
-스타트업 재무 계산 도구(원격 MCP)와 재무·IR 스킬 10종을 묶은 에이전트 플러그인 마켓플레이스다.
+스타트업 재무 계산 도구(원격 MCP)와 재무·IR 스킬 11종을 묶은 에이전트 플러그인 마켓플레이스다.
 Claude Desktop·Claude Code·Codex가 이 주소 하나로 같은 플러그인을 설치하고 갱신한다.
 
 계산의 정본은 원격 MCP `https://fintool-mcp.risingdream.workers.dev/mcp`
@@ -43,8 +43,8 @@ plugins/fintool/
   .claude-plugin/plugin.json   name fintool, semver
   .codex-plugin/plugin.json    Codex용 동일 메타
   .mcp.json                    fintool → 원격 MCP URL
-  skills/                      재무 6: startup-finance · valuation · financial-statements
-                                      fund-performance · portfolio-risk · fixed-income
+  skills/                      재무 7: startup-finance · valuation · financial-statements
+                                      fund-performance · portfolio-risk · fixed-income · option
                                검증 4: startup-design · startup-competitors
                                       startup-positioning · startup-pitch
   desktop/                     Claude Desktop 수동 커넥터 스니펫
