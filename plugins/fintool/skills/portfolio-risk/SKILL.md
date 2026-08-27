@@ -1,6 +1,6 @@
 ---
 name: portfolio-risk
-description: fintool MCP로 포트폴리오 최적화·위험·거래비용을 계산한다. 최적 비중, 공분산·연율 변동성, VaR, CVaR, 몬테카를로 고갈 확률, implementation shortfall·거래비용 분석(TCA)을 요청하면 이 스킬을 쓴다. 자산배분, 효율적 투자선, 리스크 예산, 손실 한도, 은퇴자금 고갈, 체결 슬리피지 같은 한국어 요청에 반응한다. 시계열 없이 연율 변동성·상관계수·공분산 행렬만 주어진 배분·손실 질문도 여기서 그대로 계산한다. Brinson 성과귀속·샤프·정보비율·TWRR·PE 펀드지표는 fund-performance, DCF·WACC는 valuation, 재무비율·부도확률은 financial-statements, 채권 가격·듀레이션은 fixed-income, 스타트업 IR은 startup-finance로 보낸다. 숫자는 봉투만 인용한다.
+description: fintool MCP로 포트폴리오 최적화·위험·거래비용을 계산한다. 최적 비중, 공분산·연율 변동성, VaR, CVaR, 몬테카를로 고갈 확률, implementation shortfall·거래비용 분석(TCA)을 요청하면 이 스킬을 쓴다. 자산배분, 효율적 투자선, 리스크 예산, 손실 한도, 은퇴자금 고갈, 체결 슬리피지 같은 한국어 요청에 반응한다. 시계열 없이 연율 변동성·상관계수·공분산 행렬만 주어진 배분·손실 질문도 여기서 그대로 계산한다. Brinson 성과귀속·샤프·정보비율·TWRR·PE 펀드지표는 fund-performance, DCF·WACC는 valuation, 재무비율·부도확률은 financial-statements, 채권 가격·듀레이션은 fixed-income, 스타트업 IR은 startup-finance, 옵션 가격·그릭스·내재변동성·변동성 스마일은 option으로 보낸다. 숫자는 봉투만 인용한다.
 ---
 
 # Portfolio Risk
@@ -8,7 +8,7 @@ description: fintool MCP로 포트폴리오 최적화·위험·거래비용을 �
 원격 MCP: `fintool_catalog` → `fintool_run`.
 
 범위: `vol` → `portfolio` → `var` / (선택) `montecarlo`. 거래비용은 `trade-cost`.  
-범위 밖: 성과귀속·위험조정 성과지표·펀드지표(`fund-performance` — `attribution`·`perf`·`private-markets`), DCF·WACC(`valuation`), 재무비율·부도확률(`financial-statements`), 채권 프라이싱(`fixed-income`), IR HTML(`startup-finance`).
+범위 밖: 성과귀속·위험조정 성과지표·펀드지표(`fund-performance` — `attribution`·`perf`·`private-markets`), DCF·WACC(`valuation`), 재무비율·부도확률(`financial-statements`), 채권 프라이싱(`fixed-income`), IR HTML(`startup-finance`), 옵션 가격·그릭스·내재변동성(`option`).
 
 ## 흐름
 
@@ -26,6 +26,13 @@ description: fintool MCP로 포트폴리오 최적화·위험·거래비용을 �
 벤치마크 대비 초과수익 분해(`attribution`), 샤프·정보비율·TWRR/MWRR(`perf`), PE/VC 펀드지표(`private-markets`)는
 **`fund-performance` 스킬**이 담당한다. 사용자가 "성과 귀속", "초과수익 분해", "샤프", "정보비율", "펀드 수익률"을 물으면
 여기서 추측하지 말고 그 스킬의 절차서를 따른다. 이 스킬은 사전적(ex-ante) 최적화·위험과 실행비용만 다룬다.
+
+## 옵션 IV는 이 스킬이 아니다
+
+콜·풋 가격, 그릭스, 내재변동성, 변동성 스마일은 **`option` 스킬**이 담당한다.
+`vol`은 수익률 시계열의 실현 변동성이지 옵션 IV가 아니다. 로컬 Python/SciPy로 역산하지 않는다.
+사용자가 "콜옵션", "내재변동성", "변동성 스마일", "그릭스"를 물으면 이 문서의 예시로 계산하지 말고
+`fintool_catalog {"tool":"option"}` 후 `fintool_run {"tool":"option"}`을 따른다.
 
 ## 모수만 주어졌을 때 — 시계열을 지어내지 않는다
 

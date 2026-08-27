@@ -1,6 +1,6 @@
 ---
 name: valuation
-description: fintool MCP로 WACC·DCF·배수 가치평가를 한다. 내재가치, 기업가치, 주당가치, 할인율, 영구성장률, 민감도 격자, 삼성전자형 DCF를 요청하면 이 스킬을 쓴다. 재무비율·듀폰 분해·EPS·FCFF 산출·부도확률은 financial-statements, 펀드 성과귀속·샤프·PE 펀드지표는 fund-performance, 최적 비중·VaR는 portfolio-risk, 채권 가격·듀레이션은 fixed-income, 스타트업 런웨이·캡테이블·IR HTML은 startup-finance로 보낸다. 숫자는 fintool 봉투만 인용한다.
+description: fintool MCP로 WACC·DCF·배수 가치평가를 한다. 내재가치, 기업가치, 주당가치, 할인율, 영구성장률, 민감도 격자, 삼성전자형 DCF를 요청하면 이 스킬을 쓴다. 재무비율·듀폰 분해·EPS·FCFF 산출·부도확률은 financial-statements, 펀드 성과귀속·샤프·PE 펀드지표는 fund-performance, 최적 비중·VaR는 portfolio-risk, 채권 가격·듀레이션은 fixed-income, 스타트업 런웨이·캡테이블·IR HTML은 startup-finance, 옵션 가격·그릭스·내재변동성은 option으로 보낸다. 숫자는 fintool 봉투만 인용한다.
 ---
 
 # Valuation
@@ -9,7 +9,7 @@ description: fintool MCP로 WACC·DCF·배수 가치평가를 한다. 내재가�
 `fintool_catalog`는 인자 없이 부르면 목록만 준다. 플래그는 `{"tool": "wacc"}`처럼 도구를 지정해 받는다.
 
 범위: 가정 → `wacc` → `dcf` → (선택) `equity`.  
-범위 밖: 재무비율·듀폰·EPS·회계 정규화·부도확률(`financial-statements` — FCFF **산출**은 거기서 하고 여기서는 받아 쓴다), 성과귀속·펀드지표(`fund-performance`), 최적 비중·VaR(`portfolio-risk`), 채권 프라이싱(`fixed-income`), 런웨이·BP·캡테이블·IR HTML(`startup-finance`).
+범위 밖: 재무비율·듀폰·EPS·회계 정규화·부도확률(`financial-statements` — FCFF **산출**은 거기서 하고 여기서는 받아 쓴다), 성과귀속·펀드지표(`fund-performance`), 최적 비중·VaR(`portfolio-risk`), 채권 프라이싱(`fixed-income`), 런웨이·BP·캡테이블·IR HTML(`startup-finance`), 옵션 가격·그릭스·내재변동성(`option`).
 
 ## 원칙
 

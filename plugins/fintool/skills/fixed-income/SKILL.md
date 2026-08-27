@@ -1,6 +1,6 @@
 ---
 name: fixed-income
-description: fintool MCP로 채권 가격·수익률·듀레이션·커브·전환사채를 계산한다. 이표채, 할인채, 국채, 컨벡시티, Z-spread, 커브 부트스트랩·스팟·포워드, 전환사채(CB)·전환옵션 가치를 요청하면 이 스킬을 쓴다. 시장가격에서 뽑는 Z-spread는 여기지만, 재무제표로 추정하는 Merton 부도확률·신용스프레드는 financial-statements다. 채권 포트폴리오 성과귀속은 fund-performance, DCF·WACC는 valuation, 최적 비중·VaR는 portfolio-risk, 스타트업 IR은 startup-finance로 보낸다. 숫자는 봉투만 인용한다.
+description: fintool MCP로 채권 가격·수익률·듀레이션·커브·전환사채를 계산한다. 이표채, 할인채, 국채, 컨벡시티, Z-spread, 커브 부트스트랩·스팟·포워드, 전환사채(CB)·전환옵션 가치를 요청하면 이 스킬을 쓴다. 시장가격에서 뽑는 Z-spread는 여기지만, 재무제표로 추정하는 Merton 부도확률·신용스프레드는 financial-statements다. 채권 포트폴리오 성과귀속은 fund-performance, DCF·WACC는 valuation, 최적 비중·VaR는 portfolio-risk, 스타트업 IR은 startup-finance, 주식 옵션 가격·내재변동성은 option으로 보낸다. 숫자는 봉투만 인용한다.
 ---
 
 # Fixed Income
@@ -8,7 +8,7 @@ description: fintool MCP로 채권 가격·수익률·듀레이션·커브·전�
 원격 MCP: `fintool_catalog` → `fintool_run`.
 
 범위: `coupon` / daycount basis → `bond` / `discount` → (선택) `curve`. 전환사채는 `convertible`.  
-범위 밖: 재무제표 기반 신용위험 — Merton 부도확률·구조모형 신용스프레드(`financial-statements`). 듀레이션 기반 채권 성과귀속(`attribution --model fixed-income`)은 `fund-performance`. 주식 DCF(`valuation`), 최적 비중·VaR(`portfolio-risk`), 스타트업 런웨이(`startup-finance`).
+범위 밖: 재무제표 기반 신용위험 — Merton 부도확률·구조모형 신용스프레드(`financial-statements`). 듀레이션 기반 채권 성과귀속(`attribution --model fixed-income`)은 `fund-performance`. 주식 DCF(`valuation`), 최적 비중·VaR(`portfolio-risk`), 스타트업 런웨이(`startup-finance`), 주식 옵션 가격·내재변동성(`option`).
 
 ## 흐름
 

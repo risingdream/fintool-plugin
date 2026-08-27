@@ -1,6 +1,6 @@
 ---
 name: startup-finance
-description: fintool MCP로 스타트업 재무모델·시나리오·투자유치 자료를 만든다. 재무보고서, 피칭덱 재무, 런웨이, 자금소요, 캡테이블, LTV/CAC, bear/base/bull, 엑셀 워크북을 요청하면 이 스킬을 쓴다. startup-design·startup-pitch 등 스타트업 스킬 진행 중 재무 계산(Phase 7 재무, 검증 실험 판정, 피치 숫자)이 필요한 지점에서도 이 스킬을 쓴다. DCF·WACC·내재가치는 valuation, 상장사 재무제표·재무비율·부도확률은 financial-statements, 펀드 성과귀속·PE 펀드지표는 fund-performance, 최적 비중·VaR·거래비용은 portfolio-risk, 채권 가격·듀레이션은 fixed-income으로 보낸다. 숫자는 추정하지 말고 fintool 봉투만 인용한다.
+description: fintool MCP로 스타트업 재무모델·시나리오·투자유치 자료를 만든다. 재무보고서, 피칭덱 재무, 런웨이, 자금소요, 캡테이블, LTV/CAC, bear/base/bull, 엑셀 워크북을 요청하면 이 스킬을 쓴다. startup-design·startup-pitch 등 스타트업 스킬 진행 중 재무 계산(Phase 7 재무, 검증 실험 판정, 피치 숫자)이 필요한 지점에서도 이 스킬을 쓴다. DCF·WACC·내재가치는 valuation, 상장사 재무제표·재무비율·부도확률은 financial-statements, 펀드 성과귀속·PE 펀드지표는 fund-performance, 최적 비중·VaR·거래비용은 portfolio-risk, 채권 가격·듀레이션은 fixed-income, 옵션 가격·내재변동성은 option으로 보낸다. 숫자는 추정하지 말고 fintool 봉투만 인용한다.
 ---
 
 # Startup Finance
@@ -8,7 +8,7 @@ description: fintool MCP로 스타트업 재무모델·시나리오·투자유�
 도구는 **원격 MCP**다. `fintool_catalog`로 스키마를 보고 `fintool_run`으로 실행한다. 로컬 바이너리를 설치하지 않는다.
 
 이 스킬 범위: 인터뷰 → 드라이버 모델/유닛/시나리오/캡테이블 → `report`·워크북.
-범위 밖: DCF·WACC·기업가치(`valuation`), 상장사 재무제표·재무비율·회계 정규화·부도확률(`financial-statements`), 펀드 성과귀속·PE 펀드지표(`fund-performance`), 포트폴리오 VaR·거래비용(`portfolio-risk`), 채권 프라이싱(`fixed-income`).
+범위 밖: DCF·WACC·기업가치(`valuation`), 상장사 재무제표·재무비율·회계 정규화·부도확률(`financial-statements`), 펀드 성과귀속·PE 펀드지표(`fund-performance`), 포트폴리오 VaR·거래비용(`portfolio-risk`), 채권 프라이싱(`fixed-income`), 옵션 가격·내재변동성(`option`).
 
 ## 원칙
 
