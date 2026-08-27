@@ -325,18 +325,44 @@ dart:financials:<6자리코드>:<연도>:<FY|Q1|H1|Q3>[:<CFS|OFS>]
 | `ending-equity` / `beginning-equity` | 자본총계 (당기/전기) | |
 | `ending-inventory` / `beginning-inventory` | 재고자산 (당기/전기) | |
 | `current-assets` · `current-liabilities` · `total-liabilities` · `cash` | 유동자산·유동부채·부채총계·현금및현금성자산 | 시점값 |
+| `ending-receivables` / `beginning-receivables` | 매출채권및기타유동채권 (당기/전기) | 표준계정이 매출채권과 기타유동채권을 한 줄로 낸다 |
+| `total-debt` | 차입금 계정 **합산** | 단기·유동성장기·장기차입금 + 사채 + 리스부채. 내역은 `data.debt_components` |
+
+`total-debt`는 표준계정 한 줄이 아니라 합산이고 **리스부채를 포함한다**(IFRS 16 이후 이자부부채).
+다른 정의를 쓰려면 `fetch`로 `debt_components`를 먼저 보고 `--total-debt`를 직접 준다.
+차입금 계정을 하나도 못 찾으면 아예 채우지 않는다 — 무차입 기업과 구분되어야 하기 때문이다.
 
 **여기 없는 값은 `--from`으로 채워지지 않는다.** 표준계정으로 안전하게 집을 수 없는 것들이고,
 비슷한 이름을 조용히 집어 틀린 값을 넣느니 묻는 편이 낫다. **여전히 사용자에게 묻는다:**
 
-- `ratios`: `beginning-receivables` · `ending-receivables` · `marketable-securities` · `total-debt` ·
-  `interest-expense` · `operating-cash-flow` · `nopat` · `beginning-invested-capital` · `ending-invested-capital`
+- `ratios`: `marketable-securities` · `interest-expense` · `operating-cash-flow` · `nopat` ·
+  `beginning-invested-capital` · `ending-invested-capital`
 - `eps`: `weighted-average-shares` · 지배주주지분 순이익(있으면) · 잠재주식
 - `cashflow`: 운전자본 증감 항목 전부 · `tax-rate` · CAPEX · 배당 · 환율효과
 - `credit`: 자산의 **시장가치**와 자산변동성 — 「credit」 절 참고. DART에 없다
 
-**`fsa --solve ratios`는 입력 24개를 요구하고 `--from`이 채우는 것은 14개다.** 나머지 9개를 받기 전에는
-`ratios`를 부르지 못한다. `--from`으로 절반을 채웠다고 인터뷰를 건너뛰지 않는다.
+**`fsa --solve ratios`는 입력 24개 중 `--from`이 17개를 채우고 `period-days`는 기본값 365를 쓴다.**
+나머지 6개를 받기 전에는 `ratios`를 부르지 못한다. `--from`으로 대부분을 채웠다고 인터뷰를 건너뛰지 않는다.
+
+### 주식 수는 별도 ref다
+
+```
+dart:shares:<코드>:<연도>[:<FY|Q1|H1|Q3>][:<outstanding|distributed>]
+```
+
+재무제표 API에는 주식 수가 없다. `eps`의 분모나 주당 지표가 필요하면 이 ref로 받는다.
+기본은 **보통주 발행주식총수**이고 `:distributed`를 붙이면 자기주식을 뺀 유통주식수다.
+
+**단, `weighted-average-shares`는 이 값이 아니다.** 가중평균은 기중 증자·자기주식 취득을 반영하므로
+기말 발행주식수와 다르다. 유상증자나 자사주 거래가 있었으면 사업보고서 주석의 가중평균 수를 쓴다.
+변동이 없었다면 `dart:shares` 값을 그대로 쓰고 그 사실을 답에 적는다.
+
+### 비상장사는 재무수치가 나오지 않는다
+
+`dart:search`는 외부감사 대상 비상장사도 찾아주고(`listed: false`, 8자리 `corp_code`),
+`dart:filings`도 그 고유번호로 감사보고서 목록을 준다. 그러나 **`dart:financials`는 정기보고서를
+제출하는 회사만** 다루므로 비상장사 재무수치는 이 경로로 나오지 않는다. 그 실패는 조회 조건 실수가
+아니라 API의 경계이고, 오류 메시지가 다음 수(`dart:filings`로 감사보고서 원문 확인)를 말해준다.
 
 ### 호출 형태 — 플래그만 쓴다
 
@@ -368,9 +394,11 @@ EPS는 DART가 분자를, 사용자가 분모를 준다.
           "current-assets=dart:financials:005930:2025:FY:CFS",
           "current-liabilities=dart:financials:005930:2025:FY:CFS",
           "total-liabilities=dart:financials:005930:2025:FY:CFS",
-          "cash=dart:financials:005930:2025:FY:CFS"],
-  "beginning-receivables":0,"ending-receivables":0,"marketable-securities":0,
-  "total-debt":0,"interest-expense":0,"operating-cash-flow":0,"nopat":0,
+          "cash=dart:financials:005930:2025:FY:CFS",
+          "beginning-receivables=dart:financials:005930:2025:FY:CFS",
+          "ending-receivables=dart:financials:005930:2025:FY:CFS",
+          "total-debt=dart:financials:005930:2025:FY:CFS"],
+  "marketable-securities":0,"interest-expense":0,"operating-cash-flow":0,"nopat":0,
   "beginning-invested-capital":0,"ending-invested-capital":0}}
 ```
 

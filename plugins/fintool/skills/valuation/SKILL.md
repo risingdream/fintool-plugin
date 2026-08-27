@@ -50,7 +50,13 @@ description: fintool MCP로 WACC·DCF·배수 가치평가를 한다. 내재가�
 | `wacc` | `cost-of-debt` | `ecos:rate:corp-aa-` | 회사채 3년 AA- **시장금리**다. 그 회사의 실제 조달금리를 알면 그쪽이 낫다 |
 | `wacc` | `equity-value` | `krx:marketcap:005930` | 시가총액. 장부가가 아니다 |
 | `equity` | `price` | `krx:price:005930` | 종가 |
-| `equity` · `dcf` | `shares` | `krx:shares:005930` | 상장주식수. 희석 반영이 필요하면 그대로 쓰지 않는다 |
+| `equity` · `dcf` | `shares` | `dart:shares:005930:2025:FY` | **보통주 발행주식총수(1차 공시)**. 자기주식 제외가 필요하면 뒤에 `:distributed` |
+| `equity` · `dcf` | `shares` | `krx:shares:005930` | 상장주식수. 기준일 기준이라 공시와 시점이 다를 수 있다 |
+
+**주식 수를 언론 보도나 기억에서 쓰지 않는다.** `dart:shares`가 사업보고서 원문(접수번호 포함)에서
+직접 받는다. `data.by_kind`에 보통주·우선주·합계가 다 있는데, **합계를 P/E 분모로 쓰면 안 된다** —
+우선주가 포함돼 보통주 주가와 단위가 맞지 않는다. 실제로 더존비즈온 2025년은 합계 `31,477,993`주,
+보통주 `30,382,784`주로 3.6% 차이가 난다.
 
 `beta`·`market-risk-premium`·`fcf`·`terminal-growth`에는 ref가 없다. 이 값들은 여전히 사용자 입력이거나
 「입력이 빠졌을 때」의 가정이다.
@@ -122,6 +128,30 @@ description: fintool MCP로 WACC·DCF·배수 가치평가를 한다. 내재가�
 
 ```json
 {"tool":"dcf","flags":{"fcf":"1000000000,1200000000,1400000000,1600000000,1800000000","wacc":0.1,"terminal-method":"growth","terminal-growth":0.02,"net-debt":2000000000,"shares":1000000,"wacc-range":"0.08,0.12","terminal-growth-range":"0.01,0.03"}}
+```
+
+## 배수는 필요한 지표만 고른다 (`equity --model multiples`)
+
+P/E·P/B·P/S만 필요한데 PEG와 EV 배수까지 계산하면 `--earnings-growth`(미래 추정치)와
+`--ev-metric`·`--net-debt`를 모르는 채로 채워야 하고, **그 근거 없는 숫자로 만든 배수가 결과에 남는다.**
+`--metrics`로 고르면 고른 지표가 쓰는 입력만 필수가 된다.
+
+```json
+{"tool":"equity","flags":{"model":"multiples","method":"observed","metrics":"pe,pb,ps",
+  "price":163000,"eps":3982,"book-value-per-share":21500,"sales-per-share":14700}}
+```
+
+- 고를 수 있는 지표: `pe` `pb` `ps` `peg` `ev`
+- 고르지 않은 지표는 결과에서 **사라지고** `omitted_metrics`에 이유가 남는다. 0으로 채워지지 않는다
+- `--metrics`를 생략하면 지금까지처럼 전부 계산한다(입력도 전부 필수)
+- `ev`를 고르면 `net_debt`가 결과에 함께 나온다. **순부채를 모른 채 0을 준 `enterprise_value`는
+  주식가치와 같은 값이므로 그대로 인용하면 오독이다** — 모르면 `ev`를 고르지 않는다
+
+필수 플래그가 빠지면 **한 번에 전부** 알려준다. 하나씩 채워 네 번 왕복하지 않는다.
+
+```
+--book-value-per-share, --earnings-growth, --eps, --ev-metric, --net-debt, --sales-per-share,
+--shares를 지정해야 합니다 (필수 10개 중 7개 누락)
 ```
 
 ## 카탈로그 호출 줄이기
