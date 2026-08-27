@@ -341,20 +341,43 @@ dart:financials:<6자리코드>:<연도>:<FY|Q1|H1|Q3>[:<CFS|OFS>]
 - `cashflow`: 운전자본 증감 항목 전부 · `tax-rate` · CAPEX · 배당 · 환율효과
 - `credit`: 자산의 **시장가치**와 자산변동성 — 「credit」 절 참고. DART에 없다
 
-**`fsa --solve ratios`는 입력 24개 중 `--from`이 17개를 채우고 `period-days`는 기본값 365를 쓴다.**
-나머지 6개를 받기 전에는 `ratios`를 부르지 못한다. `--from`으로 대부분을 채웠다고 인터뷰를 건너뛰지 않는다.
+**`fsa --solve ratios`는 `--solve`를 포함한 필수 플래그 24개를 요구하고 `--from`이 채우는 재무 입력은 17개다.** 나머지 6개를 받기 전에는
+`ratios` 전체를 부르지 못한다. `--from`으로 대부분을 채웠다고 인터뷰를 건너뛰지 않는다.
+
+**단, 필요한 비율만 고르면 그 입력만 있으면 된다.** `--metrics`로 지표 그룹을 고른다.
+
+```bash
+# 영업이익률 하나가 필요하면 dart:financials 하나로 끝난다
+fintool fsa --solve ratios --metrics margin --from dart:financials:012510:2025:FY:CFS
+```
+
+| 그룹 | 산출 | `dart:financials` 하나로 되는가 |
+|---|---|:---:|
+| `balance` | 회계등식 검증 | ✅ |
+| `common-size` | common-size 손익·재무상태 | ✅ |
+| `margin` | 매출총이익률·영업이익률·순이익률 | ✅ |
+| `activity` | 재고회전·재고일수·매출채권회전·DSO·총자산회전 | ✅ |
+| `dupont` | 3단계 DuPont | ✅ |
+| `liquidity` | 유동·당좌·현금비율 | ❌ `marketable-securities` |
+| `leverage` | 부채비율·재무레버리지·이자보상·영업현금/부채 | ❌ `interest-expense` `operating-cash-flow` |
+| `return` | ROA·ROE·ROIC | ❌ `nopat` `invested-capital` |
+
+고르지 않은 그룹은 결과에서 빠지고 `omitted_metrics`에 이유가 남는다. **비율 하나를 못 낸다고
+원값 두 개를 병치해 우회하지 않는다** — 그 하나를 `--metrics`로 골라 도구에게 계산시킨다.
 
 ### 주식 수는 별도 ref다
 
 ```
-dart:shares:<코드>:<연도>[:<FY|Q1|H1|Q3>][:<outstanding|distributed>]
+dart:shares:<코드>:<연도>[:<FY|Q1|H1|Q3>][:<outstanding|issued>]
 ```
 
 재무제표 API에는 주식 수가 없다. `eps`의 분모나 주당 지표가 필요하면 이 ref로 받는다.
-기본은 **보통주 발행주식총수**이고 `:distributed`를 붙이면 자기주식을 뺀 유통주식수다.
+기본은 **보통주 유통주식수**(`outstanding`, 자기주식 제외)이고, 발행주식총수가 필요하면
+`:issued`를 붙인다. IAS 33이 EPS 분모로 요구하는 것도, 배수가 서는 것도 유통주식수 쪽이다.
+`basis` 필드가 어느 쪽을 냈는지 말한다 — `by_kind`와 대조할 수 있다.
 
 **단, `weighted-average-shares`는 이 값이 아니다.** 가중평균은 기중 증자·자기주식 취득을 반영하므로
-기말 발행주식수와 다르다. 유상증자나 자사주 거래가 있었으면 사업보고서 주석의 가중평균 수를 쓴다.
+기말 유통주식수와 다르다. 유상증자나 자사주 거래가 있었으면 사업보고서 주석의 가중평균 수를 쓴다.
 변동이 없었다면 `dart:shares` 값을 그대로 쓰고 그 사실을 답에 적는다.
 
 ### 비상장사는 재무수치가 나오지 않는다
@@ -498,7 +521,7 @@ EPS는 DART가 분자를, 사용자가 분모를 준다.
 ## 함정
 
 - **`fsa`의 필수 플래그는 값이 0이어도 명시해야 한다.** 무차입 기업의 `--interest-expense 0`을 생략하면 거절된다.
-- **`--solve ratios`는 24개, `--solve cashflow`는 27개가 전부 필수다.** 모드에 없는 플래그를 섞어도 거절된다.
+- **`--solve ratios`는 24개, `--solve cashflow`는 27개가 전부 필수다.** `ratios`는 `--metrics`로 그룹을 골라 그만큼만 요구하게 줄일 수 있다. 모드에 없는 플래그를 섞어도 거절된다.
 - **`ratios`의 회계등식은 하드 거절, `cashflow`의 현금 연결은 경고다.** 전자는 `--tolerance`로 완화하고, 후자는 `reconciled: false`인 채 결과가 나오므로 직접 확인해야 한다.
 - **`cashflow`는 손익 항등식을 강제한다.** 기타수익·지분법손익을 `--operating-expenses`에 순액으로 합치고 그 사실을 밝힌다.
 - **`--adjustment inventory`는 한국 기업에 적용 불가다.** K-IFRS·일반기업회계기준 모두 LIFO를 금지한다.

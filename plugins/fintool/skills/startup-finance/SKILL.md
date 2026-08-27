@@ -267,6 +267,7 @@ warning zero_cogs: 매출원가가 0이라 매출총이익률이 100%로 나옵�
 | `business-plan` (`unfunded`) | `runway-track` |
 | `business-plan` (`bear`/`bull`) | `scenario-table` |
 | `financial-model` | `fm-summary-table` |
+| `financial-model --scenarios` | `fm-summary-table`(base) + `fm-scenario-table` |
 | `financial-model --workbook` | `workbook-table` |
 | `unit-economics` | `unit-econ-table` |
 | `cap-table-simulate` | `cap-bar` |
@@ -469,7 +470,7 @@ fintool_load name=아크메랩스-base
 ## 호출 함정
 - **금액을 원 단위 정수로 바꿀 때 자릿수를 다시 센다.** "5,000억"은 `500000000000`(0이 11개)이다. 엔진은 단위를 검증하지 못하고 그대로 계산한다.
 - **저장은 스펙만.** 결과 봉투를 `fintool_save`에 넣지 않는다. 도구가 없거나 `store_unavailable`이면 로컬 파일로 대신 저장했다고 말하지 않는다. 다음 세션에 숫자를 다시 보려면 `load` 후 재실행한다 — 결정론적이라 `calculation_hash`는 같다.
-- **같은 세션 안에서는 `run_id`를 쓴다.** `fintool_run` 성공 봉투에 붙는 `run_id`를 `report` 번들의 봉투 자리에 `{"$ref":"run_..."}`로 넣으면 55~75KB 결과를 다시 타이핑하지 않는다(보관 1시간). 이것이 원격 MCP에서 `financial-model` 기반 리포트를 내는 유일한 길이다.
+- **같은 세션 안에서는 `run_id`를 쓴다.** `fintool_run` 성공 봉투에 붙는 `run_id`를 `report` 번들의 봉투 자리에 `{"$ref":"run_..."}`로 넣으면 55~75KB 결과를 다시 타이핑하지 않는다(보관 1시간). 이것이 원격 MCP에서 `financial-model` 기반 리포트를 내는 유일한 길이다. 봉투는 사용자별로 보관되고 서버 재기동을 견딘다.
 - 다음 세션에서 저장본을 짐작하지 않는다. `fintool_list`가 말한 이름만 `load`한다.
 
 
@@ -478,7 +479,7 @@ fintool_load name=아크메랩스-base
 - `months`는 12~60이다.
 - `mode`를 생략하면 cash다. `--mode`는 스펙의 `mode`를 덮어쓴다. `cash`·`accrual` 외의 값은 거부된다.
 - **`--summary`는 두 모드 모두 붙는다.** accrual은 월별 핵심 5개 + `summary`로, cash는 월별 현금 5개(매출·비용·영업손익·순현금·기말현금) + 라인아이템별 연간 집계 + `runway`로 줄인다. `calculation_hash`는 전체 결과와 같으므로 축약본을 그대로 인용해도 된다. 36개월 모델은 이것 없이는 도구 결과 한도를 넘긴다.
-- **`--scenarios`로 BEAR/BULL을 한 번에 낸다.** `[{"name":"bear","overrides":{"drivers.<id>.schedule.monthly_growth":0.03}}]`. 스펙을 시나리오마다 다시 보내지 않는다. 응답은 이미 축약 단위라 `--summary`와 함께 쓰지 않는다.
+- **`--scenarios`로 BEAR/BULL을 한 번에 낸다.** `[{"name":"bear","overrides":{"drivers.<id>.schedule.monthly_growth":0.03}}]`. 스펙을 시나리오마다 다시 보내지 않는다. MCP에서는 `spec`과 같이 배열을 그대로 넣는다(문자열도 받는다). 응답은 이미 축약 단위라 `--summary`와 함께 쓰지 않는다. 이 봉투를 그대로 `report`의 `financial_model` 자리에 넣으면 `fm-summary-table`이 `base`를, `fm-scenario-table`이 비교표를 그린다 — 리포트 때문에 base를 한 번 더 돌리지 않는다.
 - **`cohort`·`growth` 스케줄의 파라미터에 참조를 쓴다.** 유입이 `가입 × 전환 × 보유율`이면 그 곱을 `metric` line item으로 두고 `"additions": {"ref": "m_new"}`로 가리킨다. 곱을 손으로 계산해 상수로 박으면 원칙 1(LLM은 숫자를 만들지 않는다)이 깨진다.
 - **기존 `financial-model/v1`·`v2` 스펙도 그대로 받는다.** 다만 그 두 버전에 `--mode`를 주면 거부된다 — v1은 cash, v2는 accrual로 고정이다. 모드를 바꿔 돌리려면 스펙을 새 형식으로 옮긴다.
 - expression은 **같은 월 값만** 참조한다. 전월 참조는 `expression_cycle`로 거부된다 — 시간 재귀는 `growth`·`cohort` 스케줄로 푼다.
