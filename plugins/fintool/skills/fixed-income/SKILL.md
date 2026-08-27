@@ -10,6 +10,13 @@ description: fintool MCP로 채권 가격·수익률·듀레이션·커브·전�
 범위: `coupon` / daycount basis → `bond` / `discount` → (선택) `curve`. 전환사채는 `convertible`.  
 범위 밖: 재무제표 기반 신용위험 — Merton 부도확률·구조모형 신용스프레드(`financial-statements`). 듀레이션 기반 채권 성과귀속(`attribution --model fixed-income`)은 `fund-performance`. 주식 DCF(`valuation`), 최적 비중·VaR(`portfolio-risk`), 스타트업 런웨이(`startup-finance`), 주식 옵션 가격·내재변동성(`option`).
 
+## 첫 계산 호출의 evidence 계약
+
+JSON spec 도구는 카탈로그의 `input_contract.call_example`을 우선 복사한다. 일반 플래그 도구도
+evidence에는 단수 `field`가 아니라 `fields` 배열을 쓴다. `kind:"derived"` 항목에는 입력을
+가리키는 `ref`가 필수다. `convertible`처럼 spec이 아닌 도구는 카탈로그의 `global_flags.evidence`
+계약을 그대로 따른다.
+
 ## 흐름
 
 ```

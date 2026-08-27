@@ -21,6 +21,20 @@ description: fintool MCP로 포트폴리오 최적화·위험·거래비용을 �
 
 가능하면 workflow `$ref`로 `annual_volatility_decimal`을 잇는다. `--seed`가 있는 호출은 시드를 고정한다.
 
+## 스타트업 런웨이는 startup-finance로 보낸다
+
+사업 매출·비용·채용·조달 계획에서 현금 고갈이나 런웨이를 묻는다면 **`startup-finance`**의 사업 재무모델 경계다. 은퇴자산·투자 포트폴리오처럼 자산 수익률 순서가 고갈을 좌우할 때만 이 스킬의 `montecarlo`를 쓴다.
+
+- GBM 잔고 Monte Carlo는 자산 수익률 분포와 집계 현금흐름을 모델링할 뿐, 사업 매출 성장률·원가율·채용 불확실성을 직접 모델링하지 않는다. 스타트업의 기존 계획을 `annual-flow` 하나로 축약해 사업 확률처럼 해석하지 않는다.
+- `mean-return=0`, `volatility=0`이면 모든 경로가 같아 **결정론적 스트레스**다. 고갈률을 확률 예측처럼 표현하지 않는다.
+- 변동성·부트스트랩 표본·시나리오 확률처럼 경로를 가르는 입력이 있으면 무엇의 불확실성인지 밝히고 **분포 가정**으로 표시한다. 사업 드라이버 분포가 필요하면 `startup-finance`에서 `financial-model` 시나리오를 먼저 정의한다.
+
+## 첫 계산 호출의 입력 형태
+
+- `subcommand`는 여러 단계를 잇는 `workflow`에서만 쓴다. `portfolio`·`montecarlo`·`var`·`trade-cost`의 계산 호출에는 넣지 않는다.
+- `portfolio --returns`의 다자산 시계열은 세미콜론 문자열이 아니라 JSON 객체다. 예: `"returns":{"주식":[0.01,-0.02],"채권":[0.003,0.004]}`.
+- 시계열 `--returns`와 모수 입력 `--assets`·`--volatilities`·`--correlation`은 동시에 주지 않는다. `--assets`는 모수 입력에서만 쓴다.
+
 ## 성과 귀속은 이 스킬이 아니다
 
 벤치마크 대비 초과수익 분해(`attribution`), 샤프·정보비율·TWRR/MWRR(`perf`), PE/VC 펀드지표(`private-markets`)는

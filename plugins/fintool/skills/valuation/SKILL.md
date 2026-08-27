@@ -5,6 +5,13 @@ description: fintool MCP로 WACC·DCF·배수 가치평가를 한다. 내재가�
 
 # Valuation
 
+## 첫 계산 호출의 evidence 계약
+
+JSON spec 도구는 카탈로그의 `input_contract.call_example`을 우선 복사한다. 일반 플래그 도구도
+evidence에는 단수 `field`가 아니라 `fields` 배열을 쓴다. `kind:"derived"` 항목에는 입력을
+가리키는 `ref`가 필수다. `dcf`처럼 spec이 아닌 도구는 카탈로그의 `global_flags.evidence`
+계약을 그대로 따른다.
+
 도구는 **원격 MCP**다. `fintool_catalog` → `fintool_run`. 로컬 바이너리를 설치하지 않는다.
 `fintool_catalog`는 인자 없이 부르면 목록만 준다. 플래그는 `{"tool": "wacc"}`처럼 도구를 지정해 받는다.
 
