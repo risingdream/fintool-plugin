@@ -14,7 +14,8 @@ description: fintool MCP로 스타트업 재무모델·시나리오·투자유�
 
 `financial-model`·`cap-table-simulate`처럼 JSON spec을 받는 도구는 먼저 해당 도구의
 `input_contract.call_example`을 복사하고 값만 바꾼다. evidence의 입력 경로는 `fields` 배열에
-`spec.<path>`로 적는다. `kind:"derived"` 항목에는 계산 근거 경로인 `ref`가 필수이며, 설명문인
+`spec.<path>`로 적고 `kind`는 `source|assumption|derived|unsupported` 중 하나를 쓴다.
+`kind:"derived"` 항목에는 계산 근거 경로인 `ref`가 필수이며, 설명문인
 `note`를 `ref` 대신 쓰지 않는다.
 
 ## 원칙
@@ -471,6 +472,14 @@ fintool_load name=아크메랩스-base
 
 받은 `data.spec`을 **한 글자도 바꾸지 말고** `financial-model`에 다시 넣는다. 시나리오는 그 스펙의 드라이버를 축으로 짠다. 채팅에서 성장률을 다시 계산해 넣지 않는다.
 
+투자자 업데이트에서 저장 모델의 전기 대비 변화를 낼 때는 두 버전을 다시 계산해 직접 비교한다.
+
+```
+fintool_compare before={"name":"아크메랩스-base","seq":1} after={"name":"아크메랩스-base","seq":2}
+```
+
+반환 봉투를 손대지 않고 `report --recipe investor-update` 번들의 `comparison`에 넣는다. `period-comparison-table`이 재무모델의 런웨이·기말현금·누적 EBITDA·손익분기 시점 또는 캡테이블의 창업자 지분·완전희석 주식수·라운드 후 옵션풀을 before/after/delta로 그린다. 지표가 없으면 0으로 만들지 않는다. 비교 봉투에 보존된 두 `seq`와 전체 `calculation_hash`를 그대로 인용한다.
+
 같은 이름에 새 버전을 남기려면 `overwrite: true`. 시나리오를 다른 이름으로 가르려면 `fintool_branch from=아크메랩스-base name=아크메랩스-bull`. 드라이버 하나만 고치려면 `fintool_patch`.
 
 `list`의 `models[]`에는 스펙이 없다. 내용을 보려면 `load`다.
@@ -534,9 +543,10 @@ fintool_load name=아크메랩스-base
 | pitch Ask·런웨이 | `financial-model` 자금소요액 |
 | pitch 희석 | `cap-table-simulate` |
 | 덱·IR 산출물 | `report` (`pitch-deck` / `investor-update`) |
+| 투자자 업데이트 전기 대비 변화 | `fintool_compare` → `report`의 `comparison` |
 | 사용자가 직접 조작할 모델 | `financial-model --workbook` |
 
-- `[Assumption]`/`[Estimate]` 라벨은 `assumptions[].source`에 출처로 남긴다. 고객 인터뷰 게이트 통과 전 재무는 Stage A(가정 기반)임을 명시한다.
+- `[Assumption]`/`[Estimate]` 값은 `fintool_run.evidence`에서 `kind:"assumption"`으로 분류하고 `fields`에 입력 경로, `ref`에 가정 근거를 남긴다. 고객 인터뷰 게이트 통과 전 재무는 Stage A(가정 기반)임을 명시한다.
 - TAM/SAM/SOM·RICE 같은 자명한 산술은 fintool 없이 계산하고 가정 출처를 명시한다.
 - 서드파티 SKILL.md는 수정하지 않는다(업데이트 시 덮어써짐). 유지보수는 이 섹션만 한다.
 
