@@ -1,6 +1,6 @@
 ---
 name: subscription-metrics
-description: fintool MCP로 실측 또는 명시적 plan 구독 원장을 MRR·operating ARR·waterfall·GRR/NRR/NDR/GDR·logo/revenue cohort·ledger reconciliation으로 계산한다. MRR/ARR, new/reactivation/expansion/contraction/churn, 로고 유지율, 매출 유지율, acquisition cohort 요청에 사용한다. LTV/CAC는 unit-economics, 미래 재무는 financial-model, invoice/cash는 billing-cashflow로 보낸다.
+description: fintool MCP로 실측 또는 명시적 plan 구독 원장을 MRR·operating ARR·waterfall·GRR/NRR/NDR/GDR·logo/revenue cohort·ledger reconciliation으로 계산한다. MRR/ARR, new/reactivation/expansion/contraction/churn, 로고 유지율, 매출 유지율, acquisition cohort 요청에 사용한다. LTV/CAC는 unit-economics, 미래 재무는 financial-model, invoice/cash는 billing-cashflow, 데이터 기반 재무 예측 검증은 forecast-validation으로 보낸다.
 ---
 
 # Subscription Metrics
@@ -43,6 +43,7 @@ logo 단위, 신규 고객 포함 여부, expansion cap을 먼저 확인한다. 
 | ARPA·gross margin·logo churn·CAC로 LTV/CAC·payback | `unit-economics` |
 | 미래 손익·현금·재무제표·런웨이 | `financial-model` |
 | invoice·AR·collection·settlement·bank cash | `billing-cashflow` |
+| 관측 시계열의 통계적 예측·rolling-origin·coverage | `forecast-validation` |
 
 하나의 요청에 여러 질문이 있으면 각 도구 경계를 유지한다. MRR를 invoice·recognized revenue·cash로,
 NRR를 logo churn이나 LTV로 자동 변환하지 않는다.
@@ -162,6 +163,7 @@ structured JSON으로 연결한다. currency·period·scope가 맞지 않으면 
 - revenue recognition, invoice, collection, cash 계산
 - NRR를 logo churn이나 LTV로 변환
 - 실측 원장을 미래 가정·forecast로 자동 승격
+- 검증되지 않은 statistical forecast를 계획값으로 자동 승격. 예측 검증은 `forecast-validation`
 - 목표 ARR에서 필요한 movement를 역산하는 reverse planner
 - unsupported/unverified/null을 0 또는 verified로 표현
 

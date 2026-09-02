@@ -1,6 +1,6 @@
 ---
 name: billing-cashflow
-description: fintool MCP로 청구서부터 수금·결제수수료·환불·정산·은행 현금까지 계산하고 AR·aging·DSO를 검산한다. 연간 선불 vs 월 후불, 청구 후 현금 입금시점, 수금 지연, 미수금/AR, DSO, 결제수수료, 환불 현금흐름 요청에 사용한다. MRR·ARR는 subscription-metrics, 전사 계획은 business-plan·financial-model로 보낸다.
+description: fintool MCP로 청구서부터 수금·결제수수료·환불·정산·은행 현금까지 계산하고 AR·aging·DSO를 검산한다. 연간 선불 vs 월 후불, 청구 후 현금 입금시점, 수금 지연, 미수금/AR, DSO, 결제수수료, 환불 현금흐름 요청에 사용한다. MRR·ARR는 subscription-metrics, 전사 계획은 business-plan·financial-model, 데이터 기반 재무 예측 검증은 forecast-validation으로 보낸다.
 ---
 
 # Billing Cashflow
@@ -121,6 +121,7 @@ reconciliation의 `fully_explained`·`status`, evidence 배열, warnings, `calcu
 | 장기 사업계획의 연매출·비용·연말 운전자본·자금소요 | `business-plan` |
 | 월별 회사 전체 손익·재무상태·현금·런웨이 | `financial-model` |
 | “매출은 있는데 현금이 부족”, 선후불·DSO·수수료·환불을 포함한 창업 재무 질문 | `startup-finance`가 이 스킬로 라우팅 |
+| 관측 시계열의 통계적 예측·rolling-origin·coverage | `forecast-validation` |
 
 handoff는 자동 회계 판단이 아니다.
 
@@ -140,6 +141,7 @@ handoff는 자동 회계 판단이 아니다.
 - 업계 benchmark·목표치·provider 조건 또는 missing fee·refund·terms·lag를 채우는 숨은 기본값
 - DSO scalar에서 미래 수금분포를 역산하거나 과거 event에서 지연·환불의 원인을 자동 인과추정
 - actual ledger를 plan·forecast로 자동 승격
+- 검증되지 않은 statistical forecast를 계획값으로 자동 승격. 예측 검증은 `forecast-validation`
 - 세금 계산·세법 판단, revenue recognition, 법정 계정분류·공시 적정성 판단
 - 자동 FX 또는 여러 통화 합산
 - unsupported·unverified·null을 0 또는 확인된 값으로 표현

@@ -4,15 +4,15 @@
     "name": "risingdream"
   },
   "metadata": {
-    "description": "원격 fintool MCP와 재무·운영경제성·스타트업 전문 스킬 22종. 가치평가·M&A·도산 구조조정·재무제표·채권·옵션·포트폴리오·원가·GTM·운영계획·시장 검증을 다룬다.",
-    "version": "0.10.0"
+    "description": "원격 fintool MCP와 재무·운영경제성·스타트업 전문 스킬 23종. 가치평가·M&A·도산 구조조정·재무제표·채권·옵션·포트폴리오·원가·GTM·운영계획·예측 검증·시장 검증을 다룬다.",
+    "version": "0.11.0"
   },
   "plugins": [
     {
       "name": "fintool",
       "source": "./plugins/fintool",
-      "description": "원격 fintool MCP와 재무·운영경제성·스타트업 전문 스킬 22종. 가치평가·M&A·도산 구조조정·재무제표·채권·옵션·포트폴리오·원가·GTM·운영계획·시장 검증을 다룬다.",
-      "version": "0.10.0"
+      "description": "원격 fintool MCP와 재무·운영경제성·스타트업 전문 스킬 23종. 가치평가·M&A·도산 구조조정·재무제표·채권·옵션·포트폴리오·원가·GTM·운영계획·예측 검증·시장 검증을 다룬다.",
+      "version": "0.11.0"
     }
   ]
 }

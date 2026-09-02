@@ -1,6 +1,6 @@
 ---
 name: financial-statements
-description: fintool MCP로 재무제표를 분석하고 신용위험을 계산한다. DART 재무제표에서 재무비율·듀폰 분해·EPS(기본·희석)·FCFF/FCFE·현금흐름 연결, LIFO·리스·연금·세금·외화환산 회계 정규화, Merton 부도확률·distance to default·신용스프레드, 재무지표 회귀·부도예측 로지스틱을 요청하면 이 스킬을 쓴다. 재무제표 분석, 재무비율, 부채비율, 유동비율, 이자보상배율, ROE 분해, 희석주당순이익, 잉여현금흐름, 영업현금흐름 검증, 회계 정규화, 부도확률, 신용스프레드, 신용위험, 회귀분석, 부도예측 모형 같은 한국어 요청에 반응한다. DCF·WACC·목표주가는 valuation, 펀드 성과귀속·PE 펀드지표는 fund-performance, 채권 가격·듀레이션은 fixed-income, 스타트업 런웨이·캡테이블은 startup-finance로 보낸다. 숫자는 지어내지 않고 fintool 봉투만 인용한다.
+description: fintool MCP로 재무제표를 분석하고 신용위험을 계산한다. DART 재무제표에서 재무비율·듀폰 분해·EPS(기본·희석)·FCFF/FCFE·현금흐름 연결, LIFO·리스·연금·세금·외화환산 회계 정규화, Merton 부도확률·distance to default·신용스프레드, 재무지표 회귀·부도예측 로지스틱을 요청하면 이 스킬을 쓴다. 재무제표 분석, 재무비율, 부채비율, 유동비율, 이자보상배율, ROE 분해, 희석주당순이익, 잉여현금흐름, 영업현금흐름 검증, 회계 정규화, 부도확률, 신용스프레드, 신용위험, 회귀분석, 부도예측 모형 같은 한국어 요청에 반응한다. DCF·WACC·목표주가는 valuation, 펀드 성과귀속·PE 펀드지표는 fund-performance, 채권 가격·듀레이션은 fixed-income, 스타트업 런웨이·캡테이블은 startup-finance, 과거 실적 시계열의 rolling-origin 예측 검증은 forecast-validation으로 보낸다. 숫자는 지어내지 않고 fintool 봉투만 인용한다.
 ---
 
 # Financial Statements
@@ -15,7 +15,7 @@ JSON 문자열로 이중 직렬화하지 않는다.
 도구는 **원격 MCP**다. `fintool_catalog` → `fintool_run`. 로컬 바이너리를 설치하지 않는다.
 
 범위: `fsa`(EPS·재무비율·현금흐름·회계 정규화) · `credit`(Merton 부도확률) · `regression`(OLS·로지스틱).
-범위 밖: DCF·WACC·주당가치(`valuation`), 성과귀속·펀드지표(`fund-performance`), 채권 가격·듀레이션(`fixed-income`), 월별 재무모델·런웨이(`startup-finance`).
+범위 밖: DCF·WACC·주당가치(`valuation`), 성과귀속·펀드지표(`fund-performance`), 채권 가격·듀레이션(`fixed-income`), 월별 재무모델·런웨이(`startup-finance`), 시계열 rolling-origin·seasonal naive·확률구간 calibration(`forecast-validation`).
 
 ## 원칙
 
@@ -279,6 +279,7 @@ Merton 구조모형이다. 주식을 자산가치에 대한 유럽형 콜옵션(
 
 - 인용: `data.coefficients[].{name, estimate, standard_error, statistic, p_value, confidence_interval, significant}`, `data.fit.{sample_size, parameters, degrees_freedom, r_squared, adjusted_r_squared, residual_standard_error}`, `data.anova.{regression, residual, total}`, `data.predictions[].{label, predicted, standard_error, confidence_interval, prediction_interval}`, 진단은 `data.diagnostics.{breusch_pagan, durbin_watson, vif}`, 잔차는 `data.residuals[]`·`data.fitted_values[]`.
 - **신뢰구간과 예측구간을 섞지 않는다.** `confidence_interval`은 **평균**의 구간, `prediction_interval`은 **개별 관측치**의 구간이고 후자가 항상 넓다. 특정 기업의 다음 기 값을 말할 때는 `prediction_interval`이다.
+- **시계열 rolling-origin·seasonal naive·분위수 coverage는 이 스킬이 아니다.** 관측 재무 시계열의 표본외 예측 검증은 `forecast-validation`으로 보낸다. 회귀의 prediction interval을 시계열 신뢰구간처럼 쓰지 않는다.
 - 범주형은 `{"name":..., "categorical":[...], "reference":"기준범주"}`로 준다. 계수 이름이 `standard[k-gaap]`처럼 `이름[수준]` 형태로 나오고 **기준 범주 대비 차이**로 읽는다.
 
 ### 로지스틱 — 부도예측

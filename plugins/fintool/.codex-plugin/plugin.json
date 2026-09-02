@@ -1,7 +1,7 @@
 {
   "name": "fintool",
-  "version": "0.10.0",
-  "description": "원격 fintool MCP와 재무·운영경제성·스타트업 전문 스킬 22종. 가치평가·M&A·도산 구조조정·재무제표·채권·옵션·포트폴리오·원가·GTM·운영계획·시장 검증을 다룬다.",
+  "version": "0.11.0",
+  "description": "원격 fintool MCP와 재무·운영경제성·스타트업 전문 스킬 23종. 가치평가·M&A·도산 구조조정·재무제표·채권·옵션·포트폴리오·원가·GTM·운영계획·예측 검증·시장 검증을 다룬다.",
   "author": {
     "name": "risingdream"
   },
@@ -14,7 +14,7 @@
   "interface": {
     "displayName": "fintool",
     "shortDescription": "스타트업 재무·운영경제성 계산 + IR 스킬",
-    "longDescription": "원격 fintool MCP의 결정론적 재무 계산과 22개 전문 스킬을 결합해 기업가치·M&A 거래경제성·도산 구조조정·재무제표·채권·옵션·포트폴리오 위험·제품/서비스 원가·GTM·구독·인력·벤더·청구·영업 운영경제성·스타트업 재무 및 시장 검증을 분석합니다.",
+    "longDescription": "원격 fintool MCP의 결정론적 재무 계산과 23개 전문 스킬을 결합해 기업가치·M&A 거래경제성·도산 구조조정·재무제표·채권·옵션·포트폴리오 위험·제품/서비스 원가·GTM·구독·인력·벤더·청구·영업 운영경제성·예측 검증·스타트업 재무 및 시장 검증을 분석합니다.",
     "category": "Productivity",
     "developerName": "risingdream",
     "capabilities": [
