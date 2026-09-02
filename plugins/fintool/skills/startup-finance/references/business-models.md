@@ -2,7 +2,8 @@
 
 `financial-model` 드라이버 스펙으로 옮길 때 참고하는 6종이다. 드라이버 계층은 `cash`·`accrual` 두 모드가 공유하므로 여기 규약은 모드와 무관하다. **템플릿이 아니라 출발점**이다. 실제 사업은 대개 섞여 있고, 인터뷰에서 나온 실제 경로가 항상 우선한다.
 
-실행 가능한 전체 스펙은 리포지토리의 `docs/examples/financial-model/cash/cases/`에 있다.
+실행 가능한 전체 스펙은 `fintool_catalog {"tool":"financial-model"}`의
+`input_contract.call_example`을 복사하고, 아래 드라이버 체인으로 실제 값만 교체해 만든다.
 
 ## 유형별 모드 권고
 

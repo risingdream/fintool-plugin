@@ -5,6 +5,13 @@ description: fintool MCP로 WACC·DCF·배수 가치평가를 한다. 내재가�
 
 # Valuation
 
+## 원격 MCP 호출 계약
+
+첫 계산 전에 `fintool_catalog {"tool":"<도구>"}`로 해당 도구 하나의 최신 계약을 조회하고
+`input_contract.call_example`을 복사한다. 계산은 `fintool_run {"tool":"<도구>","flags":{"<플래그>":"<값>"}}` 형태로 실행한다.
+`flags`는 JSON 객체로 전달한다. `spec` 플래그를 쓰는 도구에서는 `flags.spec`도 JSON 객체로 넣고,
+JSON 문자열로 이중 직렬화하지 않는다.
+
 ## 첫 계산 호출의 evidence 계약
 
 JSON spec 도구는 카탈로그의 `input_contract.call_example`을 우선 복사한다. 일반 플래그 도구도
@@ -34,7 +41,7 @@ evidence에는 단수 `field`가 아니라 `fields` 배열을 쓴다. `kind:"der
 5. 연결     workflow v2 명세로 wacc → dcf 를 typed $ref 로 고정
 ```
 
-가능하면 `workflow validate` 후 `workflow run`을 쓴다. 예: `docs/examples/workflow-wacc-dcf.json`.
+가능하면 카탈로그가 공개한 workflow v2 계약으로 `workflow validate` 후 `workflow run`을 쓴다.
 
 **단, `workflow` 경로에서는 `--from`을 쓸 수 없다.** `--from`은 계산 커맨드의 플래그를 채우는데
 `workflow run`에는 채울 플래그가 없다(`unknown_input`). 출처 있는 입력이 필요하면 둘 중 하나다.
@@ -165,13 +172,12 @@ P/E·P/B·P/S만 필요한데 PEG와 EV 배수까지 계산하면 `--earnings-gr
 --shares를 지정해야 합니다 (필수 10개 중 7개 누락)
 ```
 
-## 카탈로그 호출 줄이기
+## 카탈로그 호출 범위
 
-`fintool_catalog`는 스펙 조회일 뿐 계산이 아니다. 계측에서 전체 도구 호출의 31%가 카탈로그였다.
-
-- 이 문서에 **호출 예시가 있는 도구는 카탈로그를 부르지 않는다.** 예시를 그대로 쓰고 숫자만 바꾼다.
-- 예시가 없는 도구만 `fintool_catalog {"tool":"<이름>"}`으로 그 도구 하나를 받는다. 인자 없는 전체 목록은 어떤 도구가 있는지 모를 때만 쓴다.
-- 호출이 실패하면 오류 봉투가 유효 플래그 목록과 `input_contract`를 함께 준다. 그것을 보고 고치면 되고 카탈로그를 따로 부를 필요가 없다.
+- 각 도구의 첫 계산 전에 `fintool_catalog {"tool":"<이름>"}`으로 그 도구 하나의 계약을 확인한다.
+- 같은 연결·같은 세션에서 계약 버전이 바뀌지 않았다면 확인한 계약을 재사용할 수 있다.
+- 호출이 계약 오류로 실패하면 오류 봉투를 확인하고 해당 도구의 카탈로그를 다시 조회한다.
+- 인자 없는 전체 목록은 필요한 도구 이름 자체를 모를 때만 쓴다.
 
 ## 함정
 - **금액을 원 단위 정수로 바꿀 때 자릿수를 다시 센다.** "5,000억"은 `500000000000`(0이 11개)이다. 엔진은 단위를 검증하지 못하고 그대로 계산한다.
@@ -185,7 +191,7 @@ P/E·P/B·P/S만 필요한데 PEG와 EV 배수까지 계산하면 `--earnings-gr
 
 ## 호출
 
-플래그는 kebab-case. `spec`은 문자열. 비율은 연율 소수.
+플래그는 kebab-case다. MCP `flags`와 `flags.spec`은 JSON 객체이고, 비율은 연율 소수다.
 
 ```
 wacc: risk-free-rate, beta, market-risk-premium, cost-of-debt, tax-rate, equity-value, debt-value

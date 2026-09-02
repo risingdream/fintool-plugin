@@ -3,7 +3,6 @@
 **적용 대상**: `startup-design` · `startup-competitors` · `startup-positioning` · `startup-pitch` 4개 스킬 공용
 **참조 경로**: 다른 스킬에서는 `../startup-design/references/kr-research-sources.md`
 **소스 접근성 실측일**: 2026-08-23
-**덮는 K1 P0 항목**(`docs/startup-skill-kr-gap.md`): A1·A2·A3·A4·A6·A10·A12·A13·A15·A16·A17·A18·A22·A23·A25·A26 (16개). 보조로 A5·A7·A8·A9·A11·A14·A19·A20·A21 커버.
 
 이 파일은 영문 reference(`research-principles.md`, `research-wave-*.md`, `honesty-protocol.md`)를 **대체하지 않는다**. 원칙(교차검증·정량화·출처 티어링·정직성 규약)은 그대로 적용하고, **소스와 검색 쿼리만 한국 시장용으로 치환**한다.
 
@@ -74,7 +73,7 @@
 
 | 소스 | 대체하는 미국 소스 | 접근성 | 비고 |
 |---|---|---|---|
-| **혁신의숲** `innoforest.co.kr` | Crunchbase + Similarweb | C/D | 고유방문자수·**소비자 거래액**·**고용인원**·매출·투자·특허를 36개월 그래프로 제공하고 기업비교를 지원한다 *(제공 지표 구성은 `docs/startup-skill-kr-gap.md` 실사표, 2026-08-23 확인)*. Crunchbase에도 Similarweb에도 없는 데이터 |
+| **혁신의숲** `innoforest.co.kr` | Crunchbase + Similarweb | C/D | 고유방문자수·**소비자 거래액**·**고용인원**·매출·투자·특허를 36개월 그래프로 제공하고 기업비교를 지원한다 *(제공 지표 구성은 2026-08-23 확인)*. Crunchbase에도 Similarweb에도 없는 데이터 |
 | **THE VC** `thevc.kr` | Crunchbase | **D — 수동 조회 전용** | ⚠️ 아래 별도 경고 참조 |
 | **한국벤처캐피탈협회** `kvca.or.kr` | NVCA | B | UA 없으면 403 |
 | **플래텀** `platum.kr` | TechCrunch | B | UA 없으면 403 |

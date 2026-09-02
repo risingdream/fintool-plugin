@@ -1,0 +1,111 @@
+{
+  "schema_version": "workforce-economics/v1",
+  "basis": "plan",
+  "currency": "KRW",
+  "periods": [
+    {
+      "id": "2026-09",
+      "start": "2026-09-01",
+      "end": "2026-10-01",
+      "label": "2026년 9월"
+    }
+  ],
+  "groups": [
+    {
+      "id": "delivery",
+      "label": "Delivery team",
+      "employment_basis": "employee",
+      "period_inputs": [
+        {
+          "period_id": "2026-09",
+          "headcount": {
+            "opening": 2,
+            "closing": 2
+          },
+          "time": {
+            "full_time_reference_hours": 160,
+            "regular_scheduled_hours": 240,
+            "overtime_hours": 0,
+            "paid_hours": 240,
+            "unavailable_time": [
+              {
+                "category": "paid_leave",
+                "hours": 24
+              }
+            ],
+            "nonproductive_time": [
+              {
+                "category": "admin_and_training",
+                "hours": 36
+              }
+            ],
+            "allocated_productive_hours": 150
+          },
+          "costs": {
+            "components": [
+              {
+                "id": "base",
+                "layer": "cash_compensation",
+                "category": "base_pay",
+                "amount": {
+                  "type": "money",
+                  "unit": "KRW",
+                  "value": 14000000
+                },
+                "rollup": "additive"
+              },
+              {
+                "id": "contrib",
+                "layer": "employer_on_cost",
+                "category": "employer_contribution",
+                "amount": {
+                  "type": "money",
+                  "unit": "KRW",
+                  "value": 2500000
+                },
+                "rollup": "additive"
+              },
+              {
+                "id": "benefit",
+                "layer": "employer_on_cost",
+                "category": "benefit",
+                "amount": {
+                  "type": "money",
+                  "unit": "KRW",
+                  "value": 1500000
+                },
+                "rollup": "additive"
+              }
+            ],
+            "reported_total": {
+              "type": "money",
+              "unit": "KRW",
+              "value": 18000000
+            },
+            "reported_total_scope": "employment_cost"
+          }
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "source",
+      "fields": [
+        "$.groups.delivery.period_inputs.2026-09.time"
+      ],
+      "provider": "approved workforce plan",
+      "as_of": "2026-08-28",
+      "ref": "plan-2026-09"
+    },
+    {
+      "kind": "source",
+      "fields": [
+        "$.groups.delivery.period_inputs.2026-09.costs"
+      ],
+      "provider": "payroll budget",
+      "as_of": "2026-08-28",
+      "ref": "payroll-budget-2026-09"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "schema_version": "packaging-economics/v1",
+  "scenario_id": "invalid_currency_unit",
+  "currency": "KRW",
+  "period": {
+    "start": "2026-08-01",
+    "end": "2026-09-01",
+    "grain": "month"
+  },
+  "measurement_basis": "observed_billing_period",
+  "shared_fixed_cost": 0,
+  "cells": [
+    {
+      "id": "cell_a",
+      "plan_id": "plan_a",
+      "segment_id": "all",
+      "monetization_status": "paid",
+      "account_count": 2,
+      "operational_quantities": [],
+      "charge_components": [
+        {
+          "id": "base",
+          "kind": "flat_per_account",
+          "unit_price": 10,
+          "price_unit": "USD/account/month"
+        }
+      ],
+      "discount": {
+        "kind": "none",
+        "applies_to": []
+      },
+      "direct_cost": {
+        "cost_per_account": 0,
+        "cost_per_active_seat": 0,
+        "usage_costs": [],
+        "variable_revenue_share_rate": 0
+      }
+    }
+  ],
+  "evidence": []
+}

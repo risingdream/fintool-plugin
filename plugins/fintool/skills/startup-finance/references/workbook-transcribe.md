@@ -258,7 +258,8 @@ sys.exit(1 if bad else 0)
 | `accrual/workbook-36.input.json` | accrual | 2,309 | 391 | 468 | 0 | 2,700셀 0 불일치 |
 | `legacy/v1/boundary-60.input.json` (60개월, `Z` 넘김) | cash | 600 | 120 | 60 | 0 | 720셀 0 불일치 |
 
-재계산 대조는 Python `formulas` 라이브러리로 돌렸다(`scripts/workbook/verify_workbook.py`). 계약 설계와 엔진 반올림 재현 근거는 `docs/decisions/workbook-contract.md` W1~W10.
+재계산 대조는 Python `formulas` 라이브러리로 돌렸다. 계약은 이 문서의 전사 절차와 검증 게이트를
+정본으로 삼으며, 수식 셀 수·수식 원문·빈 셀·파라미터·서식이 하나라도 다르면 파일을 제공하지 않는다.
 
 **0 불일치가 검사를 안 한 결과는 아니다.** 전사기를 일부러 망가뜨려 검증이 잡는지 확인했다.
 
@@ -287,5 +288,5 @@ LibreOffice 26.2.5.2 headless. `formulas` 라이브러리 대신 실제 스프�
 
 **배포된 원격 MCP에는 이 절차가 아직 통하지 않는다.** 워커가 `layout.month_columns`·`header_labels`·
 `number_format`이 없는 이전 계약을 내고, `engine_version` 문자열은 둘을 구분하지 못한다.
-`KeyError: 'month_columns'`가 나면 **열을 직접 계산해 메우지 말고 멈춘다** — 그 순간 21개월차부터
-조용히 틀린 워크북이 된다. 전문은 `docs/testcases/workbook-remote/README.md`.
+`KeyError: 'month_columns'`가 나면 **열을 직접 계산해 메우지 말고 멈춘다**. 필요한 원격 계약 필드는
+`layout.month_columns`·`header_labels`·`number_format`이며, 하나라도 없으면 검증 가능한 워크북을 만들 수 없다.

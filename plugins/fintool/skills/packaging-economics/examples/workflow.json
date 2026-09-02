@@ -1,0 +1,123 @@
+{
+  "version": 2,
+  "steps": [
+    {
+      "id": "scenario_set",
+      "tool": "scenario",
+      "args": {
+        "spec": {
+          "assumptions": {
+            "cells.cell_a.account_count": {
+              "value": 2,
+              "range": [
+                1,
+                4
+              ],
+              "source": "explicit account-count scenario"
+            },
+            "cells.cell_a.charge_components.base.unit_price": {
+              "value": 10,
+              "range": [
+                8,
+                12
+              ],
+              "source": "explicit base-price scenario"
+            }
+          }
+        },
+        "mode": "oat"
+      }
+    },
+    {
+      "id": "packaging",
+      "tool": "packaging-economics",
+      "args": {
+        "spec": {
+          "schema_version": "packaging-economics/v1",
+          "scenario_id": "quickstart",
+          "currency": "KRW",
+          "period": {
+            "start": "2026-08-01",
+            "end": "2026-09-01",
+            "grain": "month"
+          },
+          "measurement_basis": "observed_billing_period",
+          "shared_fixed_cost": 5,
+          "cells": [
+            {
+              "id": "cell_a",
+              "plan_id": "plan_a",
+              "segment_id": "all",
+              "monetization_status": "paid",
+              "account_count": 2,
+              "operational_quantities": [
+                {
+                  "id": "active_seats",
+                  "value": 1,
+                  "unit": "seat",
+                  "basis": "per_account"
+                },
+                {
+                  "id": "requests",
+                  "value": 2,
+                  "unit": "request",
+                  "basis": "cell_total",
+                  "aggregation": "sum"
+                }
+              ],
+              "charge_components": [
+                {
+                  "id": "base",
+                  "kind": "flat_per_account",
+                  "unit_price": 10,
+                  "price_unit": "KRW/account/month"
+                },
+                {
+                  "id": "usage",
+                  "kind": "per_unit",
+                  "quantity_id": "requests",
+                  "included_quantity": 0,
+                  "entitlement_scope": "pooled",
+                  "unit_price": 2,
+                  "price_unit": "KRW/request"
+                }
+              ],
+              "discount": {
+                "kind": "none",
+                "applies_to": []
+              },
+              "direct_cost": {
+                "cost_per_account": 1,
+                "cost_per_active_seat": 1,
+                "usage_costs": [
+                  {
+                    "quantity_id": "requests",
+                    "unit_cost": 0.5,
+                    "cost_unit": "KRW/request"
+                  }
+                ],
+                "variable_revenue_share_rate": 0
+              }
+            }
+          ],
+          "mix_break_even": {
+            "scope": "all_accounts"
+          },
+          "evidence": [
+            {
+              "kind": "assumption",
+              "fields": [
+                "cells.cell_a.account_count",
+                "cells.cell_a.charge_components.base.unit_price"
+              ],
+              "note": "quickstart와 sensitivity를 위한 명시적 입력 가정"
+            }
+          ]
+        }
+      },
+      "batch": {
+        "$ref": "scenario_set#/data/cases"
+      }
+    }
+  ]
+}

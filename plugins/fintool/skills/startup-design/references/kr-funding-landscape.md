@@ -4,7 +4,6 @@
 **참조 경로**: 다른 스킬에서는 `../startup-design/references/kr-funding-landscape.md`
 **짝 파일**: `kr-legal-tax.md`(벤처확인·스톡옵션·세제), `kr-research-sources.md`(소스 맵)
 **수치 확인일**: 2026-08-23
-**덮는 K1 P0 항목**(`docs/startup-skill-kr-gap.md`): C1·C2·C3·C5·C6·C8·C9·C11·C12 + D8 (10개). 보조로 C4·C7·C10·C13·C14·D5·D9 커버.
 
 ---
 

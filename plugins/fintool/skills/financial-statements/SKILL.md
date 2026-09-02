@@ -5,6 +5,13 @@ description: fintool MCP로 재무제표를 분석하고 신용위험을 계산�
 
 # Financial Statements
 
+## 원격 MCP 호출 계약
+
+첫 계산 전에 `fintool_catalog {"tool":"<도구>"}`로 해당 도구 하나의 최신 계약을 조회하고
+`input_contract.call_example`을 복사한다. 계산은 `fintool_run {"tool":"<도구>","flags":{"<플래그>":"<값>"}}` 형태로 실행한다.
+`flags`는 JSON 객체로 전달한다. `spec` 플래그를 쓰는 도구에서는 `flags.spec`도 JSON 객체로 넣고,
+JSON 문자열로 이중 직렬화하지 않는다.
+
 도구는 **원격 MCP**다. `fintool_catalog` → `fintool_run`. 로컬 바이너리를 설치하지 않는다.
 
 범위: `fsa`(EPS·재무비율·현금흐름·회계 정규화) · `credit`(Merton 부도확률) · `regression`(OLS·로지스틱).
@@ -348,7 +355,7 @@ dart:financials:<6자리코드>:<연도>:<FY|Q1|H1|Q3>[:<CFS|OFS>]
 
 ```bash
 # 영업이익률 하나가 필요하면 dart:financials 하나로 끝난다
-fintool fsa --solve ratios --metrics margin --from dart:financials:012510:2025:FY:CFS
+fintool_run {"tool":"fsa","flags":{"solve":"ratios","metrics":"margin","from":"dart:financials:012510:2025:FY:CFS"}}
 ```
 
 | 그룹 | 산출 | `dart:financials` 하나로 되는가 |
@@ -509,14 +516,12 @@ EPS는 DART가 분자를, 사용자가 분모를 준다.
 6. **검산 결과를 본문에 한 줄 넣는다.** `balanced`, `reconciled`, `direct_indirect_difference`, `dupont.difference` 중 그 계산에 해당하는 것.
 7. **신용 관련 문장에는 반드시 측도와 가정을 붙인다.** "1년 부도확률 0.12%(위험중립, 자산가치·변동성은 가정)".
 
-## 카탈로그 호출 줄이기
+## 카탈로그 호출 범위
 
-`fintool_catalog`는 스펙 조회일 뿐 계산이 아니다. 계측에서 전체 도구 호출의 31%가 카탈로그였다.
-
-- 이 문서에 **호출 예시가 있는 도구는 카탈로그를 부르지 않는다.** 예시를 그대로 쓰고 숫자만 바꾼다.
-- `fsa`는 플래그가 100개가 넘어 카탈로그 응답이 크다. **모드별 필수 플래그가 위 표에 다 있으므로 부르지 않는다.**
-- 예시가 없는 도구만 `fintool_catalog {"tool":"<이름>"}`으로 그 도구 하나를 받는다.
-- 호출이 실패하면 오류 봉투가 무엇이 잘못됐는지 정확히 말해준다. 그것을 보고 고치면 되고 카탈로그를 따로 부를 필요가 없다.
+- 각 도구의 첫 계산 전에 `fintool_catalog {"tool":"<이름>"}`으로 그 도구 하나의 계약을 확인한다.
+- `fsa`처럼 플래그가 많은 도구도 필요한 도구 하나만 지정하며, 인자 없는 전체 목록은 도구 이름을 모를 때만 쓴다.
+- 같은 연결·같은 세션에서 계약 버전이 바뀌지 않았다면 확인한 계약을 재사용할 수 있다.
+- 호출이 계약 오류로 실패하면 오류 봉투를 확인하고 해당 도구의 카탈로그를 다시 조회한다.
 
 ## 함정
 

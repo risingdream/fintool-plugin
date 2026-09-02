@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "steps": [
+    {
+      "id": "scenario_set",
+      "tool": "scenario",
+      "args": {
+        "spec": "@.agents/skills/subscription-metrics/examples/scenario.json",
+        "mode": "corners"
+      }
+    },
+    {
+      "id": "metrics",
+      "tool": "subscription-metrics",
+      "args": {
+        "spec": "@.agents/skills/subscription-metrics/examples/scenario-base.json"
+      },
+      "batch": {
+        "$ref": "scenario_set#/data/cases"
+      }
+    }
+  ]
+}

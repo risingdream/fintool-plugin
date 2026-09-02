@@ -5,6 +5,13 @@ description: fintool MCP로 옵션 가격·그릭스·내재변동성을 계산�
 
 # Option
 
+## 원격 MCP 호출 계약
+
+첫 계산 전에 `fintool_catalog {"tool":"<도구>"}`로 해당 도구 하나의 최신 계약을 조회하고
+`input_contract.call_example`을 복사한다. 계산은 `fintool_run {"tool":"<도구>","flags":{"<플래그>":"<값>"}}` 형태로 실행한다.
+`flags`는 JSON 객체로 전달한다. `spec` 플래그를 쓰는 도구에서는 `flags.spec`도 JSON 객체로 넣고,
+JSON 문자열로 이중 직렬화하지 않는다.
+
 원격 MCP: `fintool_catalog` → `fintool_run`. 로컬 바이너리·Python·SciPy로 계산하지 않는다.
 
 범위: `option` (`price` / `greeks` / `iv` / `payoff` / `parity` / `strategy`).

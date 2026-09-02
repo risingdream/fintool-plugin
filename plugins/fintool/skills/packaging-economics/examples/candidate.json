@@ -1,0 +1,143 @@
+{
+  "schema_version": "packaging-economics/v1",
+  "scenario_id": "candidate_2026_08",
+  "currency": "KRW",
+  "period": {
+    "start": "2026-08-01",
+    "end": "2026-09-01",
+    "grain": "month"
+  },
+  "measurement_basis": "observed_billing_period",
+  "shared_fixed_cost": 100000,
+  "cells": [
+    {
+      "id": "starter_all",
+      "plan_id": "starter",
+      "segment_id": "all",
+      "monetization_status": "paid",
+      "account_count": 90,
+      "operational_quantities": [
+        {
+          "id": "active_seats",
+          "value": 2,
+          "unit": "seat",
+          "basis": "per_account"
+        },
+        {
+          "id": "api_requests",
+          "value": 14000,
+          "unit": "request",
+          "basis": "cell_total",
+          "aggregation": "sum"
+        }
+      ],
+      "charge_components": [
+        {
+          "id": "base",
+          "kind": "flat_per_account",
+          "unit_price": 11000,
+          "price_unit": "KRW/account/month"
+        },
+        {
+          "id": "api_overage",
+          "kind": "per_unit",
+          "quantity_id": "api_requests",
+          "included_quantity": 100,
+          "entitlement_scope": "pooled",
+          "unit_price": 22,
+          "price_unit": "KRW/request"
+        }
+      ],
+      "discount": {
+        "kind": "none",
+        "applies_to": []
+      },
+      "direct_cost": {
+        "cost_per_account": 1000,
+        "cost_per_active_seat": 200,
+        "usage_costs": [
+          {
+            "quantity_id": "api_requests",
+            "unit_cost": 5,
+            "cost_unit": "KRW/request"
+          }
+        ],
+        "variable_revenue_share_rate": 0.02
+      }
+    },
+    {
+      "id": "pro_all",
+      "plan_id": "pro",
+      "segment_id": "all",
+      "monetization_status": "paid",
+      "account_count": 60,
+      "operational_quantities": [
+        {
+          "id": "active_seats",
+          "value": 8,
+          "unit": "seat",
+          "basis": "per_account"
+        },
+        {
+          "id": "storage_gb",
+          "value": 70,
+          "unit": "gb",
+          "basis": "per_account",
+          "aggregation": "max"
+        }
+      ],
+      "charge_components": [
+        {
+          "id": "base",
+          "kind": "flat_per_account",
+          "unit_price": 32000,
+          "price_unit": "KRW/account/month"
+        },
+        {
+          "id": "storage_pack",
+          "kind": "per_package",
+          "quantity_id": "storage_gb",
+          "included_quantity": 50,
+          "entitlement_scope": "per_account",
+          "block_size": 25,
+          "unit_price": 4500,
+          "price_unit": "KRW/gb"
+        }
+      ],
+      "discount": {
+        "kind": "percentage",
+        "percent_off": 0.08,
+        "applies_to": [
+          "base"
+        ]
+      },
+      "direct_cost": {
+        "cost_per_account": 2000,
+        "cost_per_active_seat": 300,
+        "usage_costs": [
+          {
+            "quantity_id": "storage_gb",
+            "unit_cost": 10,
+            "cost_unit": "KRW/gb"
+          }
+        ],
+        "variable_revenue_share_rate": 0.02
+      }
+    }
+  ],
+  "mix_break_even": {
+    "scope": "paid_accounts"
+  },
+  "evidence": [
+    {
+      "kind": "assumption",
+      "fields": [
+        "cells.starter_all.account_count",
+        "cells.starter_all.charge_components.base.unit_price",
+        "cells.pro_all.account_count",
+        "cells.pro_all.charge_components.base.unit_price"
+      ],
+      "note": "후보 패키지의 명시적 계정·가격 가정"
+    }
+  ]
+}

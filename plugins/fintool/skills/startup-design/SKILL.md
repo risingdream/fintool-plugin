@@ -1,6 +1,6 @@
 ---
 name: startup-design
-description: 스타트업 아이디어를 설계·검증·계획한다. 시장 리서치, 경쟁 분석, 비즈니스 모델, 브랜드, 제품 정의, 재무 추정, 검증 실험을 다룬다. "창업 아이디어 검증", "사업 아이템 봐줘", "린 캔버스", "사업계획서", "시장 규모 추정", "이 아이디어 될까" 같은 한국어 요청에도 사용한다. Design, validate, and plan a startup from scratch. Covers market research, competitive analysis, business model, brand identity, product definition, financial projections, and validation experiments. Trigger when the user has a startup idea to explore, wants to validate a business concept, needs a business plan or lean canvas, asks for market sizing or competitive landscape, wants brand positioning or go-to-market strategy, or says anything like "I have an idea for..." or "is this idea worth pursuing". Also handles resuming from a previous checkpoint.
+description: 스타트업 아이디어를 설계·검증·계획한다. 시장 리서치, 경쟁 분석, 비즈니스 모델, 브랜드, 제품 정의, 재무 추정, 검증 실험을 다룬다. "창업 아이디어 검증", "사업 아이템 봐줘", "린 캔버스", "사업계획서", "시장 규모 추정", "이 아이디어 될까" 같은 한국어 요청에도 사용한다. 실제·계획 GTM 지출과 퍼널에서 채널별 CAC·ROAS·ROMI·필요 리드/예산을 계산하는 요청은 gtm-economics로 보낸다. Design, validate, and plan a startup from scratch. Covers market research, competitive analysis, business model, brand identity, product definition, financial projections, and validation experiments. Trigger when the user has a startup idea to explore, wants to validate a business concept, needs a business plan or lean canvas, asks for market sizing or competitive landscape, wants brand positioning or go-to-market strategy, or says anything like "I have an idea for..." or "is this idea worth pursuing". Also handles resuming from a previous checkpoint.
 ---
 
 # Startup Design
@@ -309,6 +309,10 @@ Produce in `02-strategy/`:
 - `business-model.md` — revenue model, unit economics, scalability, dependencies and partnerships
 - `positioning.md` — April Dunford's five components
 - `go-to-market.md` — launch strategy, first 100 customers plan, ranked growth channels, milestones
+
+이 단계는 어떤 채널을 왜 선택할지 설계한다. 실제·계획한 매체비·영업/마케팅 인건비와
+동일 cohort 퍼널로 채널 CAC·ROAS·ROMI 또는 목표 리드·예산을 계산하는 질문은
+`gtm-economics`로 넘긴다. 그 스킬의 계산 결과를 이 문서의 채널 우선순위 근거로 쓴다.
 
 Update PROGRESS.md.
 

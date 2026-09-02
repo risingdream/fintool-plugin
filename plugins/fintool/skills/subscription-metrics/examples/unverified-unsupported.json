@@ -1,0 +1,84 @@
+{
+  "schema_version": "subscription-metrics/v1",
+  "basis": "actual",
+  "ledger_version": "ledger-partial-evidence-v1",
+  "currency": "KRW",
+  "reporting_timezone": "Asia/Seoul",
+  "period": {
+    "start": "2026-07-01T00:00:00+09:00",
+    "end_exclusive": "2026-08-01T00:00:00+09:00",
+    "grain": "calendar_month"
+  },
+  "as_of": "2026-08-03T12:00:00+09:00",
+  "metric_policy": {
+    "id": "operating-subscription-v1",
+    "version": "2026-08-28",
+    "entity_unit": "account",
+    "cohort_anchor": "first_positive_mrr",
+    "active_basis": "positive_eligible_mrr",
+    "included_statuses": ["active"],
+    "trial_handling": "exclude_trial_components",
+    "discount_handling": "net_recurring_discounts",
+    "tax_handling": "exclude",
+    "one_time_fee_handling": "exclude",
+    "professional_service_handling": "exclude",
+    "usage_handling": "committed_minimum_only",
+    "reactivation_policy": "any_prior_positive_in_supplied_history",
+    "future_contract_handling": "exclude_until_effective",
+    "source_correction_handling": "revise_effective_period"
+  },
+  "precision": {
+    "money_decimal_scale": 2,
+    "calculation": "binary64_full_precision",
+    "rounding": "presentation_only",
+    "reconciliation_tolerance": 0
+  },
+  "opening_snapshot": {
+    "at": "2026-07-01T00:00:00+09:00",
+    "accounts": [
+      {
+        "account_id": "acct_a",
+        "reported_mrr": 100,
+        "components": [
+          {
+            "component_id": "base",
+            "status": "active",
+            "currency": "KRW",
+            "recurring_amount": 100,
+            "billing_interval_months": 1,
+            "eligible": true,
+            "amount_basis": "fixed_commitment",
+            "source_record_id": "open-base"
+          }
+        ]
+      }
+    ]
+  },
+  "event_groups": [
+    {
+      "event_group_id": "event-expand",
+      "account_id": "acct_a",
+      "effective_at": "2026-07-10T09:00:00+09:00",
+      "sequence": 1,
+      "operations": [
+        {
+          "op": "set_recurring_amount",
+          "component_id": "base",
+          "recurring_amount": 125,
+          "billing_interval_months": 1,
+          "source_record_id": "change-expand"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "source",
+      "fields": ["opening_snapshot", "event_groups"],
+      "provider": "billing_ledger",
+      "dataset": "subscription_items",
+      "as_of": "2026-08-03T12:00:00+09:00",
+      "record_ids": ["open-base", "change-expand"]
+    }
+  ]
+}

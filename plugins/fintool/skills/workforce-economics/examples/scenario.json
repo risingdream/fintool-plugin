@@ -1,0 +1,9 @@
+{
+  "assumptions": {
+    "groups.delivery.period_inputs.0.time.allocated_productive_hours": {
+      "value": 150,
+      "range": [120, 180],
+      "source": "Delivery capacity plan approved 2026-08-28"
+    }
+  }
+}

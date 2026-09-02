@@ -1,0 +1,20 @@
+{
+  "cases": [
+    {
+      "label": "base",
+      "params": {}
+    },
+    {
+      "label": "accounts_4",
+      "params": {
+        "cells.cell_a.account_count": 4
+      }
+    },
+    {
+      "label": "base_price_12",
+      "params": {
+        "cells.cell_a.charge_components.base.unit_price": 12
+      }
+    }
+  ]
+}

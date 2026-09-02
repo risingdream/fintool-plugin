@@ -1,0 +1,18 @@
+{
+  "schema_version": "subscription-metrics/v0",
+  "basis": "actual",
+  "ledger_version": "ledger-invalid-v1",
+  "currency": "KRW",
+  "reporting_timezone": "Asia/Seoul",
+  "period": {
+    "start": "2026-07-01T00:00:00+09:00",
+    "end_exclusive": "2026-08-01T00:00:00+09:00",
+    "grain": "calendar_month"
+  },
+  "as_of": "2026-08-03T12:00:00+09:00",
+  "metric_policy": {},
+  "precision": {},
+  "opening_snapshot": {"at": "2026-07-01T00:00:00+09:00", "accounts": []},
+  "event_groups": [],
+  "evidence": []
+}

@@ -1,14 +1,21 @@
 ---
 name: startup-finance
-description: fintool MCP로 스타트업 재무모델·시나리오·투자유치 자료를 만든다. 재무보고서, 피칭덱 재무, 런웨이, 자금소요, 캡테이블, LTV/CAC, bear/base/bull, 엑셀 워크북을 요청하면 이 스킬을 쓴다. startup-design·startup-pitch 등 스타트업 스킬 진행 중 재무 계산(Phase 7 재무, 검증 실험 판정, 피치 숫자)이 필요한 지점에서도 이 스킬을 쓴다. DCF·WACC·내재가치는 valuation, 상장사 재무제표·재무비율·부도확률은 financial-statements, 펀드 성과귀속·PE 펀드지표는 fund-performance, 최적 비중·VaR·거래비용은 portfolio-risk, 채권 가격·듀레이션은 fixed-income, 옵션 가격·내재변동성은 option으로 보낸다. 숫자는 추정하지 말고 fintool 봉투만 인용한다.
+description: fintool MCP로 스타트업 재무모델·시나리오·투자유치 자료를 만든다. 재무보고서, 피칭덱 재무, 런웨이, 자금소요, 캡테이블, LTV/CAC, bear/base/bull, 엑셀 워크북을 요청하면 이 스킬을 쓴다. startup-design·startup-pitch 등 스타트업 스킬 진행 중 재무 계산(Phase 7 재무, 검증 실험 판정, 피치 숫자)이 필요한 지점에서도 이 스킬을 쓴다. 실제·계획 GTM 지출과 퍼널에서 채널 CAC·ROAS·ROMI·필요 리드/예산을 계산하는 일은 gtm-economics, 제품·서비스 원가를 BOM·작업시간·간접비 배부로 쌓아 만드는 일은 costing, DCF·WACC·내재가치는 valuation, 상장사 재무제표·재무비율·부도확률은 financial-statements, 펀드 성과귀속·PE 펀드지표는 fund-performance, 최적 비중·VaR·거래비용은 portfolio-risk, 채권 가격·듀레이션은 fixed-income, 옵션 가격·내재변동성은 option으로 보낸다. 숫자는 추정하지 말고 fintool 봉투만 인용한다.
 ---
 
 # Startup Finance
 
+## 원격 MCP 호출 계약
+
+첫 계산 전에 `fintool_catalog {"tool":"<도구>"}`로 해당 도구 하나의 최신 계약을 조회하고
+`input_contract.call_example`을 복사한다. 계산은 `fintool_run {"tool":"<도구>","flags":{"<플래그>":"<값>"}}` 형태로 실행한다.
+`flags`는 JSON 객체로 전달한다. `spec` 플래그를 쓰는 도구에서는 `flags.spec`도 JSON 객체로 넣고,
+JSON 문자열로 이중 직렬화하지 않는다.
+
 도구는 **원격 MCP**다. `fintool_catalog`로 스키마를 보고 `fintool_run`으로 실행한다. 로컬 바이너리를 설치하지 않는다.
 
 이 스킬 범위: 인터뷰 → 드라이버 모델/유닛/시나리오/캡테이블 → `report`·워크북.
-범위 밖: DCF·WACC·기업가치(`valuation`), 상장사 재무제표·재무비율·회계 정규화·부도확률(`financial-statements`), 펀드 성과귀속·PE 펀드지표(`fund-performance`), 포트폴리오 VaR·거래비용(`portfolio-risk`), 채권 프라이싱(`fixed-income`), 옵션 가격·내재변동성(`option`).
+범위 밖: 실제·계획 GTM 지출과 퍼널에서 채널 CAC·ROAS·ROMI·목표 리드/예산을 계산하는 일(`gtm-economics` — 이미 확정된 CAC로 LTV/CAC·payback을 계산하는 단계부터 이 스킬이다), 원가 구성요소를 쌓아 단위원가·cost-to-serve를 만드는 일(`costing` — 원가율을 이미 알고 있으면 여기서 그대로 쓰고, 그 원가율이 어디서 왔는지가 질문이면 `costing`이다), DCF·WACC·기업가치(`valuation`), 상장사 재무제표·재무비율·회계 정규화·부도확률(`financial-statements`), 펀드 성과귀속·PE 펀드지표(`fund-performance`), 포트폴리오 VaR·거래비용(`portfolio-risk`), 채권 프라이싱(`fixed-income`), 옵션 가격·내재변동성(`option`).
 
 ## 첫 계산 호출의 evidence 계약
 
@@ -302,7 +309,8 @@ warning zero_cogs: 매출원가가 0이라 매출총이익률이 100%로 나옵�
 | `cap-table-simulate` | `cap-bar` |
 | `business-plan --batch` | `batch-summary` |
 
-전체 매핑·동반 부품·제외 목록은 저장소 `docs/tools/report-fragments.md`.
+사용 가능한 전체 매핑·동반 부품·제외 목록은 `fintool_catalog {"tool":"report"}`의
+component 계약을 정본으로 삼는다.
 
 실행 가능한 조각 호출이다. 숫자만 바꿔 그대로 쓴다.
 
@@ -431,7 +439,8 @@ accrual 워크북의 `BS`에는 `balance_check` 행이 있다 — `ROUND(총자�
 
 **사용자가 워크북을 원한다고 밝혔으면 리볼버를 켜기 전에 이 제약을 먼저 알린다.** 다 돌리고 나서 "워크북은 안 됩니다"라고 하지 않는다.
 
-재무 리포트만으로 충분한지, 조작 가능한 워크북이 필요한지 **먼저 묻는다.** 둘은 다른 산출물이다. 계약 전문은 `docs/decisions/workbook-contract.md`.
+재무 리포트만으로 충분한지, 조작 가능한 워크북이 필요한지 **먼저 묻는다.** 둘은 다른 산출물이다.
+리볼버 비지원, 수식 보존, 재열기 검증 계약은 이 절과 `references/workbook-transcribe.md`를 따른다.
 
 ## 저장과 재개
 
@@ -496,13 +505,12 @@ fintool_compare before={"name":"아크메랩스-base","seq":1} after={"name":"�
 
 해시는 자르지 않는다. 저장·load 봉투의 `hash`를 한 번 인용한다.
 
-## 카탈로그 호출 줄이기
+## 카탈로그 호출 범위
 
-`fintool_catalog`는 스펙 조회일 뿐 계산이 아니다. 계측에서 전체 도구 호출의 31%가 카탈로그였다.
-
-- 이 문서에 **호출 예시가 있는 도구는 카탈로그를 부르지 않는다.** 예시를 그대로 쓰고 숫자만 바꾼다.
-- 예시가 없는 도구만 `fintool_catalog {"tool":"<이름>"}`으로 그 도구 하나를 받는다. 인자 없는 전체 목록은 어떤 도구가 있는지 모를 때만 쓴다.
-- 호출이 실패하면 오류 봉투가 유효 플래그 목록과 `input_contract`를 함께 준다. 그것을 보고 고치면 되고 카탈로그를 따로 부를 필요가 없다.
+- 각 도구의 첫 계산 전에 `fintool_catalog {"tool":"<이름>"}`으로 그 도구 하나의 계약을 확인한다.
+- 같은 연결·같은 세션에서 계약 버전이 바뀌지 않았다면 확인한 계약을 재사용할 수 있다.
+- 호출이 계약 오류로 실패하면 오류 봉투를 확인하고 해당 도구의 카탈로그를 다시 조회한다.
+- 인자 없는 전체 목록은 필요한 도구 이름 자체를 모를 때만 쓴다.
 
 ## 호출 함정
 - **금액을 원 단위 정수로 바꿀 때 자릿수를 다시 센다.** "5,000억"은 `500000000000`(0이 11개)이다. 엔진은 단위를 검증하지 못하고 그대로 계산한다.
@@ -511,12 +519,12 @@ fintool_compare before={"name":"아크메랩스-base","seq":1} after={"name":"�
 - 다음 세션에서 저장본을 짐작하지 않는다. `fintool_list`가 말한 이름만 `load`한다.
 
 
-- `fintool_run`의 `spec`은 **문자열**로 직렬화한다.
+- `fintool_run`의 `flags.spec`은 JSON 객체로 전달한다. 따옴표로 감싼 JSON 문자열로 바꾸지 않는다.
 - 기본 플래그는 kebab-case. batch `params`는 **snake_case**, 스칼라만.
 - `months`는 12~60이다.
 - `mode`를 생략하면 cash다. `--mode`는 스펙의 `mode`를 덮어쓴다. `cash`·`accrual` 외의 값은 거부된다.
 - **`--summary`는 두 모드 모두 붙는다.** accrual은 월별 핵심 5개 + `summary`로, cash는 월별 현금 5개(매출·비용·영업손익·순현금·기말현금) + 라인아이템별 연간 집계 + `runway`로 줄인다. `calculation_hash`는 전체 결과와 같으므로 축약본을 그대로 인용해도 된다. 36개월 모델은 이것 없이는 도구 결과 한도를 넘긴다.
-- **`--scenarios`로 BEAR/BULL을 한 번에 낸다.** `[{"name":"bear","overrides":{"drivers.<id>.schedule.monthly_growth":0.03}}]`. 스펙을 시나리오마다 다시 보내지 않는다. MCP에서는 `spec`과 같이 배열을 그대로 넣는다(문자열도 받는다). 응답은 이미 축약 단위라 `--summary`와 함께 쓰지 않는다. 이 봉투를 그대로 `report`의 `financial_model` 자리에 넣으면 `fm-summary-table`이 `base`를, `fm-scenario-table`이 비교표를 그린다 — 리포트 때문에 base를 한 번 더 돌리지 않는다.
+- **`--scenarios`로 BEAR/BULL을 한 번에 낸다.** `[{"name":"bear","overrides":{"drivers.<id>.schedule.monthly_growth":0.03}}]`. 스펙을 시나리오마다 다시 보내지 않는다. MCP에서는 `flags.scenarios`에 배열을 그대로 넣고 문자열로 직렬화하지 않는다. 응답은 이미 축약 단위라 `--summary`와 함께 쓰지 않는다. 이 봉투를 그대로 `report`의 `financial_model` 자리에 넣으면 `fm-summary-table`이 `base`를, `fm-scenario-table`이 비교표를 그린다 — 리포트 때문에 base를 한 번 더 돌리지 않는다.
 - **`cohort`·`growth` 스케줄의 파라미터에 참조를 쓴다.** 유입이 `가입 × 전환 × 보유율`이면 그 곱을 `metric` line item으로 두고 `"additions": {"ref": "m_new"}`로 가리킨다. 곱을 손으로 계산해 상수로 박으면 원칙 1(LLM은 숫자를 만들지 않는다)이 깨진다.
 - **기존 `financial-model/v1`·`v2` 스펙도 그대로 받는다.** 다만 그 두 버전에 `--mode`를 주면 거부된다 — v1은 cash, v2는 accrual로 고정이다. 모드를 바꿔 돌리려면 스펙을 새 형식으로 옮긴다.
 - expression은 **같은 월 값만** 참조한다. 전월 참조는 `expression_cycle`로 거부된다 — 시간 재귀는 `growth`·`cohort` 스케줄로 푼다.
@@ -537,6 +545,7 @@ fintool_compare before={"name":"아크메랩스-base","seq":1} after={"name":"�
 | Phase 7 민감도 ±30% | `scenario --mode oat` |
 | Phase 7 conservative/base/optimistic | named bear/base/bull batch (`--mode corners` 아님) |
 | Phase 7 CAC·LTV·churn | `unit-economics --model subscription` |
+| Phase 4/7 실제·계획 GTM 비용·퍼널·채널 CAC·ROAS·ROMI | `gtm-economics` → scope가 보존된 `unit-economics` handoff |
 | Phase 7 break-even | `unit-economics --model transaction` |
 | Phase 7 runway·자금소요 | `financial-model` 미조달/조달 케이스 + `montecarlo --failure-rate` |
 | Phase 8 실험 pass/fail 판정 | `stats --mode test --test independence --method fisher-exact` |

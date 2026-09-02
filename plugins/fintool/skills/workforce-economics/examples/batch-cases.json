@@ -1,0 +1,20 @@
+{
+  "cases": [
+    {
+      "label": "base",
+      "params": {}
+    },
+    {
+      "label": "leave_up",
+      "params": {
+        "groups.delivery.period_inputs.0.time.unavailable_time.0.hours": 40
+      }
+    },
+    {
+      "label": "more_overtime",
+      "params": {
+        "groups.delivery.period_inputs.0.time.overtime_hours": 20
+      }
+    }
+  ]
+}

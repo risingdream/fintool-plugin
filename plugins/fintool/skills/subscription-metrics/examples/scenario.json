@@ -1,0 +1,34 @@
+{
+  "assumptions": {
+    "opening_snapshot.accounts.0.reported_mrr": {
+      "value": 100,
+      "range": [80, 120],
+      "source": "approved planning range"
+    },
+    "opening_snapshot.accounts.0.components.0.recurring_amount": {
+      "value": 100,
+      "range": [80, 120],
+      "source": "approved planning range"
+    },
+    "closing_snapshot.accounts.0.reported_mrr": {
+      "value": 100,
+      "range": [80, 120],
+      "source": "approved planning range"
+    },
+    "closing_snapshot.accounts.0.components.0.recurring_amount": {
+      "value": 100,
+      "range": [80, 120],
+      "source": "approved planning range"
+    },
+    "history.accounts.0.monthly_mrr.0.mrr": {
+      "value": 100,
+      "range": [80, 120],
+      "source": "approved planning range"
+    },
+    "history.accounts.0.monthly_mrr.1.mrr": {
+      "value": 100,
+      "range": [80, 120],
+      "source": "approved planning range"
+    }
+  }
+}

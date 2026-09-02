@@ -1,0 +1,20 @@
+{
+  "assumptions": {
+    "cells.cell_a.account_count": {
+      "value": 2,
+      "range": [
+        1,
+        4
+      ],
+      "source": "explicit account-count scenario"
+    },
+    "cells.cell_a.charge_components.base.unit_price": {
+      "value": 10,
+      "range": [
+        8,
+        12
+      ],
+      "source": "explicit base-price scenario"
+    }
+  }
+}

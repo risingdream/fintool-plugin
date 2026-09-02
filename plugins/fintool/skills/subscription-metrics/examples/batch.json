@@ -1,0 +1,26 @@
+{
+  "cases": [
+    {
+      "label": "low_plan_mrr",
+      "params": {
+        "opening_snapshot.accounts.0.reported_mrr": 80,
+        "opening_snapshot.accounts.0.components.0.recurring_amount": 80,
+        "closing_snapshot.accounts.0.reported_mrr": 80,
+        "closing_snapshot.accounts.0.components.0.recurring_amount": 80,
+        "history.accounts.0.monthly_mrr.0.mrr": 80,
+        "history.accounts.0.monthly_mrr.1.mrr": 80
+      }
+    },
+    {
+      "label": "high_plan_mrr",
+      "params": {
+        "opening_snapshot.accounts.0.reported_mrr": 120,
+        "opening_snapshot.accounts.0.components.0.recurring_amount": 120,
+        "closing_snapshot.accounts.0.reported_mrr": 120,
+        "closing_snapshot.accounts.0.components.0.recurring_amount": 120,
+        "history.accounts.0.monthly_mrr.0.mrr": 120,
+        "history.accounts.0.monthly_mrr.1.mrr": 120
+      }
+    }
+  ]
+}

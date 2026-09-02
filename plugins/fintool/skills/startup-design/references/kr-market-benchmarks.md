@@ -3,7 +3,6 @@
 **적용 대상**: `startup-design` Phase 7(재무), `startup-pitch` 시장규모 검증
 **짝 파일**: `industry-benchmarks.md`(미국 기준), `kr-research-sources.md`(소스 맵), `honesty-protocol.md`(정직성 규약)
 **작성 기준일**: 2026-08-23
-**덮는 K1 P0 항목**(`docs/startup-skill-kr-gap.md`): B1·B2·B6·B8·B11·B12·B13 + D2 (8개). 보조로 B3·B5·B7·B9·B10·D6·F9·F10 커버.
 
 ---
 

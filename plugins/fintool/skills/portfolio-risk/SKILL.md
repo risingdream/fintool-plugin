@@ -5,6 +5,13 @@ description: fintool MCP로 포트폴리오 최적화·위험·거래비용을 �
 
 # Portfolio Risk
 
+## 원격 MCP 호출 계약
+
+첫 계산 전에 `fintool_catalog {"tool":"<도구>"}`로 해당 도구 하나의 최신 계약을 조회하고
+`input_contract.call_example`을 복사한다. 계산은 `fintool_run {"tool":"<도구>","flags":{"<플래그>":"<값>"}}` 형태로 실행한다.
+`flags`는 JSON 객체로 전달한다. `spec` 플래그를 쓰는 도구에서는 `flags.spec`도 JSON 객체로 넣고,
+JSON 문자열로 이중 직렬화하지 않는다.
+
 원격 MCP: `fintool_catalog` → `fintool_run`.
 
 범위: `vol` → `portfolio` → `var` / (선택) `montecarlo`. 거래비용은 `trade-cost`.  
@@ -67,6 +74,13 @@ description: fintool MCP로 포트폴리오 최적화·위험·거래비용을 �
  "weights":[0.6,0.4],"confidence":0.99,"portfolio-value":1000000000}}
 ```
 
+은퇴자산처럼 자산 수익률 순서가 고갈을 좌우할 때는 시드를 고정하고 요약 결과만 받는다.
+
+```json
+{"tool":"montecarlo","flags":{"initial":100000000,"annual-flow":-4000000,
+ "mean-return":0.05,"volatility":0.15,"years":10,"trials":3000,"seed":9,"summary":true}}
+```
+
 - `--volatilities` + `--correlation`(생략하면 무상관) 또는 `--covariance` 중 하나. **둘을 같이 주면 입력 오류다.**
 - 모수는 전부 **연율 소수**다(22% = `0.22`). `--assets`를 생략하면 `asset1..N`이다.
 - 시계열(`--returns`/`--prices`)과 **동시에 줄 수 없다.**
@@ -95,13 +109,12 @@ description: fintool MCP로 포트폴리오 최적화·위험·거래비용을 �
 - 미체결분이 있으면 기회비용이 잡힌다. **지연·기회비용의 귀속 관례가 둘로 갈린다**(미체결분의 지연 손실을 지연에 넣느냐 기회에 넣느냐). 합계는 같으니 어느 관례인지 밝히고 쓴다.
 - 매수는 `side buy`, 매도는 `sell`. 부호는 비용이 양수다.
 
-## 카탈로그 호출 줄이기
+## 카탈로그 호출 범위
 
-`fintool_catalog`는 스펙 조회일 뿐 계산이 아니다. 계측에서 전체 도구 호출의 31%가 카탈로그였다.
-
-- 이 문서에 **호출 예시가 있는 도구는 카탈로그를 부르지 않는다.** 예시를 그대로 쓰고 숫자만 바꾼다.
-- 예시가 없는 도구만 `fintool_catalog {"tool":"<이름>"}`으로 그 도구 하나를 받는다. 인자 없는 전체 목록은 어떤 도구가 있는지 모를 때만 쓴다.
-- 호출이 실패하면 오류 봉투가 유효 플래그 목록과 `input_contract`를 함께 준다. 그것을 보고 고치면 되고 카탈로그를 따로 부를 필요가 없다.
+- 각 도구의 첫 계산 전에 `fintool_catalog {"tool":"<이름>"}`으로 그 도구 하나의 계약을 확인한다.
+- 같은 연결·같은 세션에서 계약 버전이 바뀌지 않았다면 확인한 계약을 재사용할 수 있다.
+- 호출이 계약 오류로 실패하면 오류 봉투를 확인하고 해당 도구의 카탈로그를 다시 조회한다.
+- 인자 없는 전체 목록은 필요한 도구 이름 자체를 모를 때만 쓴다.
 
 ## 함정
 
